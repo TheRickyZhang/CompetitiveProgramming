@@ -1,0 +1,19 @@
+# IDE metadata
+.idea/
+
+# Build system directories
+cmake-build-debug/
+CMakeFiles/
+.cache/
+.cmake/
+
+# Ninja build system files
+.ninja_deps
+.ninja_log
+build.ninja
+
+# CMake-generated files
+cmake_install.cmake
+
+# Optional (if "Not Done/" is personal work)
+Not Done/
