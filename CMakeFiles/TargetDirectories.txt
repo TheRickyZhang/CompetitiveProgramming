@@ -1,5 +1,0 @@
-C:/Users/ricky/CompetitiveProgramming/CMakeFiles/CSES2166.dir
-C:/Users/ricky/CompetitiveProgramming/CMakeFiles/KMP.dir
-C:/Users/ricky/CompetitiveProgramming/CMakeFiles/Template.dir
-C:/Users/ricky/CompetitiveProgramming/CMakeFiles/edit_cache.dir
-C:/Users/ricky/CompetitiveProgramming/CMakeFiles/rebuild_cache.dir
