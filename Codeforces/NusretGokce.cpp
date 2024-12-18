@@ -16,7 +16,6 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
 #define str string
-#define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
 constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}}; constexpr char en = '\n'; constexpr char sp = ' ';
 template<typename A, typename B> ostream& operator<<(ostream &os, const pair<A, B> &p) { return os<<"("<<p.first<<", "<<p.second<<")"; }
 template<typename T_container, typename T = enable_if_t<!is_same_v<T_container, string>, typename T_container::value_type>> ostream& operator<<(ostream &os, const T_container &v) { os<<"{"; string sep; for (const T &x : v) os<<sep<<x, sep = ", "; return os<<"}"; }
@@ -26,12 +25,20 @@ struct vectorHash { template <class T> size_t operator()(const vector<T>& v) con
 auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >= 0 && x < n; };
 
 constexpr int N = 100000;
-ll t, n, m, k, a, b;
+int t, n, m, k, a, b;
 void solve() {
     
 }
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    
+    cin>>n>>k;
+    vi nums(n); f(i, n) cin>>nums[i];
+    f(i, n-1) {
+        nums[i+1] = max(nums[i+1], nums[i]-k);
+    }
+    repr(i, n, 1) {
+        nums[i-1] = max(nums[i-1], nums[i]-k);
+    }
+    for(int x : nums) cout<<x<<" ";
 }

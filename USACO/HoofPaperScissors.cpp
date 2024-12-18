@@ -16,7 +16,6 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
 #define str string
-#define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
 constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}}; constexpr char en = '\n'; constexpr char sp = ' ';
 template<typename A, typename B> ostream& operator<<(ostream &os, const pair<A, B> &p) { return os<<"("<<p.first<<", "<<p.second<<")"; }
 template<typename T_container, typename T = enable_if_t<!is_same_v<T_container, string>, typename T_container::value_type>> ostream& operator<<(ostream &os, const T_container &v) { os<<"{"; string sep; for (const T &x : v) os<<sep<<x, sep = ", "; return os<<"}"; }
@@ -27,11 +26,35 @@ auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >=
 
 constexpr int N = 100000;
 ll t, n, m, k, a, b;
-void solve() {
-    
-}
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    
+    ifstream cin("hps.in"); ofstream cout("hps.out");
+    cin>>n; vi nums(n);
+    f(i, n) {
+        char c; cin>>c;
+        if(c=='P') nums[i]=0;
+        else if(c=='H') nums[i]=1;
+        else nums[i]=2;
+    }
+    vi pre(n, 0), post(n, 0);
+
+    int a=0, b=0, c=0;
+    f(i, n) {
+        if(nums[i]==0) b++;
+        else if(nums[i]==1) c++;
+        else a++;
+        pre[i] = max({a, b, c});
+    }
+    a=0, b=0, c=0;
+    repr(i, n, 0) {
+        if(nums[i]==0) b++;
+        else if(nums[i]==1) c++;
+        else a++;
+        post[i] = max({a, b, c});
+    }
+    // cout<<pre<<en<<post<<en;
+    int res=max(post[0], pre[n-1]);
+    f(i, n-1) res = max(res, pre[i]+post[i+1]);
+    cout<<res<<en;
 }

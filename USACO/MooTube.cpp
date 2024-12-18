@@ -33,5 +33,28 @@ void solve() {
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    
+    setIO("mootube");
+    cin>>n>>t;
+    vvpii adj(n);
+    f(i, n-1) {
+        int u, v, w; cin>>u>>v>>w;
+        u--; v--;
+        adj[u].pb({v, w});
+        adj[v].pb({u, w});
+    }
+    f(i, t) {
+        int k, u; cin>>k>>u;
+        queue<tuple<int,int,int>> q;
+        q.push({u-1, -1, INF}); // node, parent, MIN
+        int res=0;
+        while(!q.empty()) {
+            auto [u, p, w] = q.front(); q.pop();
+            if(w >= k && w != INF) res++;
+            for(auto [v, nw] : adj[u]) {
+                if(v==p) continue;
+                q.emplace(v, u, min(w, nw));
+            }
+        }
+        cout<<res<<en;
+    }
 }

@@ -16,7 +16,6 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
 #define str string
-#define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
 constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}}; constexpr char en = '\n'; constexpr char sp = ' ';
 template<typename A, typename B> ostream& operator<<(ostream &os, const pair<A, B> &p) { return os<<"("<<p.first<<", "<<p.second<<")"; }
 template<typename T_container, typename T = enable_if_t<!is_same_v<T_container, string>, typename T_container::value_type>> ostream& operator<<(ostream &os, const T_container &v) { os<<"{"; string sep; for (const T &x : v) os<<sep<<x, sep = ", "; return os<<"}"; }
@@ -31,7 +30,34 @@ void solve() {
     
 }
 
+
 int main() {
+    ifstream cin("revegetate.in"); ofstream cout("revegetate.out");
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    
+    cin>>n>>m;
+    vi p(n);
+    f(i, n) p[i]=i;
+    vi sz(n, 1);
+
+    function<int(int)> par = [&](int u) {
+        if(p[u]==u) return u;
+        return p[u]=par(p[u]);
+    };
+    function<void(int, int)> merge = [&](int a, int b) {
+        int x = par(a), y = par(b);
+        if(x==y) return;
+        if(sz[x] < sz[y]) swap(x, y);
+        sz[x] += sz[y];
+        p[y]=x;
+    };
+
+    f(i, m) {
+        string s; cin>>s;
+        cin>>a>>b; a--; b--;
+        merge(a, b);
+    }
+    // cout<<p<<en;
+    set<int> s;
+    f(i, n) s.insert(par(i));
+    cout<<1<<string(s.size(), '0')<<en;
 }

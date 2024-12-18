@@ -570,3 +570,22 @@ int countMinMaxSubarrays(vi& nums, int minK, int maxK)
     }
     return ans;
 }
+
+// Two different types of binary search
+int bs(vi& arr, int x)
+    int l, r;
+    while(l<r)
+        int mid=l+(r-l)/2;
+        if(arr[mid]<x)
+            l=m+1;
+        else
+            r=m;
+    return l; // Sometimes might return l-1 for last invalid
+
+int bs(vi& arr, int x)
+    int l, r;
+    while(l<=r)
+        int m=l+(r-l)/2;
+        if(arr[m]<x) l=m+1;
+        else if(arr[m]>x) r=m-1;
+        else return m;

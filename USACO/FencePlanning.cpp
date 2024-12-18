@@ -16,7 +16,6 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
 #define str string
-#define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
 constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}}; constexpr char en = '\n'; constexpr char sp = ' ';
 template<typename A, typename B> ostream& operator<<(ostream &os, const pair<A, B> &p) { return os<<"("<<p.first<<", "<<p.second<<")"; }
 template<typename T_container, typename T = enable_if_t<!is_same_v<T_container, string>, typename T_container::value_type>> ostream& operator<<(ostream &os, const T_container &v) { os<<"{"; string sep; for (const T &x : v) os<<sep<<x, sep = ", "; return os<<"}"; }
@@ -33,5 +32,33 @@ void solve() {
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    
+    ifstream cin("fenceplan.in");
+    ofstream cout("fenceplan.out");
+    cin>>n>>m;
+    vpii pos(n);
+    f(i, n) cin>>pos[i].ff>>pos[i].ss;
+    vvi adj(n);
+    f(i, m) {
+        int u, v; cin>>u>>v; u--; v--;
+        adj[u].pb(v); adj[v].pb(u);
+    }
+    vb vis(n, false);
+    function<void(int, int&, int&, int&, int&)> dfs=[&](int u, int& lx, int&rx, int&ly, int& ry) {
+        vis[u]=true;
+        auto [x, y] = pos[u];
+        lx=min(lx, x); rx=max(rx, x);
+        ly=min(ly, y); ry=max(ry, y);
+        for(int v : adj[u]) {
+            if(!vis[v]) dfs(v, lx, rx, ly, ry);
+        }
+    };
+    int res=INT_MAX;
+    f(i, n) {
+        if(vis[i]) continue;
+        int lx=INT_MAX, rx=INT_MIN, ly=INT_MAX, ry=INT_MIN;
+        dfs(i, lx, rx, ly, ry);
+        // cout<<lx<<sp<<rx<<sp<<ly<<sp<<ry<<en;
+        res=min(res, 2*(rx-lx+ry-ly));
+    }
+    cout<<res<<en;
 }

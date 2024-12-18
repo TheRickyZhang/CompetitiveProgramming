@@ -16,7 +16,6 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
 #define str string
-#define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
 constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}}; constexpr char en = '\n'; constexpr char sp = ' ';
 template<typename A, typename B> ostream& operator<<(ostream &os, const pair<A, B> &p) { return os<<"("<<p.first<<", "<<p.second<<")"; }
 template<typename T_container, typename T = enable_if_t<!is_same_v<T_container, string>, typename T_container::value_type>> ostream& operator<<(ostream &os, const T_container &v) { os<<"{"; string sep; for (const T &x : v) os<<sep<<x, sep = ", "; return os<<"}"; }
@@ -28,10 +27,41 @@ auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >=
 constexpr int N = 100000;
 ll t, n, m, k, a, b;
 void solve() {
-    
+    cin>>n>>m;
+    vvi adj(n);
+    f(i, m) {
+        int u, v; cin>>u>>v; u--; v--;
+        adj[u].pb(v);
+        adj[v].pb(u);
+    }
+    vi col(n, -1);
+    queue<pii> q;
+    q.push({0, 0});
+    int zcnt=0;
+    while(!q.empty()) {
+        int sz = q.size();
+        f(i, sz) {
+            auto [u, c] = q.front(); q.pop();
+            if(col[u] != -1) continue;
+            col[u]=c;
+            if(c==0) zcnt++;
+            for(int v : adj[u]) {
+                q.push({v, 1-c});
+            }
+        }
+    }
+    int tar = (zcnt <= n/2) ? 0 : 1;
+    vi res;
+    f(i, n) {
+        if(col[i] == tar) res.pb(i);
+    }
+    cout<<res.size()<<en;
+    for(int x : res) cout<<x+1<<" ";
+    cout<<en;
 }
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    
+    cin>>t;
+    f(i, t) solve();
 }

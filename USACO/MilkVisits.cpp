@@ -26,12 +26,42 @@ struct vectorHash { template <class T> size_t operator()(const vector<T>& v) con
 auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >= 0 && x < n; };
 
 constexpr int N = 100000;
-ll t, n, m, k, a, b;
-void solve() {
-    
-}
-
+ll n, m;
+\
 int main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    
+    setIO("milkvisits");
+    cin>>n>>m;
+    vi col(n);
+    string s; cin>>s;
+    f(i, n) {
+        col[i] = (s[i] =='H') ? 1 : 0;
+    }
+    vvi adj(n);
+    f(i, n-1) {
+        int u, v; cin>>u>>v; u--; v--;
+        adj[u].pb(v);
+        adj[v].pb(u);
+    }
+    vvi parts;
+    vi type(n, -1);
+    f(i, n) {
+        if(type[i]!=-1) continue;
+        queue<pii> q; q.emplace(i, -1);
+        int c=col[i];
+        while(!q.empty()) {
+            auto [u, p] = q.front(); q.pop();
+            type[u] = i;
+            for(int v : adj[u]) {
+                if(col[v] != c || v==p) continue;
+                q.emplace(v, u);
+            }
+        }
+    }
+    f(i, m) {
+        int u, v; char c;
+        cin>>u>>v>>c; u--; v--;
+        int t = (c=='H') ? 1 : 0;
+        cout<<(type[u]==type[v] && col[u]!=t ? "0" : "1");
+    }
 }
