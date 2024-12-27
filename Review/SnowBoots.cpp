@@ -7,6 +7,7 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define ump unordered_map
 #define ust unordered_set
 #define f(i, to) for (int i = 0; i < (to); ++i)
+#define fe(i, to) for (int i = 1; i <= (to); ++i)
 #define rep(i, a, b) for (int i = (a); i < (b); ++i)
 #define repr(i, a, b) for (int i = (a)-1; i >= (b); --i)
 #define ff first
@@ -17,7 +18,8 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define rall(x) rbegin(x), rend(x)
 #define str string
 #define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
-constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}}; constexpr char en = '\n'; constexpr char sp = ' ';
+constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}};
+constexpr char EN = '\n'; constexpr char SP = ' '; auto en = EN; auto sp = SP;
 template<typename A, typename B> ostream& operator<<(ostream &os, const pair<A, B> &p) { return os<<"("<<p.first<<", "<<p.second<<")"; }
 template<typename T_container, typename T = enable_if_t<!is_same_v<T_container, string>, typename T_container::value_type>> ostream& operator<<(ostream &os, const T_container &v) { os<<"{"; string sep; for (const T &x : v) os<<sep<<x, sep = ", "; return os<<"}"; }
 template<typename K, typename V> ostream& operator<<(ostream &os, const map<K, V> &m) { os<<"{"; string sep; for (const auto &kv : m) os<<sep<<kv.first<<": "<<kv.second, sep = ", "; return os<<"}"; }
@@ -26,42 +28,40 @@ struct vectorHash { template <class T> size_t operator()(const vector<T>& v) con
 auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >= 0 && x < n; };
 
 constexpr int N = 100000;
-ll n, m;
+ll t, n, m, k, a, b;
+
+// Key insight: We can iteratively remove valid tiles by first attempting the largest boot size
+struct boot {
+    int d, s, i; // depth, steps, index
+};
 
 int main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    setIO("milkvisits");
     cin>>n>>m;
-    vi col(n);
-    string s; cin>>s;
-    f(i, n) {
-        col[i] = (s[i] =='H') ? 1 : 0;
-    }
-    vvi adj(n);
-    f(i, n-1) {
-        int u, v; cin>>u>>v; u--; v--;
-        adj[u].pb(v);
-        adj[v].pb(u);
-    }
-    vvi parts;
-    vi type(n, -1);
-    f(i, n) {
-        if(type[i]!=-1) continue;
-        queue<pii> q; q.emplace(i, -1);
-        int c=col[i];
-        while(!q.empty()) {
-            auto [u, p] = q.front(); q.pop();
-            type[u] = i;
-            for(int v : adj[u]) {
-                if(col[v] != c || v==p) continue;
-                q.emplace(v, u);
-            }
-        }
-    }
+    vi tiles(n); f(i, n) cin>>tiles[i]; // The order of the tiles is most important, so can't sort away
+    vector<boot> boots(n);
     f(i, m) {
-        int u, v; char c;
-        cin>>u>>v>>c; u--; v--;
-        int t = (c=='H') ? 1 : 0;
-        cout<<(type[u]==type[v] && col[u]!=t ? "0" : "1");
+        cin>>boots[i].d>>boots[i].s; boots[i].i=i;
     }
+    sort(all(boots), [&](boot& a, boot& b) {
+        return a.d > b.d;
+    });
+
+    vi tilesByDepth(n-2); // Exclude the first and last
+    for(int i=1; i<=n-2; ++i) tilesByDepth[i-1]=i;
+    sort(all(tilesByDepth), [&](int a, int b) {return tiles[a]>tiles[b]; });
+
+    set<int> validIndices; f(i, n) validIndices.insert(i);
+    vb res(m, false);
+    int i=0, step=1; // Iterate through tilesByDepth, eliminate largest tiles first
+    for(auto b : boots) {
+        while(i < n-2 && tiles[tilesByDepth[i]] > b.d) {
+            auto it = validIndices.find(tilesByDepth[i]);
+            step = max(step, *next(it)-*prev(it)); // Note that these bounds are always valid since 0 and n-1 always remain
+            validIndices.erase(it); // By monotonicity this index is not available for any of the next boots as well
+            i++;
+        }
+        res[b.i]= b.s >= step;
+    }
+    for(auto x : res) cout<<x<<en;
 }
+

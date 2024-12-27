@@ -7,6 +7,7 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define ump unordered_map
 #define ust unordered_set
 #define f(i, to) for (int i = 0; i < (to); ++i)
+#define fe(i, to) for (int i = 1; i <= (to); ++i)
 #define rep(i, a, b) for (int i = (a); i < (b); ++i)
 #define repr(i, a, b) for (int i = (a)-1; i >= (b); --i)
 #define ff first
@@ -17,7 +18,8 @@ using vvi = vector<vector<int>>; using vvll = vector<vector<ll>>; using mpq = pr
 #define rall(x) rbegin(x), rend(x)
 #define str string
 #define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
-constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}}; constexpr char en = '\n'; constexpr char sp = ' ';
+constexpr int MOD = 1000000007; constexpr ll INF = INT_MAX-37; constexpr ll INFL = 0x3f3f3f3f3f3f3f3f; const vector<pii> dirs = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}};
+constexpr char EN = '\n'; constexpr char SP = ' '; auto en = EN; auto sp = SP;
 template<typename A, typename B> ostream& operator<<(ostream &os, const pair<A, B> &p) { return os<<"("<<p.first<<", "<<p.second<<")"; }
 template<typename T_container, typename T = enable_if_t<!is_same_v<T_container, string>, typename T_container::value_type>> ostream& operator<<(ostream &os, const T_container &v) { os<<"{"; string sep; for (const T &x : v) os<<sep<<x, sep = ", "; return os<<"}"; }
 template<typename K, typename V> ostream& operator<<(ostream &os, const map<K, V> &m) { os<<"{"; string sep; for (const auto &kv : m) os<<sep<<kv.first<<": "<<kv.second, sep = ", "; return os<<"}"; }
@@ -25,43 +27,48 @@ struct pairHash { template <class T1, class T2> size_t operator()(const pair<T1,
 struct vectorHash { template <class T> size_t operator()(const vector<T>& v) const { size_t hashValue = 0; for (const T& i : v) hashValue ^= hash<T>{}(i) + 0x9e3779b9 + (hashValue<<6) + (hashValue >> 2); return hashValue; } };
 auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >= 0 && x < n; };
 
-constexpr int N = 100000;
-ll n, m;
 
 int main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    setIO("milkvisits");
-    cin>>n>>m;
-    vi col(n);
-    string s; cin>>s;
-    f(i, n) {
-        col[i] = (s[i] =='H') ? 1 : 0;
-    }
-    vvi adj(n);
-    f(i, n-1) {
-        int u, v; cin>>u>>v; u--; v--;
-        adj[u].pb(v);
-        adj[v].pb(u);
-    }
-    vvi parts;
-    vi type(n, -1);
-    f(i, n) {
-        if(type[i]!=-1) continue;
-        queue<pii> q; q.emplace(i, -1);
-        int c=col[i];
-        while(!q.empty()) {
-            auto [u, p] = q.front(); q.pop();
-            type[u] = i;
-            for(int v : adj[u]) {
-                if(col[v] != c || v==p) continue;
-                q.emplace(v, u);
-            }
+    ios_base::sync_with_stdio(false);
+    int n, k; cin>>n>>k;
+    int m = n/2;
+    vi nums(n);
+    f(i, n) cin>>nums[i];
+    sort(all(nums));
+
+    auto check = [&](int x) {
+        int tot=0;
+        for(int i = m; i<n; ++i) {
+            tot += max(0, x-nums[i]);
+            if(tot > k) return false;
         }
+        return true;
+    };
+    int l=0, r=INF;
+    while(l<r) {
+        int m = l + (r-l)/2;
+        if(check(m)) l=m+1;
+        else r=m;
     }
-    f(i, m) {
-        int u, v; char c;
-        cin>>u>>v>>c; u--; v--;
-        int t = (c=='H') ? 1 : 0;
-        cout<<(type[u]==type[v] && col[u]!=t ? "0" : "1");
-    }
+    cout<<l-1<<en; // Note how our check and m assignment results in returning the smallest that makes false
 }
+
+// TLE
+// int main() {
+//     ios::sync_with_stdio(false); cin.tie(nullptr);
+//     cin>>n>>k;
+//     vi nums(n);
+//     f(i, n) cin>>nums[i];
+//     sort(all(nums));
+//     int x = n/2;
+//     int res=nums[x];
+//     while(true) {
+//         k -= upper_bound(all(nums), res) - n/2 - nums.begin();
+//         if(k < 0) break;
+//         if(++res >= nums.back()) {
+//             res+=k / (x+1);
+//             break;
+//         }
+//     }
+//     cout<<res<<en;
+// }
