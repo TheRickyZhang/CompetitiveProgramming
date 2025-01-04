@@ -61,18 +61,22 @@ int bs(vi& arr, int x)
     else if(arr[m]>x) r=m-1;
     else return m;
 
-auto atMost = [&](int x) {  // Example of from-scratch binary search
-    int lo = 0;
-    int hi = bales.size();
-    while (lo < hi) {
-        int mid = (lo + hi) / 2;
-        if (bales[mid] <= x) {  // The +1 is when it goes over, so returns smallest element > (upper_bound)
-            lo = mid + 1;
-        } else {
-            hi = mid;
-        }
+auto binarySearch = [&](int x) {  // Example of from-scratch binary search
+    int l, r;
+    while (l<r) {
+        int m = l+(r-l)/2;
+
+        // >=
+        if (nums[m] < x) l=m+1; // The +1 is when it goes over, so returns smallest element > (upper_bound)
+        else r=m;
+
+        // >
+        if(nums[m] <= x) l=m+1;
+        else r=m;
+
+        // NOTE: reverse ops <=, < just return l-1;
     }
-    return lo;
+    return l;
 };
 
 // Two pointer (verbose)
