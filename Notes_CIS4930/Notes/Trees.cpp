@@ -196,3 +196,50 @@ f(i, m)
     if(l!=1) sub[par[l][0]]--;
 propogate(1);
 f(i, n) cout<<sub[i+1]<<" ";
+
+
+
+// Path Queries (to root). To extend to direct paths, also subtract out LCA
+
+int32_t main() {
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+    cin>>n>>k;
+    vi nums(n);
+    f(i, n) cin>>nums[i];
+    vvi adj(n);
+    f(i, n-1) {
+        int u, v; cin>>u>>v; u--; v--;
+        adj[u].pb(v); adj[v].pb(u);
+    }
+    vi start(n), end(n); t=0;
+    function<void(int, int)> dfs = [&](int u, int p) {
+        start[u] = t++;
+        for(int v : adj[u]) {
+            if(v==p) continue;
+            dfs(v, u);
+        }
+        end[u] =t;
+    };
+    dfs(0, 0);
+
+    BIT<int> bit(n+1, 0, [&](int a, int b) {
+        return a+b;
+    });
+    f(i, n) {
+        bit.add(start[i], nums[i]);
+        bit.add(end[i], -nums[i]);
+    }
+
+    f(i, k) {
+        cin>>t; int u; cin>>u; u--;
+        if(t==1) {
+            int x; cin>>x;
+            int diff = x-nums[u];
+            bit.add(start[u], diff);
+            bit.add(end[u], -diff);
+            nums[u] = x;
+        } else {
+            cout<<bit.query(start[u])<<en;
+        }
+    }
+}

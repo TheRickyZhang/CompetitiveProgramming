@@ -16,7 +16,7 @@ using namespace std;
 #define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
 
 #define int long long
-tpl_<tn_ T>        using v = vector<T>;  using ll=long long;  using pii=pair<int,int>;  using pll=pair<ll,ll>;  using t3=tuple<int,int,int>;       using t4=tuple<int,int,int,int>;
+tpl_<tn_ T>        using v = vector<T>;  using ll=long long;  using pii=pair<int,int>;  using pll=pair<ll,ll>;  using iii=tuple<int,int,int>;       using t4=tuple<int,int,int,int>;
 using vi=v<int>;   using vb=v<bool>;     using vvb=v<vb>;     using vs=v<string>;       using vvi=v<vi>;        using vll=v<ll>;using vvll=v<vll>; using vpii=v<pii>; using vvpii=v<vpii>; using vpll=v<pll>; using vvpll=v<vpll>;
 tpl_<tn_ K,tn_ T>  using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>;  tpl_<tn_ K,tn_ T>    using rmap=map<K,T,greater<K>>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>; tpl_<tn_ T>using rmset=multiset<T,greater<T>>;
 tpl_<tn_ T>        using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;
@@ -35,6 +35,7 @@ struct DSU{ vi p,sz; explicit
     void merge(int x,int y){x=par(x),y=par(y);if(x!=y){if(sz[x]<sz[y])swap(x,y);p[y]=x,sz[x]+=sz[y];}}
 };
 tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; function<T(T, T)> c;
+    Segtree() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
     Segtree(int sz, T zero, function<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(4 * sz, zero), nums(sz, zero), z(zero), c(move(combine)) { if (!init.empty()) { nums = init; build(1, 0, n - 1); } }
     void build(int i, int a, int b) { if (a == b) { t[i] = nums[a]; return; } int m = (a + b) / 2; build(2 * i, a, m); build(2 * i + 1, m + 1, b); t[i] = c(t[2 * i], t[2 * i + 1]); }
     void add(int i, int a, int b, int p, T x) { if (a == b) { t[i] += x; return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
@@ -45,16 +46,17 @@ tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; function<T(T, T)> c;
     T query(int l, int r) { return query(1, 0, n - 1, l, r); }
 };
 tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   // All 0-indexed
-    BIT(int sz, T zero, function<T(T, T)> combine, v<T> init = {}) : n(sz), t(sz + 1, zero), nums(sz, zero), z(zero), c(move(combine)) { if (!init.empty()) { nums = init; f(i, n) add(i, nums[i]); } }
-    void add(int i, T x) {nums[i] += x; for (i += 1; i <= n; i += (i & -i)) t[i] += x; }
-    void update(int i, T x) {T diff = x - nums[i];nums[i] = x; for (i += 1; i <= n; i += (i & -i)) t[i] += diff; }
+    BIT() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
+    BIT(int sz, T zero, function<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(sz + 1, zero), nums(sz, zero), z(zero), c(std::move(combine)) { if (!init.empty()) { nums = init; f(i, n) add(i, nums[i]); } }
+    void add(int i, T x) { nums[i] += x; for (i += 1; i <= n; i += (i & -i)) t[i] = c(t[i], x); }
+    void update(int i, T x) { T diff = x-nums[i]; nums[i] = x; for (i += 1; i <= n; i += (i & -i)) t[i] = c(t[i], diff); }
     T query(int i) { T res = z; for (i += 1; i > 0; i -= (i & -i)) res = c(res, t[i]); return res; }
     T query(int l, int r) { return query(r) - query(l-1); }
 };
+auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
 tpl_<tn_ T> ostream& operator<<(ostream& os, const Segtree<T>& seg) { int maxRows=20, rowCount=0, maxDepth=4; function<void(int,int,int,int)> pt=[&](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return; os<<string(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os; }
 tpl_<tn_ T> ostream& operator<<(ostream& os, const BIT<T>& bit) { os << "BIT:\n"; int levels = 0; while ((1 << levels) <= bit.n) levels++; v<vs> grid(levels, vs(bit.n, string(4, ' ')));
     for(int i = 1; i <= bit.n; ++i) {int row = __builtin_ctz(i);if(row < levels) {ostringstream oss;oss << setw(4) << bit.t[i];grid[row][i - 1] = oss.str();}} for(int r = 0; r < levels; ++r) {for(int c = 0; c < bit.n; ++c) {os << grid[r][c];}os << "\n";}return os;}
-template<class T, class U> T fstTrue(T l, T r, U ff) { while (l<r) { T m = (l + r)/2; ff(m) ? r=m : l = m+1; } return ff(l) ? l : r+1; }
 template<class T, class U> T lstTrue(T l, T r, U ff) { while (l<r) { T m = (l+r+1)/2; ff(m) ? l=m : r = m-1; } return ff(l) ? l : r+1; }
 template<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  template<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
     int N = 10000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
@@ -74,56 +76,133 @@ void solve() {
     
 }
 
+template<class T, class P, class U> T fstTrue(T l, T r, P a, P b, U ff) { while (l<r) { T m = (l + r)/2; ff(a, b, m) ? r=m : l = m+1; } return ff(a, b, l) ? l : r+1; }
+
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n>>k;
-    vvi adj(n);
-    vi nums(n);
-    f(i, n) cin>>nums[i];
-    f(i, n-1) {
-        int u, v; cin>>u>>v; u--; v--;
-        adj[u].pb(v); adj[v].pb(u);
-    }
-    vi start(n), end(n);
-    vi tour(2*n); // We should visit every node exactly once
-    t=0;
-    function<void(int, int)> dfs = [&](int u, int p) {
-        start[u] = t;
-        tour[t++] = u;
-        for(int v : adj[u]) {
-            if(v==p) continue;
-            dfs(v, u);
-        }
-        end[u] = t;
-        tour[t++] = u;
-    };
-    dfs(0, 0);
-    // cout<<tour<<en;
-    // cout<<start<<en<<end<<en;
+    cin>>n>>k>>m;
+    vs grid(n); f(i, n) cin>>grid[i];
+    int rocks = 0;
+    f(i, n) f(j, n) if(grid[i][j]=='+') rocks++;
 
-    vi temp(2*n+1, 0);
-    f(i, n) {
-        temp[start[i]] += nums[i];
-        temp[end[i]+1] -= nums[i];
-    }
-    // This is a difference array! So we do +- add, sum for path sum
-    BIT<int> bit(temp.size(), 0LL, [&](int a, int b) {
-        return a+b;
-    }, temp); // Initialize with initial sumRange. Note that updates depend to
-
-    // cout<<bit<<en;
+    vvi costs(k+1, vi(k+1, INF)); // Pairwise distances, where costs[0] = base, [1] = k1, etc.
+    f(i, k+1) costs[i][i] = 0;
+    vpii locs(k+1);
+    vi weights(k+1, 0);
+    locs[0] = {0, 0};
     f(i, k) {
-        cin>>t;
-        if(t==1) {
-            int u, x; cin>>u>>x; u--;
-            int diff = x - nums[u];
-            nums[u] = x;
-            bit.add(start[u], diff);
-            bit.add(end[u]+1, -diff);
-            // cout<<bit<<en;
-        } else {
-            int u; cin>>u; u--;
-            cout<<bit.query(start[u])<<en; // Since end is exclusive
+        int x, y, w; cin>>x>>y>>w; x--; y--;
+        locs[i+1] = {x, y}; weights[i+1] = w;
+    }
+
+    // Original Idea: THIS TLEs, need to use something like 0-1 BFS or dijkstra instead
+    // auto canReach = [&](pii start, pii end, int l) {
+    //     vvi left(n, vi(n, -1));
+    //     stack<pair<pii, int>> s;
+    //     s.push({start, l});
+    //     int cnt = 0;
+    //     while(!s.empty()) {
+    //         cnt++;
+    //         auto [a, d] = s.top(); s.pop();
+    //         auto [x, y] = a;
+    //         if(d < 0) continue;
+    //         if(a == end) return true;
+    //         for(auto [dy, dx] : dirs) {
+    //             int ny=y+dy, nx = x+dx;
+    //             if(check(nx, ny, n, n) && grid[nx][ny] != '#' && d > left[nx][ny]) {
+    //                 left[nx][ny] = d;
+    //                 pii c = {nx, ny};
+    //                 s.push(make_pair(c, d - (grid[nx][ny]=='+')));
+    //             }
+    //         }
+    //     }
+    //     return false;
+    // };
+    // f(i, k+1) {
+    //     f(j, i) {
+    //         pii a = locs[i], b = locs[j];
+    //         int req = fstTrue(0LL, rocks, a, b, canReach);
+    //         costs[j][i] = costs[i][j] = req;
+    //     }
+    // }
+
+
+    auto zeroOneBFS = [&](int startX, int startY) {
+        vvi dist(n, vi(n, INF));
+        deque<pii> dq;
+        dist[startX][startY] = 0;
+        dq.push_back({startX, startY});
+
+        while(!dq.empty()) {
+            auto [x, y] = dq.front();
+            dq.pop_front();
+            for(auto [dy, dx] : dirs) {
+                int nx = x + dx, ny = y + dy;
+                if(!check(nx, ny, n, n) || grid[nx][ny] == '#') continue;
+                int newDist = dist[x][y] + (grid[nx][ny] == '+' ? 1 : 0);
+                if(newDist < dist[nx][ny]) {
+                    dist[nx][ny] = newDist;
+                    if(grid[nx][ny] == '+') dq.push_back({nx, ny});
+                    else dq.push_front({nx, ny});
+                }
+            }
+        }
+        return dist;
+    };
+    vector<vvi> allDist(k+1);
+    f(i, k+1) {
+        int sx = locs[i].first;
+        int sy = locs[i].second;
+        allDist[i] = zeroOneBFS(sx, sy);
+    }
+    f(i, k+1) f(j, k+1) {
+        costs[i][j] = allDist[i][locs[j].first][locs[j].second];
+    }
+
+    // cout<<costs<<en;
+
+    vvi dp(1<<k, vi(k+1, INF));
+    dp[0][0] = 0;
+
+    // Held–Karp DP: Compute shortest paths for all subsets ending at each node
+    f(i, 1<<k) f(j, k+1) {
+        if(dp[i][j] == INF) continue;
+        f(kk, k) {
+            if(i & 1<<kk) continue; // Already visited
+            int next = i | (1<<kk);
+            ckmn(dp[next][kk+1], dp[i][j] + costs[j][kk+1]);
         }
     }
+
+    // Extract oneTripCost for each subset from the TSP DP table
+    vi oneTripCost(1<<k, INF);
+    oneTripCost[0] = 0;
+    fe(i, (1<<k) - 1) {
+        ll res = INF; int cw = 0; bool flag = false;
+        f(j, k) {
+            if(i & (1<<j)) {
+                ckmn(res, dp[i][j+1] + costs[j+1][0]);
+                cw += weights[j+1];
+                if(cw > m) {
+                    flag = true; break;
+                }
+            }
+        }
+        if(flag) oneTripCost[i] = INF;
+        else oneTripCost[i] = res;
+    }
+
+    // cout<<"One trip costs:" <<en<<oneTripCost<<en;
+
+    // Second bitset for multiple trips (wow...)
+    vll dpp(1<<k, INF);
+    dpp[0] = 0;
+    f(i, 1<<k) {
+        for(int j = i; j > 0; j = (j-1) & i) {
+            ckmn(dpp[i], dpp[i ^ j] + oneTripCost[j]);
+        }
+    }
+    // cout<<"Multi trip costs "<<en<<dp<<en;
+
+    cout<<dpp[(1<<k)-1]<<en;
 }
