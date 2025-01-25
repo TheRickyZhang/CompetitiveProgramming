@@ -243,3 +243,18 @@ int32_t main() {
         }
     }
 }
+
+// Small to Large Merging
+function<void(int, int)> dfs = [&](int u, int p) {
+    for(int v : adj[u]) {
+        if(v==p) continue;
+        dfs(v, u);
+        if(cols[u].size() < cols[v].size()) {
+            swap(cols[u], cols[v]);
+        }
+        for(int c : cols[v]) {
+            cols[u].insert(c);
+        }
+    }
+    cnt[u] = cols[u].size();
+};
