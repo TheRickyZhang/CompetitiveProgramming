@@ -54,6 +54,7 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
     T query(int l, int r) { return query(r) - query(l-1); }
 };
 auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
+typedef function<void(int, int)> autotree;
 tpl_<tn_ T> ostream& operator<<(ostream& os, const Segtree<T>& seg) { int maxRows=20, rowCount=0, maxDepth=4; function<void(int,int,int,int)> pt=[&](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return; os<<string(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os; }
 tpl_<tn_ T> ostream& operator<<(ostream& os, const BIT<T>& bit) { os << "BIT:\n"; int levels = 0; while ((1 << levels) <= bit.n) levels++; v<vs> grid(levels, vs(bit.n, string(4, ' ')));
     for(int i = 1; i <= bit.n; ++i) {int row = __builtin_ctz(i);if(row < levels) {ostringstream oss;oss << setw(4) << bit.t[i];grid[row][i - 1] = oss.str();}} for(int r = 0; r < levels; ++r) {for(int c = 0; c < bit.n; ++c) {os << grid[r][c];}os << "\n";}return os;}
@@ -73,11 +74,23 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 };
 
 int t, k, n, m;
+
 void solve() {
-    
+    cin>>n;
+    vi nums(n);
+    f(i, n) cin>>nums[i];
+    ll res = -INFL;
+    f(i, n) {
+        ll sum = 0;
+        f(j, n-i) sum += nums[j];
+        if(i==0) ckmx(res, sum);
+        else ckmx(res, abs(sum));
+        f(j, n-i) nums[j] = (nums[j+1]-nums[j]);
+    }
+    cout<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }
