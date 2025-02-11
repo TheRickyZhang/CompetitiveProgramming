@@ -54,12 +54,14 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
     T query(int l, int r) { return query(r) - query(l-1); }
 };
 auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
+typedef function<void(int, int)> autotree;
 tpl_<tn_ T> ostream& operator<<(ostream& os, const Segtree<T>& seg) { int maxRows=20, rowCount=0, maxDepth=4; function<void(int,int,int,int)> pt=[&](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return; os<<string(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os; }
 tpl_<tn_ T> ostream& operator<<(ostream& os, const BIT<T>& bit) { os << "BIT:\n"; int levels = 0; while ((1 << levels) <= bit.n) levels++; v<vs> grid(levels, vs(bit.n, string(4, ' ')));
     for(int i = 1; i <= bit.n; ++i) {int row = __builtin_ctz(i);if(row < levels) {ostringstream oss;oss << setw(4) << bit.t[i];grid[row][i - 1] = oss.str();}} for(int r = 0; r < levels; ++r) {for(int c = 0; c < bit.n; ++c) {os << grid[r][c];}os << "\n";}return os;}
 template<class T, class U> T fstTrue(T l, T r, U ff) { while (l<r) { T m = (l + r)/2; ff(m) ? r=m : l = m+1; } return ff(l) ? l : r+1; }
 template<class T, class U> T lstTrue(T l, T r, U ff) { while (l<r) { T m = (l+r+1)/2; ff(m) ? l=m : r = m-1; } return ff(l) ? l : r+1; }
 template<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  template<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
+#define str string
     int N = 10000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
 int ceil(int num, int den) { return (num + den - 1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
@@ -73,37 +75,102 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 };
 
 int t, k, n, m;
+
+v<char> name = {'n', 'a', 'r', 'e', 'k'};
+ust<char> st(all(name));
+
 void solve() {
-    
+    cin>>n>>m;
+    vs a(n); f(i, n) cin>>a[i];
+
+    // Index, start at c -> score, next c
+    vvpii states(n, vpii(5));
+    f(i, n) {
+        f(j, 5) {
+            // Populate states
+            str s = a[i];
+            int x = 0, y = j;
+            for(char c : s) {
+                if(c == name[y]) {
+                    if(++y == 5) {
+                        y = 0;
+                        x += 5;
+                    }
+                } else if(st.count(c)) {
+                    x--;
+                }
+            }
+            states[i][j] = {x, y};
+        }
+    }
+    // cout<<states<<en;
+
+    // Index, ending
+    vvi dp(n+1, vi(5, -INF));
+    dp[0][0] = 0; // Only wanting 0 (first char n) = 0
+    f(i, n) {
+        f(j, 5) dp[i+1][j] = dp[i][j];
+        f(j, 5) {
+            auto [x, y] = states[i][j];
+            ckmx(dp[i+1][y], dp[i][j] + x);
+        }
+    }
+    // cout<<dp<<en;
+    int res = -INF;
+    f(j, 5) {
+        ckmx(res, dp[n][j] - j); // Account for not using
+    }
+    cout<<res<<en;
+
+    // Correct logic (maybe) for a different version of the problem I was hallucinating in my head
+    // vi suf(n+1, 0); // Suffix if you start counting at i
+    // suf[n] = 0; // There is no diff for not choosing any
+    // repr(i, n-1, 0) {
+    //     suf[i] = suf[i+1] + calc(a[i]);
+    // }
+    // cout<<suf<<en;
+
+    // // word, char, current letter want
+    // vvi dp(n*m, vi(5, 0));
+    // f(j, 5) {
+    //     char c = s[0];
+    //     int jj = (j+1)%5;
+    //     if(c==name[j]) {
+    //         dp[0][jj] = 1;
+    //     } else if(nameset.count(c)) {
+    //         dp[0][jj] = -1;
+    //     } else {
+    //         dp[0][jj] = 0;
+    //     }
+    // }
+    // f(i, n*m-1) {
+    //     f(j, 5) {
+    //         char c = s[i+1];
+    //         int jj = (j+1)%5;
+    //         if(c == name[j]) {
+    //             dp[i+1][jj] = dp[i][j]+1;
+    //         } else if(nameset.count(c)) {
+    //             dp[i+1][jj] = dp[i][j]-1;
+    //         } else {
+    //             dp[i+1][jj] = dp[i][j];
+    //         }
+    //     }
+    //     if(i == n*m-1) {
+    //         f(j, 5) {
+    //             dp[i][j] -= j; // Unused letters
+    //         }
+    //     }
+    // }
+    // int res = max(0LL, suf[0]); // Everything
+    // for(int i = 1; i < n; ++i) {
+    //     f(j, 5) {
+    //         ckmx(res, dp[i*m - 1][j] + suf[i]);
+    //     }
+    // }
+    // cout<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vi nums(n);
-    f(i, n) cin>>nums[i];
-
-    // Keep track of the actual values
-    vi lis;
-    vi pos(n), prev(n, -1);
-    f(i, n) {
-        auto it = lower_bound(all(lis), nums[i]);
-        int j = it-lis.begin(); // Note we need to declare this before pb to not invalidate iterator
-
-        if(it==lis.end()) lis.pb(nums[i]);
-        else *it = nums[i];
-
-        pos[j] = i;
-        if(j > 0) prev[i] = pos[j-1]; // Gap between pos[j] and pos[j-1]
-    }
-
-    vi res;
-    int it = pos[lis.size()-1];
-    while(it != -1) {
-        res.pb(nums[it]);
-        it = prev[it];
-    }
-    reverse(all(res));
-    // for(int x : res) cout<<x<<sp;   cout<<en;
-    cout<<res.size()<<en;
+    int t; cin>>t; f(i, t) solve();
 }

@@ -40,8 +40,6 @@ auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >=
 // 1st > x: upper_bound
 // 1st < x: lower_bound-1 (handle lower_bound==begin()) OR upper_bound with greater<>
 
-
-
 // Two different types of binary search
 int bs(vi& arr, int x)
     int l, r;

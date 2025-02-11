@@ -52,9 +52,7 @@ int main() {
     cin>>n>>k;
     vi nums(n); f(i, n) cin>>nums[i];
     sort(all(nums));
-
-    vi dp(k+1, 0);
-    dp[0]=1;
+    vi dp(k+1, 0); dp[0]=1;
     for(int x : nums) {
         fe(i, k) {
             if(i-x>=0) dp[i] = add(dp[i], dp[i-x]);

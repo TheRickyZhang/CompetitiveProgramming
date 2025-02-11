@@ -38,7 +38,7 @@ tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; function<T(T, T)> c;
     Segtree() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
     Segtree(int sz, T zero, function<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(4 * sz, zero), nums(sz, zero), z(zero), c(move(combine)) { if (!init.empty()) { nums = init; build(1, 0, n - 1); } }
     void build(int i, int a, int b) { if (a == b) { t[i] = nums[a]; return; } int m = (a + b) / 2; build(2 * i, a, m); build(2 * i + 1, m + 1, b); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void add(int i, int a, int b, int p, T x) { if (a == b) { t[i] += x; return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    void add(int i, int a, int b, int p, T x) { if (a == b) { t[i] = c(t[i], x); return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
     void update(int i, int a, int b, int p, T x) { T diff = x - nums[p]; nums[p] = x; add(1, 0, n - 1, p, diff); }
     T query(int i, int a, int b, int l, int r) { if (l > r) return z; if (a == l && b == r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, min(r, m)), query(2 * i + 1, m + 1, b, max(l, m + 1), r)); }
     void add(int p, T x) { add(1, 0, n - 1, p, x); }
@@ -54,13 +54,15 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
     T query(int l, int r) { return query(r) - query(l-1); }
 };
 auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
+typedef function<void(int, int)> autotree;
 tpl_<tn_ T> ostream& operator<<(ostream& os, const Segtree<T>& seg) { int maxRows=20, rowCount=0, maxDepth=4; function<void(int,int,int,int)> pt=[&](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return; os<<string(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os; }
 tpl_<tn_ T> ostream& operator<<(ostream& os, const BIT<T>& bit) { os << "BIT:\n"; int levels = 0; while ((1 << levels) <= bit.n) levels++; v<vs> grid(levels, vs(bit.n, string(4, ' ')));
     for(int i = 1; i <= bit.n; ++i) {int row = __builtin_ctz(i);if(row < levels) {ostringstream oss;oss << setw(4) << bit.t[i];grid[row][i - 1] = oss.str();}} for(int r = 0; r < levels; ++r) {for(int c = 0; c < bit.n; ++c) {os << grid[r][c];}os << "\n";}return os;}
 template<class T, class U> T fstTrue(T l, T r, U ff) { while (l<r) { T m = (l + r)/2; ff(m) ? r=m : l = m+1; } return ff(l) ? l : r+1; }
 template<class T, class U> T lstTrue(T l, T r, U ff) { while (l<r) { T m = (l+r+1)/2; ff(m) ? l=m : r = m-1; } return ff(l) ? l : r+1; }
 template<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  template<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
-    int N = 10000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
+#define str string
+    int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
 int ceil(int num, int den) { return (num + den - 1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m + b % m) % m;}
@@ -72,38 +74,142 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
     mint& operator+=(const mint& o) { val = (val + o.val >= MOD ? val + o.val - MOD : val + o.val); return *this; } mint& operator-=(const mint& o) { val = (val - o.val < 0 ? val - o.val + MOD : val - o.val); return *this; }
 };
 
-int t, k, n, m;
-void solve() {
-    
+int n, m;
+
+// We'll store vertical segments as {startRow, segmentHeight}
+// and for each potential 3-stripe flag, use colCont[] (the horizontal
+// run-length array for the current column) to find how wide
+// the flag can extend.
+using vpa = v<pii>;
+ll calc(const vpa &cl, const vi &colCont){
+    ll ans = 0;
+    int sz = (int)cl.size();
+    f(i, sz - 2){
+        // Must have top and bottom segments >= middle segment's height
+        if(cl[i].ss < cl[i+1].ss || cl[i+2].ss < cl[i+1].ss) continue;
+        int h = cl[i+1].ss, width = m;
+        // For each row in the middle stripe's height, find minimal horizontal run
+        f(j, h){
+            // Check row above middle stripe
+            if(cl[i+1].ff - 1 - j < 0){ width = 0; break; }
+            width = min(width, colCont[ cl[i+1].ff - 1 - j ]);
+            // Middle stripe row
+            width = min(width, colCont[ cl[i+1].ff + j ]);
+            // Bottom stripe row
+            width = min(width, colCont[ cl[i+2].ff + j ]);
+        }
+        ans += width;
+    }
+    return ans;
 }
 
-int32_t main() {
+int32_t main(){
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vi nums(n);
-    f(i, n) cin>>nums[i];
+    cin >> n >> m;
+    vs v(n);
+    f(i, n) cin >> v[i];
 
-    // Keep track of the actual values
-    vi lis;
-    vi pos(n), prev(n, -1);
-    f(i, n) {
-        auto it = lower_bound(all(lis), nums[i]);
-        int j = it-lis.begin(); // Note we need to declare this before pb to not invalidate iterator
-
-        if(it==lis.end()) lis.pb(nums[i]);
-        else *it = nums[i];
-
-        pos[j] = i;
-        if(j > 0) prev[i] = pos[j-1]; // Gap between pos[j] and pos[j-1]
+    // Compute horizontal runs: r[i][j] = how many same-colored cells extend to the right from (i, j).
+    vvi r(n, vi(m, 0));
+    f(i, n){
+        int j = 0;
+        while(j < m){
+            int k = j;
+            while(k < m && v[i][k] == v[i][j]) k++;
+            rep(x, j, k-1){
+                r[i][x] = k - x;
+            }
+            j = k;
+        }
     }
 
-    vi res;
-    int it = pos[lis.size()-1];
-    while(it != -1) {
-        res.pb(nums[it]);
-        it = prev[it];
+    // Build vertical segments per column: cl[col] = list of {start_row, segment_height}
+    vector<vpa> cl(m);
+    f(col, m){
+        int i = 0;
+        while(i < n){
+            int j = i;
+            while(j < n && v[j][col] == v[i][col]) j++;
+            cl[col].pb({i, j - i});
+            i = j;
+        }
     }
-    reverse(all(res));
-    // for(int x : res) cout<<x<<sp;   cout<<en;
-    cout<<res.size()<<en;
+
+    // For each column, gather horizontal run data into colCont and compute
+    // how many flags can extend in that column using calc().
+    ll ans = 0;
+    f(col, m){
+        vi colCont(n);
+        f(i, n) colCont[i] = r[i][col];
+        ans += calc(cl[col], colCont);
+    }
+
+    cout << ans << en;
+    return 0;
 }
+
+
+// Incorrect logic, assumes must have left valid for right valid, but can be any
+// int n, m;
+// int32_t main() {
+//     ios::sync_with_stdio(false); cin.tie(nullptr);
+//     cin>>n>>m;
+//     vvi grid(n, vi(m, 0));
+//     f(i, n) {
+//         str s; cin>>s;
+//         f(j, m) {
+//             grid[i][j] = s[j]-'a';
+//         }
+//     }
+//
+//     // row #, len, col
+//     map<int, pair<int, int>> endings;
+//     f(i, n) {
+//         int c = grid[i][0];
+//         int f = false;
+//         f(j, m-1) {
+//             if(grid[i][j+1] != c) {
+//                 endings[i] = {j, c};
+//                 f=true;
+//                 break;
+//             }
+//         }
+//         if(!f) endings[i] = {m-1, c};
+//     }
+//
+//
+//     vvi pre(n, vi(m, 0));
+//     f(i, n) {
+//         rep(j, 0, endings[i].ff) {
+//             if(i != 0 && pre[i-1][j] == 0) break;
+//             pre[i][j] = 1;
+//         }
+//     }
+//
+//     f(i, n-1) {
+//         rep(j, 0, endings[i].ff) {
+//             if(endings[i+1].ss != endings[i].ss || endings[i+1].ff < endings[i].ff) break;
+//             pre[i+1][j] = pre[i][j] + 1;
+//         }
+//     }
+//
+//     int res = 0;
+//
+//     vvi dp(n+1, vi(3, 0));
+//     rep(i, 2, n-1) {
+//         vi mp((i+1)/3 + 1, 0);
+//         fe(x, (i+1)/3) {
+//             f(j, m) {
+//                 auto [a, b] = endings[i];
+//                 auto [c, d] = endings[i-x];
+//                 auto [e, f] = endings[i-2*x];
+//                 if(!(pre[i][j] == x && pre[i-x][j] == x && pre[i-2*x][j] == x && b != d && b != f && d != f)) {
+//                     res += j * (j+1) / 2;
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+//     cout<<res<<en;
+//     return 0;
+// }

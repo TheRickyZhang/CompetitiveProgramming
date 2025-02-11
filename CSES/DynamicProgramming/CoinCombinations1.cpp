@@ -58,6 +58,5 @@ int main() {
             if(i-x >= 0) dp[i] = add(dp[i], dp[i-x]);
         }
     }
-    // cout<<dp<<en;
     cout<<dp[k]<<en;
 }

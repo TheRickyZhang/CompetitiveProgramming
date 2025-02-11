@@ -29,19 +29,19 @@ auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >=
 
 These are typically common variable names I use. Note there is some flexibility depending on context, with some terms being used for a single item or a vector.
 
-a, b: Generic numbers
-c: Generic character
+a, b: generic numbers or vectors
+c: generic character
 d: distance
-e: edge list
+e: edge list, even
 f: flag
-g: graph
+g: graph, gcd
 h: high
 i, j: indices
-k: Number of queries or goal number.
+k: number of queries or goal number.
 l: left
 m: secondary number, such as the secondary boundary in a rectangular grid.
 n: important number in problem
-o: Unused, not to be confused with 0.
+o: odd
 p: parent
 q: queue or priority queue
 r: right
@@ -71,5 +71,6 @@ bfs, dfs
 freq: frequency vector or map
 it: iterator of some sort
 ch: children
+ln: log2 of max
 
 For syntax and formatting, please see example code snippets I have uploaded.
