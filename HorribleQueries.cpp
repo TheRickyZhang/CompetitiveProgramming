@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+
+#include <utility>
 using namespace std;
 
 #define tpl_ template
@@ -122,10 +124,26 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>k;
+    LazySegtree<int, int> tree(n, 0, 0,
+        [&](int a, int b){return a+b;},
+        [&](int x, int y, int len){return x + y*len;},
+        [&](int a, int b) {return a+b;}
+    );
+    f(i, k) {
+        cin>>t;
+        if(t==0) {
+            int l, r, x; cin>>l>>r>>x; l--; r--;
+            tree.update(l, r, x);
+            cout<<tree<<en;
+        } else {
+            int l, r; cin>>l>>r; l--; r--;
+            cout<<tree.query(l, r)<<en;
+        }
+    }
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

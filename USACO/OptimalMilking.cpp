@@ -29,6 +29,7 @@ tpl_<tn_ K, tn_ T> ostream& operator<<(ostream& os, const map<K, T>& m) { os << 
 tpl_<tn_ C, tn_ T = enable_if_t<!is_same_v<C, string>, typename C::value_type>> ostream& operator<<(ostream& os, const C& v) { os<<"{"; string sep; for(const T& x : v) os<<sep<<x, sep=", "; return os<<"}";}
 vector<pii> dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}}; auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 struct pairHash{tpl_<class T1,class T2>size_t operator()(const pair<T1,T2>&p)const{return hash<T1>{}(p.first)^ (hash<T2>{}(p.second)<<1);}}; struct vectorHash{tpl_<class T>size_t operator()(const vector<T>&v)const{size_t hashTalue=0;for(const T&i:v)hashTalue^=hash<T>{}(i)+0x9e3779b9+(hashTalue<<6)+(hashTalue>>2);return hashTalue;}};
+auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
 struct DSU{ vi p,sz; explicit
          DSU(const int n){p.resize(n),sz.resize(n,1),iota(all(p),0);}
     int  par(int x){return x==p[x]?x:p[x]=par(p[x]);}
@@ -37,12 +38,14 @@ struct DSU{ vi p,sz; explicit
 tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; function<T(T, T)> c;
     Segtree() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
     Segtree(int sz, T zero, function<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(4 * sz, zero), nums(sz, zero), z(zero), c(move(combine)) { if (!init.empty()) { nums = init; build(1, 0, n - 1); } }
-    void build(int i, int a, int b) { if (a == b) { t[i] = nums[a]; return; } int m = (a + b) / 2; build(2 * i, a, m); build(2 * i + 1, m + 1, b); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void add(int i, int a, int b, int p, T x) { if (a == b) { t[i] += x; return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void update(int i, int a, int b, int p, T x) { T diff = x - nums[p]; nums[p] = x; add(1, 0, n - 1, p, diff); }
+    void build (int i, int a, int b) { if (a == b) { t[i] = nums[a]; return; } int m = (a + b) / 2; build(2 * i, a, m); build(2 * i + 1, m + 1, b); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    void add   (int i, int a, int b, int p, T x) { if(a==b) { t[i] = c(t[i], x); return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    void update(int i, int a, int b, int p, T x) { if(a==b) { t[i] = x;          return; } int m = (a + b) / 2; (p <= m ? update(2 * i, a, m, p, x) : update(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    void updateWithDiff(int i, int a, int b, int p, T x, function<T(T, T)> minus) { T diff = minus(x, nums[p]); nums[p] = x; add(i, a, b, p, diff); }
     T query(int i, int a, int b, int l, int r) { if (l > r) return z; if (a == l && b == r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, min(r, m)), query(2 * i + 1, m + 1, b, max(l, m + 1), r)); }
     void add(int p, T x) { add(1, 0, n - 1, p, x); }
-    void update(int p, T x) { update(1, 0, n - 1, p, x); }
+    void update(int p, T x) { update(1,0,n-1,p,x); }
+    void updateWithDiff(int p, T x, function<T(T, T)> minus = sub) { updateWithDiff(1, 0, n - 1, p, x, minus); }
     T query(int l, int r) { return query(1, 0, n - 1, l, r); }
 };
 tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   // All 0-indexed
@@ -53,19 +56,18 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
     T query(int i) { T res = z; for (i += 1; i > 0; i -= (i & -i)) res = c(res, t[i]); return res; }
     T query(int l, int r) { return query(r) - query(l-1); }
 };
-auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
 typedef function<void(int, int)> autotree;
 tpl_<tn_ T> ostream& operator<<(ostream& os, const Segtree<T>& seg) { int maxRows=20, rowCount=0, maxDepth=4; function<void(int,int,int,int)> pt=[&](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return; os<<string(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os; }
 tpl_<tn_ T> ostream& operator<<(ostream& os, const BIT<T>& bit) { os << "BIT:\n"; int levels = 0; while ((1 << levels) <= bit.n) levels++; v<vs> grid(levels, vs(bit.n, string(4, ' ')));
     for(int i = 1; i <= bit.n; ++i) {int row = __builtin_ctz(i);if(row < levels) {ostringstream oss;oss << setw(4) << bit.t[i];grid[row][i - 1] = oss.str();}} for(int r = 0; r < levels; ++r) {for(int c = 0; c < bit.n; ++c) {os << grid[r][c];}os << "\n";}return os;}
-template<class T, class U> T fstTrue(T l, T r, U ff) { while (l<r) { T m = (l + r)/2; ff(m) ? r=m : l = m+1; } return ff(l) ? l : r+1; }
-template<class T, class U> T lstTrue(T l, T r, U ff) { while (l<r) { T m = (l+r+1)/2; ff(m) ? l=m : r = m-1; } return ff(l) ? l : r+1; }
-template<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  template<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
+tpl_<class T, class U> T fstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l + (r - l) / 2; if(ff(m)) r = m; else l = m + 1; } return l; }
+tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l + (r - l) / 2; if(ff(m)) l = m + 1; else r = m; } return l - 1; }
+tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 #define str string
-    int N = 10000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
-int ceil(int num, int den) { return (num + den - 1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; }
+    int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
+int ceil(int num, int den) { return (num + den - 1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
-inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m + b % m) % m;}
+inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m + b % m) % m;} 
 struct mint { int val; // Avg 2x slowdown over raw % operations
     mint(int v=0) : val((v%MOD+MOD)%MOD) {} // NOLINT(google-explicit-constructor) (We want mint = 5 to be treated like int)
     mint operator+(const mint& o) const { return mint(val + o.val >= MOD ? val + o.val - MOD : val + o.val); } mint operator-(const mint& o) const { return mint(val - o.val < 0 ? val - o.val + MOD : val - o.val); }
@@ -75,22 +77,39 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 };
 
 int t, k, n, m;
-void solve() {
-    cin>>n;
-    str res;
-    int cnt = n/5, rem = n%5;
-    str s = "aeiou";
-    f(i, 5) {
-        res += string(cnt, s[i]);
-        if(rem) {
-            rem--;
-            res += s[i];
-        }
-    }
-    cout<<res<<en;
+
+struct Node {
+    int both, left, right, none; // How many are free
+    Node(int b, int l, int r, int none) : both(b), left(l), right(r), none(none) {}
+};
+ostream& operator<<(ostream& os, const Node& node) {
+    os<<node.both<<sp<<node.left<<sp<<node.right<<sp<<node.none;
+    return os;
 }
 
 int32_t main() {
+    setIO("optmilk");
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    int t; cin>>t; f(i, t) solve();
+    cin>>n>>k;
+    vi nums(n); f(i, n) cin>>nums[i];
+    Segtree<Node> t(n, Node(0, 0, 0, 0), [&](Node a, Node b) {
+        int both = max(a.left+b.both, a.both + b.right);
+        int left = max(a.both + b.none, a.left + b.left);
+        int right = max(b.both + a.none, b.right + a.right);
+        int none = max(a.none + b.left, a.right + b.none);
+        return Node(both, left, right, none);
+    });
+    f(i, n) {
+        t.update(i, Node(0, 0, 0, nums[i]));
+    }
+    int res = 0;
+    f(_, k) {
+        int i, x; cin>>i>>x; i--;
+        t.update(i, Node(0, 0, 0, x));
+        // cout<<t<<en;
+        auto node = t.query(0, n-1);
+        res += max({node.both, node.left, node.right, node.none});
+        // cout<<max({node.both, node.left, node.right, node.none})<<en;
+    }
+    cout<<res<<en;
 }

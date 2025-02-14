@@ -52,8 +52,8 @@ tpl_<tn_ T, tn_ U>
 struct LazySegtree{
     int n;v<T> seg;v<U> lazy;T z;U lz;
     function<T(T,T)> combine;function<T(T,U,int)> apply;function<U(U,U)> merge;
-    LazySegtree(int n,T z,U lz, function<T(T,T)>combine=[](T a,T b){return a+b;}, function<T(T,U,int)> apply=[](T s,U u,int len){return s+u*len;}, function<U(U,U)> merge=[](T a,T b){return a+b;}, const v<T>& init={}):
-                n(n),seg(4*n,z),lazy(4*n,lz),z(z),lz(lz),combine(std::move(combine)),apply(std::move(apply)),merge(std::move(merge)){
+    LazySegtree(int n,T z,U lz, function<T(T,T)>combine=[](T a,T b){return a+b;}, function<T(T,U,int)> apply=[](T s,U u,int len){return s+u*len;}, function<U(U,U)> merge=[](U a,U b){return a+b;},const v<T>& init={}):
+                n(n),seg(4*n,z),lazy(4*n,lz),z(z),lz(lz),combine(combine),apply(apply),merge(merge){
         if(!init.empty())build(1,0,n-1,init);
     }
     void build(int i,int l,int r,const v<T>& init){
@@ -62,9 +62,10 @@ struct LazySegtree{
         seg[i]=combine(seg[2*i],seg[2*i+1]);
     }
     void push_down(int i,int l,int r){
-        if(lazy[i]!=lz){
-            int m=(l+r)/2; lazy[2*i]=merge(lazy[2*i],lazy[i]);
-            lazy[2*i+1]=merge(lazy[2*i+1],lazy[i]);  seg[2*i]=apply(seg[2*i],lazy[i],m-l+1); seg[2*i+1]=apply(seg[2*i+1],lazy[i],r-m);  lazy[i]=lz;
+        if(lazy[i]!=lz){int m=(l+r)/2;lazy[2*i]=merge(lazy[2*i],lazy[i]);
+            lazy[2*i+1]=merge(lazy[2*i+1],lazy[i]);
+            seg[2*i]=apply(seg[2*i],lazy[i],m-l+1); seg[2*i+1]=apply(seg[2*i+1],lazy[i],r-m);
+            lazy[i]=lz;
         }
     }
     void update_range(int i,int l,int r,int ql,int qr,U val){
@@ -81,6 +82,7 @@ struct LazySegtree{
     void update(int l,int r,U val){update_range(1,0,n-1,l,r,val);}
     T query(int l,int r){return query_range(1,0,n-1,l,r);}
 };
+
 tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   // All 0-indexed
     BIT() : n(0), z(0), c([](T a, T b) { return a+b; }) {}
     BIT(int sz, T zero, function<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(sz+1, zero), nums(sz, zero), z(zero), c(std::move(combine)) { if (!init.empty()) { nums = init; f(i, n) add(i, nums[i]); } }
@@ -91,13 +93,8 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 };
 typedef function<void(int, int)> autotree;
 tpl_<tn_ T> ostream& operator<<(ostream& os, const Segtree<T>& seg) {
-    int maxRows=20, rowCount=0, maxDepth=4; function<void(int,int,int,int)> pt; pt=[maxRows, maxDepth, &rowCount, &os, &seg, &pt](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return;
+    int maxRows=20, rowCount=0, maxDepth=4; function<void(int,int,int,int)> pt=[&](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return;
     os<<string(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os;
-}
-tpl_<tn_ T, tn_ U> ostream& operator<<(ostream& os, const LazySegtree<T,U>& seg){
-    int maxRows=20, rowCount=0, maxDepth=4; function<void(int,int,int,int)> pt; pt=[maxRows, maxDepth, &rowCount, &os, &seg, &pt](int i,int a,int b,int d){
-        if(a>b||rowCount>=maxRows||d>maxDepth)return; os<<string(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.seg[i]<<", "<<seg.lazy[i]<<"\n";
-        rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); }}; os<<"Lazy Segtree:\n"; pt(1,0,seg.n-1,0); return os;
 }
 tpl_<tn_ T> ostream& operator<<(ostream& os, const BIT<T>& bit) {
     os<<"BIT:\n"; int maxCol = 16, lvls = 0; while ((1<<lvls) <= min(bit.n, maxCol)) lvls++; int cols = min(bit.n, maxCol); v<vs> grid(lvls, vs(cols, string(4, ' ')));
@@ -119,13 +116,72 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
     mint& operator+=(const mint& o) { val = (val+o.val >= MOD ? val+o.val-MOD : val+o.val); return *this; } mint& operator-=(const mint& o) { val = (val-o.val < 0 ? val-o.val+MOD : val-o.val); return *this; }
 };
 
-
+// struct value {
+//     bool operator()(const pii& a, const pii& b) const {
+//         return a.ff * b.ss > a.ss * b.ff;
+//     }
+// };
 int t, k, n, m;
 void solve() {
-    
+    int x; cin>>n>>x;
+    vi cost(n), val(n);
+    f(i, n) {
+        cin>>cost[i]>>val[i];
+    }
+
+    int tot = accumulate(all(val), 0LL);
+    vi dp(tot+1, INFL);
+    dp[0] = 0;
+    f(i, n) {
+        repr(j, tot, val[i]) {
+            if(dp[j-val[i]] + cost[i] <= i * x) {
+                ckmn(dp[j], dp[j-val[i]] + cost[i]);
+            }
+        }
+    }
+    // cout<<dp<<en;
+    repr(i, tot, 0) {
+        if(dp[i] != INFL) {
+            cout<<i<<en;
+            return;
+        }
+    }
+
+    // v<set<pii>> dp(n+1);
+    // // Val, remain
+    // dp[0].insert({0, 0});
+    //
+    // auto insert = [&](set<pii>& s, pii a) {
+    //     auto [v, c] = a;
+    //     auto it = lower_bound(all(s), a);
+    //     while(it != s.end()) {
+    //         auto [vv, cc] = *it;
+    //         if(v <= vv & c <= cc) return;
+    //         it = next(it);
+    //     }
+    //     s.insert(a);
+    // };
+    //
+    // f(i, n) {
+    //     int v = val[i], c = cost[i];
+    //     // pc is how much remains from dp[i] to spend
+    //     for(auto [pv, pc] : dp[i]) {
+    //         if(pc >= c) {
+    //             insert(dp[i+1], {pv + v, pc-c + x});
+    //         }
+    //         insert(dp[i+1], {pv, pc + x});
+    //     }
+    // }
+    // // cout<<dp<<en;
+    //
+    // int res = 0;
+    // for(auto [v, c] : dp[n]) {
+    //     ckmx(res, v);
+    // }
+    // cout<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }
