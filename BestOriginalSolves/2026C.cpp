@@ -84,10 +84,41 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    str s; cin>>s;
+    vi dp(n, 0);
+    pq<int> o, z; // Ones, zeroes
+    f(i, n) {
+        if(s[i]=='1') o.push(i+1);
+        else z.push(i+1);
+    }
+    int res = 0; // How much spend
+    while(!o.empty() && !z.empty()) {
+        int i = o.top(), j = z.top();
+        if(j > i) {
+            res += j;
+            z.pop();
+        } else {
+            res += j;
+            z.pop(); o.pop();
+        }
+    }
+    while(!z.empty()) {
+        res += z.top();
+        z.pop();
+    }
+    vi remainOnes;
+    while(!o.empty()) {
+        remainOnes.pb(o.top()); o.pop();
+    }
+    sort(all(remainOnes));
+    f(i, (remainOnes.size()+1) / 2) {
+        res += remainOnes[i];
+    }
+    cout<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

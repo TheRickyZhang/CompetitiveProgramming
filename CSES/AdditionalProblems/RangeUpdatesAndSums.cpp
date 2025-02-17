@@ -89,5 +89,15 @@ void solve() {
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>k;
+    LazySegtree<int, int> tree(n, 0, 0,
+        [&](int a, int b){return a + b;},
+        [&](int x, int y, int len) {return x + y*len;},
+        [&](int a, int b){return a+b;});
+    f(i, k) {
+        cin>>t;
+        if(t==1) {
+            tree.update
+        }
+    }
 }

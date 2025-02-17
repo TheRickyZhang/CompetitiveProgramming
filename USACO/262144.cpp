@@ -87,7 +87,36 @@ void solve() {
     
 }
 
-int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+int32_t main(){
+    setIO("262144");
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int N; cin >> N;
+    vi nums(N);
+    f(i, N) cin >> nums[i];
+
+    const int MAX_VAL = 70;
+    vector<vi> dp(MAX_VAL+1, vi(N+1, -1));
+    int res = 0;
+
+    f(v, MAX_VAL+1) {
+        f(j, N) {
+            if(nums[j] == v) {
+                dp[v][j] = j + 1;  // A single element equals v: covers [j, j+1)
+                res = max(res, v);
+            } else {
+                if(v == 0 || dp[v-1][j] == -1 || dp[v-1][dp[v-1][j]] == -1)
+                    dp[v][j] = -1;
+                else {
+                    dp[v][j] = dp[v-1][ dp[v-1][j] ];
+                    res = max(res, v);
+                }
+            }
+        }
+        dp[v][N] = -1; // Sentinel for ease of use
+    }
+
+    cout << res << en;
+    return 0;
 }

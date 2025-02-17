@@ -84,10 +84,40 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    vi a(n), b(n);
+    f(i, n) cin>>a[i];
+    f(i, n) {
+        cin>>b[i]; b[i]--;
+    }
+    vvi col(n);
+    f(i, n) col[b[i]].pb(i);
+
+    vvi ord(n);
+    f(i, n) {
+        ord[i] = col[i];
+        sort(all(ord[i], [&](int x, int y) {
+            return a[x] < a[y];
+        }));
+    }
+
+    Segtree<int> seg(n, 0, [&](int x, int y) {
+        return max(x, y);
+    }, a); // We are segging the lens
+
+    int res = 1;
+
+    // Need custom DSU that also tracks min/max/used, and segtree for finding range of i.
+    // VERY HARD to implement. Tough problem all around
+    DSU dsu(n);
+    f(i, n) {
+        f(j, col[i].size()) {
+
+        }
+    }
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

@@ -87,7 +87,44 @@ void solve() {
     
 }
 
-int32_t main() {
+int32_t main(){
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    cin >> n >> k;
+
+    vi nums(2*n + 1, 0);
+    f(i, n) {
+        cin >> nums[i]; nums[i+n] = nums[i];
+    }
+    f(i, 2*n) nums[i+1] += nums[i];
+
+    int ln = 31;
+    vvi par(2*n, vi(ln, 0));
+
+    int j = 0;
+    f(i, 2*n) {
+        while(j <= 2*n && nums[j] - nums[i] <= k) j++;
+        par[i][0] = j-1;
+    }
+
+    fe(j, ln-1) {
+        f(i, 2*n) {
+            int nxt = par[i][j-1];
+            par[i][j] = (nxt >= 2*n ? 2*n : par[nxt][j-1]);
+        }
+    }
+
+    int res = n;
+    f(i, n) {
+        int curr = 0, pos = i;
+        repr(j, ln-1, 0) {
+            if(par[pos][j] < i+n) {
+                curr += (1 << j);
+                pos = par[pos][j]; if(pos >= 2*n) break;
+            }
+        }
+        curr++;
+        res = min(res, curr);
+    }
+    cout<<res<<en;
+    return 0;
 }

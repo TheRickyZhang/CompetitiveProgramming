@@ -81,13 +81,70 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
     mint& operator+=(const mint& o) { val = (val+o.val >= MOD ? val+o.val-MOD : val+o.val); return *this; } mint& operator-=(const mint& o) { val = (val-o.val < 0 ? val-o.val+MOD : val-o.val); return *this; }
 };
 
-
 int t, k, n, m;
 void solve() {
-    
+    int n; cin >> n;
+    vi a(n);
+    f(i, n) cin>>a[i];
+
+    map<int, int> freq;
+    for (int x : a) freq[x]++;
+
+    vb good(n, false);
+    f(i, n) if(freq[a[i]] == 1) good[i] = true;
+
+    int res = 0, x = -1, y = -1;
+    for (int i = 0; i < n; ){
+        if(good[i]){
+            int j = i;
+            while(j < n && good[j]) j++;
+            if(j-i > res){
+                res = j-i;
+                x = i, y=j-1;
+            }
+            i = j;
+        } else {
+            i++;
+        }
+    }
+    if(res == 0) cout<<0<<en;
+    else cout<<x+1<<sp<<y+1<<en;
+
+    // :(
+    // cin>>n;
+    // vi nums(n); f(i, n) cin>>nums[i];
+    // vb good(n, true);
+    // f(i, n) if(mp[nums[i]] >= 2) good[i] = false;
+    // cout<<good<<en;
+    //
+    // int a=-1, b=-1, len=0, res=0;
+    // int l=0, r=-1, curr=0;
+    // f(i, n) {
+    //     if(good[i]) {
+    //         curr++;
+    //         r = i;
+    //         if(curr >= res) {
+    //             res = curr;
+    //             if(r-l+1 > len) {
+    //                 a=l, b=r, len=r-l+1;
+    //             }
+    //         }
+    //     } else {
+    //         curr--;
+    //         if(curr < 0) {
+    //             curr = 0, l=i+1;
+    //         }
+    //     }
+    // }
+    // if(a==-1) {
+    //     cout<<0<<en;
+    // } else {
+    //     cout<<a+1<<sp<<b+1<<en;
+    // }
+    // cout<<a<<sp<<b<<sp<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

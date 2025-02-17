@@ -84,10 +84,76 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>k;
+
+    vvi dist(n, vi(n, INF));
+    vpii nums(k);
+    vi len(n, 0);
+    f(i, k) {
+        int x; char c; cin>>x>>c; x--;
+        if(c=='+') nums[i] = {x, 1};
+        else nums[i] = {x, -1};
+        len[x] += (c=='+');
+    }
+    f(a, n) {
+        f(b, n) {
+            int curr = 0, res = 0;
+            if(a==b) continue;
+            f(i, k) {
+                auto [x, y] = nums[i];
+                if(a==x && y == 1) {
+                    curr++;
+                }
+                if(b==x && y == -1) {
+                    curr--;
+                }
+                ckmx(res, curr);
+            }
+            dist[a][b] = res+1;  // This adds 1 so they don't touch!!
+        }
+    }
+
+    // Current state, previous state
+    vvi dp(1<<n, vi(n, INFL));
+    f(i, n) dp[1<<i][i] = 1; // Start with cost of singular
+    f(i, 1<<n) {
+        if(__builtin_popcount(i) <= 1) continue;
+        f(j, n) {
+            if(i & (1<<j)) {
+                f(prev, n) {
+                    if(prev==j) continue;
+                    ckmn(dp[i][j], dp[i ^ (1<<j)][prev] + dist[prev][j]);
+                }
+            }
+        }
+    }
+    int res = INF;
+    // cout<<len<<en;
+    // cout<<dist<<en;
+    // cout<<dp<<en;
+    f(i, n) ckmn(res, dp[(1<<n)-1][i] + len[i]); // Adding this last length for trailing is important!!
+    cout<<res<<en;
 }
+
+// vi free(n+1, 0);
+// int extra = 0;
+// f(i, k) {
+//     int x; char c; cin>>x>>c;
+//     if(c=='+') {
+//         auto it = max_element(all(free));
+//         if(*it >= 1) {
+//             int pos = it - free.begin();
+//             free[pos]--;
+//         } else {
+//             extra++;
+//         }
+//     } else {
+//         free[x]++;
+//     }
+// }
+// cout<<n+extra<<en;
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    solve();
 }

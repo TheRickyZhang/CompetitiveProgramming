@@ -84,10 +84,23 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    int a, b, c; cin>>a>>b>>c;
+    int x = a+b+c;
+    int rem = (n % x);
+    int res = n/x * 3;
+    if(rem==0) {
+    } else if(rem <= a) {
+        res++;
+    } else if(rem <= a+b) {
+        res += 2;
+    } else {
+        res += 3;
+    }
+    cout<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

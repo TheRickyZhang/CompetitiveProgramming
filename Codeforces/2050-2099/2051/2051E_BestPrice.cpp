@@ -84,10 +84,61 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>k;
+    vi a(n), b(n);
+    f(i, n) cin>>a[i];
+    f(i, n) cin>>b[i];
+
+    vpii nums;
+    f(i, n) {
+        nums.pb({a[i], 1});
+        nums.pb({b[i], 2});
+    }
+    sort(all(nums));
+    int res = 0, cnt=n, bad=0;
+    f(i, 2*n) {
+        auto [x, t] = nums[i];
+        if(bad <= k && (i==0 || x != nums[i-1].ff)) ckmx(res, x*cnt);
+        if(t==1) {
+            bad++;
+        } else {
+            bad--;
+            cnt--;
+        }
+    }
+    cout<<res<<en;
+
+    // int mna = *min_element(all(a));
+    // int mxb = *max_element(all(b));
+    //
+    // int high = lstTrue(0LL, mxb, [&](int m) {
+    //     int cnt = 0;
+    //     f(i, n) {
+    //         if(m >= a[i]+1 && m <= b[i]) cnt++;
+    //     }
+    //     return cnt <= k;
+    // });
+    // int low = fstTrue(mna, INFL, [&](int m) {
+    //     int cnt = 0;
+    //     f(i, n) if(m >= a[i]+1 && m<=b[i]) cnt++;
+    //     return cnt <= k;
+    // });
+    // if(low > high) swap(low, high);
+    //
+    // cout<<low<<sp<<high<<en;
+
+
+    // int p =
+    // int res = 0;
+    // f(i, n) {
+    //     if(price <= b[i]) {
+    //         res += a[i]-price;
+    //     }
+    // }
+    // cout<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+     int t; cin>>t; f(i, t) solve();
 }

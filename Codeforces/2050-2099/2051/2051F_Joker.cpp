@@ -84,10 +84,41 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>m>>k;
+    vpii ranges; ranges.pb({m, m});
+    f(i, k) {
+        int x; cin>>x;
+        vpii temp;
+        f(j, ranges.size()) {
+            auto [l, r] = ranges[j];
+            if(ranges.size() <= 3 && x >= l && x <= r) {
+                temp.pb({1, 1});
+                temp.pb({n, n});
+                if(l != r) temp.pb({l, r});
+            } else {
+                if(r < x) r = min(r+1, n);
+                if(l > x) l = max(l-1, 1LL);
+                temp.pb({l, r});
+            }
+        }
+        sort(all(temp));
+        // cout<<temp<<en;
+        vpii merged; merged.pb(temp[0]);
+        fe(i, temp.size()-1) {
+            if(merged.back().ss+1 >= temp[i].ff) ckmx(merged.back().ss, temp[i].ss);
+            else merged.pb(temp[i]);
+        }
+        temp = merged;
+        ranges = temp;
+        // cout<<ranges<<en;
+        int res = 0;
+        for(auto [l, r] : ranges) res += r-l+1;
+        cout<<res<<sp;
+    }
+    cout<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

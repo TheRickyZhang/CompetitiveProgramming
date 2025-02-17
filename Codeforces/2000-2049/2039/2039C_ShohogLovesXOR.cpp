@@ -83,11 +83,71 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 
 int t, k, n, m;
-void solve() {
-    
+vi factorize(int x) {
+    vi res = {1};
+    for(int i = 2; i*i <= x; ++i) {
+        if(x % i == 0) {
+            res.pb(i);
+            while(x > 0 && x % i == 0) x /= i;
+        }
+    }
+    return res;
 }
+int getpow(int x) {
+    int res = 0;
+    while(x > 0) {
+        x>>=1;
+        res++;
+    }
+    return res-1;
+}
+void solve() {
+    int x, m; cin>>x>>m;
+    int a = m - (m%x); int b = a+x; // Checking vals (m-x, m+x] multiples of x
+    int res = a/x - (x < a);
+    if(1 <= (x^a) && (x^a) <= m) res++;
+    if(1 <= (x^b) && (x^b) <= m) res++;
+
+    fe(y, min(x, m)) {
+        if((x^y) % y == 0) res++;
+    }
+
+    if(x <= m) res--;
+    cout<<res<<en;
+
+    // int x, r; cin>>x>>r;
+    // Good attempt. Not sure what is logically wrong with it. Maybe not restricted to factors.
+
+    // set<int> s;
+    // f(i, 1e6/x + 1) {
+    //     int curr = x ^ (i*x);
+    //     if(1 <= curr && curr <= r) s.insert(curr);
+    // }
+    // // cout<<s<<en;
+    // vi factors = factorize(x);
+    // auto check = [&](int f) {
+    //     int curr = x ^ f;
+    //     int sz = getpow(f);
+    //     repr(j, 31, 0) {
+    //         if((curr & (1<<j)) == 0) continue;
+    //         if(j < sz) return false;
+    //         curr ^= f<<(j-sz);
+    //     }
+    //     return true;
+    // };
+    // for(int f : factors) {
+    //     if(f > r) break;
+    //     if(check(f)) {
+    //         // cout<<f<<" good"<<en;
+    //         s.insert(f);
+    //     }
+    // }
+    // // cout<<s<<en;
+    // cout<<s.size()<<en;
+}
+
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

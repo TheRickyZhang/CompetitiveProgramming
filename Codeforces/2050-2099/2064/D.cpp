@@ -84,10 +84,41 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>k;
+    vi a(n); f(i, n) cin>>a[i];
+    vi pre = a; f(i, n-1) pre[i+1] ^= pre[i];
+    vvi dp(n, vi(30, 0)); // Store the first that is >= before
+    f(i, n) {
+        repr(j, 29, 0) {
+            if(a[i] < (1<<j)) {
+                if(i==0) dp[i][j] = -1;
+                else dp[i][j] = dp[i-1][j];
+            } else {
+                dp[i][j] = i;
+            }
+        }
+    }
+    // cout<<dp<<en;
+
+    f(_, k) {
+        int x; cin>>x;
+        int i = n-1;
+        // The important thing is that we need to handle borderline case (==) separately
+        // So instead of consecutive jumps it is (jump, check and shift 1), as consuming equal msb slime lowers x
+        while(i >= 0 && x > 0) {
+            int next = dp[i][__lg(x)]; // __lg(x) is log x
+            x ^= (pre[i] ^ pre[next]); // this does NOT include next
+            i = next;
+            if(next == -1 || a[next] > x) break;
+            x ^= a[next];
+            i--;
+        }
+        cout<<n-i-1<<sp;
+    }
+    cout<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

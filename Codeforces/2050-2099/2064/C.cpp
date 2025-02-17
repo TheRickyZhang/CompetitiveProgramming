@@ -84,10 +84,56 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 int t, k, n, m;
 void solve() {
-    
+    int n; cin>>n;
+    vi nums(n); f(i, n) cin>>nums[i];
+
+    // f(i, n) {
+    //     if(i > 0 && ((nums[i]>0) == (nums[i-1])>0)) {
+    //         nums[i] += nums[i-1];
+    //         nums[i-1] = 0;
+    //     }
+    // }
+    // vi a;
+    // f(i, n) {
+    //     if(nums[i] != 0) a.pb(nums[i]);
+    // }
+    vi a;
+    int curr = 0;
+    f(i, n) {
+        if((nums[i] > 0) != (curr > 0) && i != 0) {
+            a.pb(curr);
+            curr = nums[i];
+        } else {
+            curr += nums[i];
+        }
+    }
+    if(curr != 0) a.pb(curr);
+    n = a.size();
+
+    n = a.size();
+    int carry = 0;
+    repr(i, n-1, 0) {
+        if(a[i] < 0) {
+            int x = a[i];
+            a[i] += carry;
+            carry += x;
+        }
+    }
+    // cout<<a<<en;
+
+    int res = 0; curr=0;
+    f(i, a.size()) {
+        if(a[i] < 0) {
+            ckmx(res, curr - a[i]);
+        } else {
+            curr += a[i];
+            ckmx(res, curr);
+        }
+    }
+    cout<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }
