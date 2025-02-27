@@ -81,47 +81,44 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
     mint& operator+=(const mint& o) { val = (val+o.val >= MOD ? val+o.val-MOD : val+o.val); return *this; } mint& operator-=(const mint& o) { val = (val-o.val < 0 ? val-o.val+MOD : val-o.val); return *this; }
 };
 
+// #include <bits/stdc++.h>
+// using namespace std;
+// int n,t,i,j,x,c[1000100];
+// double s[1000100],eps=1e-11;
+// int main() {
+//     scanf("%d",&n);
+//     for (i=0; i<n; i++) {
+//         scanf("%d",&x);
+//         s[++t]=x; c[t]=1;
+//         for (; t>1 && s[t]<s[t-1]; --t) {
+//             s[t-1]=(s[t-1]*c[t-1]+s[t]*c[t])/(c[t-1]+c[t]);
+//             c[t-1]+=c[t];
+//         }
+//     }
+//     for (i=1; i<=t; i++) for (j=0; j<c[i]; j++) printf("%.11lf\n",s[i]);
+//     return 0;
 
 int t, k, n, m;
-void solve() {
-    cin>>n;
-    vi nums(n); f(i, n) cin>>nums[i];
-    sort(all(nums));
-
-    if(n % 2 == 0) {
-        int res = 0;
-        for(int i = 0; i < n; i += 2) {
-            ckmx(res, nums[i+1]-nums[i]);
-        }
-        cout<<res<<en; return;
-    }
-    int res = INFL;
-    f(i, n) {
-        int curr = 1;
-        vi a = nums;
-        a.erase(a.begin() + i);
-        for(int j = 0; j < n-1; j += 2) {
-            ckmx(curr, a[j+1]-a[j]);
-        }
-        ckmn(res, curr);
-    }
-    cout<<res<<en;
-    // sort(all(nums));
-    // bool extra = false;
-    // int res = 0;
-    // f(i, n) {
-    //     if(i == n-1 || nums[i+1]-nums[i] > k) {
-    //         extra = true;
-    //     } else {
-    //         i++;
-    //     }
-    //     res++;
-    // }
-    // if(extra) res++;
-    // cout<<res<<en;
-}
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    int t; cin>>t; f(i, t) solve();
+    cin>>n;
+    v<double> tot(n+1, 0); vi cnt(n+1, 0);
+    int ii = 0;
+    f(_, n) {
+        ii++;
+        int x; cin>>x;
+        tot[ii] = x;
+        cnt[ii] = 1;
+        while(ii > 1 && tot[ii] < tot[ii-1]) {
+            tot[ii-1] = (tot[ii-1] * cnt[ii-1] + tot[ii] * cnt[ii]) / (cnt[ii-1]+cnt[ii]);
+            cnt[ii-1] += cnt[ii];
+            ii--;
+        }
+    }
+    f(i, ii+1) {
+        f(j, cnt[i]) {
+            cout<<tot[i]<<sp;
+        }
+    }
 }

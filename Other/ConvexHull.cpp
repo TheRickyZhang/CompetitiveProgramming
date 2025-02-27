@@ -73,6 +73,7 @@ tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  
 int ceil(int num, int den) { return (num+den-1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
+int norm(const pii& a) { return a.ff*a.ff + a.ss*a.ss;} int cross(const pii& a, const pii& b) { return a.ff*b.ss - a.ss*b.ff;}
 struct mint { int val; // Avg 2x slowdown over raw % operations
     mint(int v=0) : val((v%MOD+MOD)%MOD) {} // NOLINT(google-explicit-constructor) (We want mint = 5 to be treated like int)
     mint operator+(const mint& o) const { return mint(val+o.val >= MOD ? val+o.val-MOD : val+o.val); } mint operator-(const mint& o) const { return mint(val-o.val < 0 ? val-o.val+MOD : val-o.val); }
@@ -83,14 +84,46 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 
 int t, k, n, m;
+
+pii operator-(const pii& a, const pii& b) {
+    return make_pair(a.ff - b.ff, a.ss - b.ss);
+}
+
+vi hullIndices (vpii& v){
+    n = v.size();
+    int pos = min_element(all(v)) - v.begin();
+    vi cand, hull = {pos};
+    f(i, n) if(v[i] != v[pos]) cand.pb(i);
+    sort(all(cand), [&](int a, int b) {
+        pii x = v[a]-v[pos], y = v[b] - v[pos];
+        int cr = cross(x, y);
+        if(cr == 0) return norm(x) < norm(y);
+        return cr > 0;
+    });
+    for(auto p : cand) {
+        while(hull.size() > 1 && cross(v[hull.back()] - v[hull[hull.size()-2]], v[p] - v[hull[hull.size()-2]]) <= 0) {
+            hull.pop_back();
+        }
+        hull.pb(p);
+    }
+    return hull;
+}
 void solve() {
-    int x, y; cin>>x>>y>>k;
-    x = y = min(x, y);
-    cout<<0<<sp<<0<<sp<<x<<sp<<y<<en;
-    cout<<x<<sp<<0<<sp<<0<<sp<<y<<en;
+    
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    int t; cin>>t; f(i, t) solve();
+    while(true) {
+        cin>>n;
+        if(!n) break;
+        vpii points(n);
+        f(i, n) cin>>points[i].ff>>points[i].ss;
+        vi res = hullIndices(points);
+        cout<<res.size()<<en;
+        for(auto i : res) {
+            auto [x, y] = points[i];
+            cout<<x<<sp<<y<<en;
+        }
+    }
 }

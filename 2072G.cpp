@@ -70,7 +70,7 @@ tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 #define str string
     int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
-int ceil(int num, int den) { return (num+den-1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
+int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
 struct mint { int val; // Avg 2x slowdown over raw % operations
@@ -83,71 +83,11 @@ struct mint { int val; // Avg 2x slowdown over raw % operations
 
 
 int t, k, n, m;
-
+void solve() {
+    
+}
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vi nums(n); f(i, n) cin>>nums[i];
-
-    // Do a double prefix sum for accumulating correctly
-    vi pre(n+1, 0);
-    f(i, n) pre[i+1] = pre[i] + nums[i];
-    vi tot(n+2, 0);
-    f(i, n+1) tot[i+1] = tot[i] + pre[i];
-
-    vi block(n, 0);
-    f(i, n) block[i] = (tot[n+1] - tot[i+1]) - (n-i)*pre[i];
-    // cout<<block<<en;
-
-    vi prebig(n+1, 0);
-    f(i, n) prebig[i+1] = prebig[i] + block[i];
-    // cout<<prebig<<en;
-
-    // THis does not work since we need to uniquely "shift" each small prefix
-    // vi presmall(n+1, 0);
-    // f(i, n) presmall[i+1] = presmall[i] + nums[i] * (n-i);
-    // cout<<presmall<<en;
-
-    // vi cnt(n+1, 0); // Prefix count
-    // f(i, n) cnt[i+1] = cnt[i] + (n-i);
-    // cout<<cnt<<en;
-
-    auto cnt = [&](int i) {
-        return i*n - i*(i-1)/2;
-    };
-    function<pii(int)> findPos = [&](int x) {
-        int a = lstTrue(0LL, n, [&](int m) {
-            return cnt(m) <= x;
-        });
-        return make_pair(a, x-cnt(a));
-    };
-
-    auto partialBlockSum = [&](int i, int j) -> int {
-        return (tot[i+j+2] - tot[i+1]) - (j+1) * pre[i];
-    };
-
-    auto getPrefix = [&](int pos) -> int {
-        if (pos < 0) return 0;
-        auto [i, off] = findPos(pos);
-        return prebig[i] + partialBlockSum(i, off);
-    };
-
-    cin>>k;
-    f(i, k) {
-        int l, r; cin>>l>>r;
-        cout<<getPrefix(r-1)-getPrefix(l-2)<<en;
-
-        // auto [x1, y1] = findPos(l-1);
-        // auto [x2, y2] = findPos(r);
-
-        // cout<<x1<<sp<<y1<<sp<<x2<<sp<<y2<<en;
-        // if(x1 < 0 || x1 >= n) cout<<"HUH1 "<<l<<sp<<r<<en;
-        // if(x2 < 0 || x2 >= n) cout<<"HUH2 "<<l<<sp<<r<<en;
-        // if(y1 < 0 || y1 >= n) cout<<"HUH3 "<<l<<sp<<r<<en;
-        // if(y2 < 0 || y2 >= n) cout<<"HUH4 "<<l<<sp<<r<<en;
-        // int low = prebig[x1] + presmall[y1];
-        // int high = prebig[x2] + presmall[y2];
-        // cout<<low<<sp<<high<<en;
-    }
+    // int t; cin>>t; f(i, t) solve();
 }
