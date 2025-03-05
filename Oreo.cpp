@@ -6,51 +6,51 @@
 #include <cstdlib>
 #include <ctime>
 using namespace std;
+#define ll long long
+#define f(i, to) for (int i = 0; i < (to); ++i)
 
 struct Oreo {
     long long a, b, c;
 };
 
-void solve(istream &in, ostream &out) {
+void solve(istream &cin, ostream &cout) {
     int n;
-    in >> n;
+    cin >> n;
     vector<Oreo> oreos(n);
     for (int i = 0; i < n; i++){
-        in >> oreos[i].a >> oreos[i].b >> oreos[i].c;
+        cin >> oreos[i].a >> oreos[i].b >> oreos[i].c;
     }
 
-    // Sort Oreos by top cookie width in descending order.
     sort(oreos.begin(), oreos.end(), [](const Oreo &x, const Oreo &y){
         return x.a > y.a;
     });
 
-    long long ans = 0, prefix = 0;
-    // For each prefix, base oreo's cream counts twice.
-    for (int i = 0; i < n; i++){
-        prefix += oreos[i].b;
-        ans = max(ans, prefix + oreos[i].b);
+    ll res = 0, pre = 0;
+    f(i, n){
+        pre += oreos[i].b;
+        res = max(res, pre + oreos[i].b);
     }
-    out << ans << "\n";
+    cout << res << "\n";
 }
 
 int main(){
     srand(time(nullptr));
 
-    // Generate input file
     ofstream inputFile("input.txt");
-    int t = 100;
-    int n = 1000;
+    int t = 1000;
     inputFile << t << "\n";
-    inputFile << n << "\n";
-    for (int i = 0; i < n; i++){
-        long long a = rand() % 1000000001; // [0, 1e9]
-        long long b = rand() % 1000000001;
-        long long c = rand() % 1000000001;
-        inputFile << a << " " << b << " " << c << "\n";
+    for (int tc = 0; tc < t; tc++){
+        int n = 100; // or choose a random n if desired
+        inputFile << n << "\n";
+        for (int i = 0; i < n; i++){
+            long long a = rand() % 10001;
+            long long b = rand() % 10001;
+            long long c = rand() % 10001;
+            inputFile << a << " " << b << " " << c << "\n";
+        }
     }
     inputFile.close();
 
-    // Process input and produce output file
     ifstream inFile("input.txt");
     ofstream outFile("output.txt");
 
