@@ -80,11 +80,59 @@ void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind
 
 
 int t, k, n, m;
-void solve() {
-    
+void solve(){
+    cin>>n;
+    vi a(n), b(n);
+    f(i, n) cin>>a[i];
+    f(i, n) cind>>b[i];
+    vi pre(n,0); pre[0]=a[0]; f(i, n-1) pre[i+1]=pre[i]+a[i+1];
+    vvpii adj(n);
+    f(i, n-1) adj[i+1].pb({i, 0});
+    f(i, n) {
+        if(b[i] > i) adj[i].pb({b[i], a[i]});
+    }
+    vi dist(n, 0);
+    mpq<pii> q;
+    q.push({0, 0});
+    while(!q.empty()) {
+        auto [w, u] = q.top(); q.pop();
+        if(pre[u] - w <= dist[u]) continue;
+        dist[u]=pre[u]-w;
+        for(auto [v, dw] : adj[u]) {
+            q.push({w+dw, v});
+        }
+    }
+    int res = *max_element(all(dist));
+    cout<<res<<en;
+    // int pen=0, res=0;
+    // stack<int> s;
+    // vi best(n, INFL);
+    // set<int> vis;
+    // function<void(int)> dfs=[&](int i){
+    //     if(vis.count(i)) return; vis.insert(i);
+    //     if(pen>=best[i]) return; best[i]=pen;
+    //     ckmx(res, pre[i]-pen);
+    //     if(b[i]>i){
+    //         pen+=a[i];
+    //         dfs(b[i]);
+    //         pen-=a[i];
+    //     } else {
+    //         repr(j, i-1, 0){
+    //             if(b[j]>i){
+    //                 pen+=a[j];
+    //                 dfs(b[j]);
+    //                 pen-=a[j];
+    //             }
+    //         }
+    //     }
+    //     vis.erase(i);
+    // };
+    // dfs(0);
+    // cout<<res<<en;
 }
+
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

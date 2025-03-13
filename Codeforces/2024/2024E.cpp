@@ -78,13 +78,73 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind& operator>>(T &x) { cin >> x; --x; return *this; }} cind;
 
-
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>k;
+    vi a(n), b(n);
+    read(a);
+    vvi adja(n);
+    cin>>m; f(i, m) {
+        int u, v; cind>>u>>v;
+        adja[u].pb(v);
+    }
+    read(b);
+    vvi adjb(n);
+    cin>>m; f(i, m) {
+        int u, v; cind>>u>>v;
+        adjb[u].pb(v);
+    }
+    int aa = accumulate(all(a), 0LL);
+    int bb = accumulate(all(b), 0LL);
+    if(aa + bb != n) {
+        cout<<"NO"<<en; return;
+    }
+
+    auto assign = [&](vvi& adj, vi& id) {
+        id.assign(n, -1);
+        id[0] = 0;
+        queue<int> q; q.push(0);
+        while(!q.empty()) {
+            int u = q.front(); q.pop();
+            for(int v : adj[u]) {
+                if(id[v] != -1) continue;
+                id[v] = (id[u]+1) % k;
+                q.push(v);
+            }
+        }
+        f(i, n) if(id[i]==-1) id[i]=0;
+    };
+    if(aa==0 || bb==0) {
+        cout<<"YES"<<en; return;
+    }
+
+    vi ida, idb;
+    assign(adja, ida); assign(adjb, idb);
+    vi ina(k, 0), outa(k, 0), inb(k, 0), outb(k, 0);
+    f(i, n) {
+        if(a[i]==1) outa[ida[i]]++;
+        else ina[ida[i]]++;
+        if(b[i]==1) outb[idb[i]]++;
+        else inb[idb[i]]++;
+    }
+    bool ok=false;
+    //shift
+    auto match = [&](int sh) {
+        f(i, k) {
+            if(outa[i] != inb[(i+sh+1)%k]) return false;
+            if(outb[i] != ina[(i-sh+1+k) % k]) return false;
+        }
+        return true;
+    };
+    f(sh, k) {
+        if(match(sh)) {
+            cout<<"YES"<<en; return;
+        }
+    }
+    cout<<"NO"<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

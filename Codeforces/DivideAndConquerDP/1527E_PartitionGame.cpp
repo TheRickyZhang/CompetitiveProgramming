@@ -70,9 +70,9 @@ tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 #define str string
     int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
-int ceil(int num, int den) { return (num+den-1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
-vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
+int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
+vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
@@ -86,5 +86,72 @@ void solve() {
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>k;
+    vi nums(n); read(nums);
+    f(i, n) nums[i]--;
+    vvi dp(n, vi(k, INFL));
+    // Calculate first row
+    {
+        vi early(n, -1), late(n, -1);
+        int curr = 0;
+        f(i, n) {
+            int x = nums[i];
+            int prev = late[x] - early[x];
+            if(early[x]==-1) early[x]=i;
+            late[x]=i;
+            curr += (late[x]-early[x]) - prev;
+            dp[i][0] = curr;
+        }
+    }
+    v<deque<int>> freq(n);
+    int l=0, r=-1;
+    int curr = 0;
+    auto add = [&](int i, bool front) {
+        int x = nums[i];
+        curr -= freq[x].empty() ? 0 : freq[x].back() - freq[x].front();
+        front ? freq[x].push_front(i) : freq[x].push_back(i);
+        curr += freq[x].back() - freq[x].front();
+    };
+    auto sub = [&](int i, bool front) {
+        int x = nums[i];
+        curr -= freq[x].back() - freq[x].front();
+        front ? freq[x].pop_front() : freq[x].pop_back();
+        curr += freq[x].empty() ? 0 : freq[x].back() - freq[x].front();
+    };
+    auto update = [&](int nl, int nr) {
+        while(r < nr) {
+            r++; add(r, false);
+        }
+        while(l > nl) {
+            l--; add(l, true);
+        }
+        while(l < nl) {
+            sub(l, true); l++;
+        }
+        while(r > nr) {
+            sub(r, false); r--;
+        }
+    };
+    function<void(int, int, int, int, int)> dpp = [&](int k, int l, int r, int a, int b) {
+        if(l > r) return;
+        int m = (l+r)/2;
+        int best = INFL, pos = -1;
+        rep(i, a, min(m, b)) {
+            update(i, m);
+            int val = dp[i-1][k-1] + curr;
+            if(val < best) {
+                best=val, pos = i;
+            } else if(val==best) {
+                pos=i;
+            }
+        }
+        dp[m][k] = best;
+        dpp(k, l, m-1, a, pos);
+        dpp(k, m+1, r, pos, b);
+    };
+    fe(i, k-1) {
+        dpp(i, i, n-1, i, n-1);
+    }
+    // cout<<dp<<en;
+    cout<<dp[n-1][k-1]<<en;
 }

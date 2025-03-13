@@ -70,9 +70,9 @@ tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 #define str string
     int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
-int ceil(int num, int den) { return (num+den-1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
-vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
+int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
+vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
@@ -80,11 +80,68 @@ void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind
 
 
 int t, k, n, m;
-void solve() {
-    
-}
 
 int32_t main() {
+    setIO("newbarn");
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n;
+    vpii diam(n, {-1, -1});
+    int ln = log2(n)+1;
+    vvi par(n, vi(ln, -1));
+    vi root(n, -1);
+    vi dep(n, 0);
+    auto lca = [&](int u, int v) {
+        if(dep[u] < dep[v]) swap(u, v);
+        int diff = dep[u]-dep[v];
+        repr(i, ln-1, 0) {
+            if(diff & (1<<i)) {
+                diff-=(1<<i);
+                u = par[u][i];
+            }
+        }
+        if(u==v) return u;
+        repr(i, ln-1, 0) {
+            int x = par[u][i], y = par[v][i];
+            if(x != y) {
+                u=x, v=y;
+            }
+        }
+        return par[u][0];
+    };
+    auto dist = [&](int u, int v) {
+        int p = lca(u, v);
+        return dep[u] + dep[v] - 2 * dep[p];
+    };
+    auto build = [&](int u, int v) {
+        if(v < 0) {
+            diam[u] = {u, u};
+            f(i, ln) par[u][i]=u;
+            root[u]=u; dep[u]=0;
+        } else {
+            int r = root[v];
+            root[u]=r, dep[u]=dep[v]+1;
+            par[u][0]=v;
+            fe(i, ln-1) {
+                par[u][i] = par[par[u][i-1]][i-1];
+            }
+            auto [a, b] = diam[r];
+            int curr = dist(a, b);
+            if(dist(u, a) > curr) diam[r] = {u, a};
+            else if(dist(u, b) > curr) diam[r] ={u, b};
+        }
+    };
+    auto query = [&](int u) {
+        auto [a, b] = diam[root[u]];
+        cout<<max(dist(u, a), dist(u, b))<<en;
+    };
+    int pos=0;
+    f(i, n) {
+        char c; int u; cin>>c>>u; u--;
+        if(c=='B') {
+            build(pos, u);
+            pos++;
+        } else {
+            query(u);
+        }
+    }
 }

@@ -81,10 +81,33 @@ void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    m = 2*n;
+    vi a(2*n); read(a);
+    sort(rall(a));
+    vi e, o;
+    f(i, 2*n) {
+        if(i < n+1) e.pb(a[i]);
+        else o.pb(a[i]);
+    }
+    int curr = e[0];
+    f(i, n-1) {
+        curr += e[i+2] - o[i];
+    }
+    curr += e[1];
+    vi res(2*n+1);
+    res[0] = e[0];
+    res[1] = curr;
+    res[2] = e[1];
+    f(i, n-1) {
+        res[2*i+3] = o[i];
+        res[2*i+4] = e[i+2];
+    }
+    for(int x : res) cout<<x<<sp;
+    cout<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

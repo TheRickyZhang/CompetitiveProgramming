@@ -76,15 +76,71 @@ inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline 
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
-void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind& operator>>(T &x) { cin >> x; --x; return *this; }} cind;
+void read(vi &v) { for (auto &x : v) cin>>x; } struct cind { tpl_ <tn_ T> cind& operator>>(T &x) { cin>>x; --x; return *this; }} cind;
 
 
-int t, k, n, m;
 void solve() {
-    
+    int n; cin>>n;
+    vi lop(n), rop(n);
+    vi l(n), r(n);
+    f(i, n) {
+        char c;
+        cin>>c>>l[i];
+        if(c=='+') lop[i]=0;
+        else lop[i]=1;
+        cin>>c>>r[i];
+        if(c=='+') rop[i]=0;
+        else rop[i]=1;
+    }
+    int a=1, b=1, c=0;
+    repr(i, n-1, 0) {
+        int na, nb, nc;
+        if(lop[i] == 0 && rop[i] == 0) {
+            if(a >= b){
+                na = a, nb = b, nc = c + a * (l[i] + r[i]);
+            } else {
+                na = a, nb = b, nc = c + b * (l[i] + r[i]);
+            }
+        }
+        else if(lop[i] == 1 && rop[i] == 0) {
+            if(a >= b) {
+                na = a * l[i];
+                nb = b;
+                nc = c + a * r[i];
+            } else {
+                na = a + b * (l[i] - 1);
+                nb = b;
+                nc = c + b * r[i];
+            }
+        }
+        else if(lop[i] == 0 && rop[i] == 1) {
+            if(a >= b) {
+                na = a;
+                nb = b + a * (r[i] - 1);
+                nc = c + a * l[i];
+            } else {
+                na = a;
+                nb = b * r[i];
+                nc = c + b * l[i];
+            }
+        }  else {
+            if(a >= b) {
+                na = a * l[i];
+                nb = b + a * (r[i]-1);
+                nc = c;
+            } else {
+                na = a + b * (l[i]-1);
+                nb = b * r[i];
+                nc = c;
+            }
+        }
+        a=na, b=nb, c=nc;
+    }
+    cout<<a+b+c<<en;
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int t; cin>>t; f(i, t) solve();
 }

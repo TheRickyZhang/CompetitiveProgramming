@@ -80,11 +80,38 @@ void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind
 
 
 int t, k, n, m;
+
 void solve() {
-    
+    cin>>n>>k;
+    vi a(n); read(a);
+    bitset<200001> x(false);
+    {
+        int mx=-INFL, mn=INFL;
+        f(i, n-1) {
+            ckmx(mx, a[i]), ckmn(mn, a[i]);
+            if(mx == i+1 && mn == 1) x[i]=false;
+            else x[i]=true;
+        }
+    }
+    str s; cin>>s;
+    bitset<200001> y(false);
+    f(i, n-1) {
+        if(s[i]=='L' && s[i+1]=='R') y[i]=true;
+        else y[i]=false;
+    }
+    f(_, k) {
+        int i; cin>>i; i--;
+        y[i-1] = y[i] = false;
+        if(s[i]=='L') s[i]='R';
+        else s[i]='L';
+        y[i-1] = (s[i-1]=='L' && s[i]=='R');
+        y[i]   = (s[i]=='L' && s[i+1]=='R');
+        if((x & y).any()) cout<<"NO"<<en;
+        else cout<<"YES"<<en;
+    }
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

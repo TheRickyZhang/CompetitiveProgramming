@@ -70,9 +70,9 @@ tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 #define str string
     int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
-int ceil(int num, int den) { return (num+den-1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
-vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
+int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
+vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
@@ -80,11 +80,74 @@ void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind
 
 
 int t, k, n, m;
-void solve() {
-    
-}
 
+// Great example of centroid decomposition
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>m;
+    vvi adj(n);
+    f(i, n-1) {
+        int u, v; cind>>u>>v;
+        adj[u].pb(v); adj[v].pb(u);
+    }
+    vi sz(n, 0);
+    vvpii ancestors(n);   // Ancestors is just centroid parents
+    vb rem(n, false);
+    vi dist(n, INFL);
+
+    function<int(int, int)> get_size = [&](int u, int p) {
+        sz[u]=1;
+        for(int v : adj[u]) {
+            if(v==p || rem[v]) continue;
+            sz[u] += get_size(v, u);
+        }
+        return sz[u];
+    };
+    function<int(int, int, int)> get_centroid = [&](int u, int p, int s) {
+        for(int v : adj[u]) {
+            if(v==p || rem[v]) continue;
+            if(sz[v] * 2 > s) {
+                return get_centroid(v, u, s);
+            }
+        }
+        return u;
+    };
+    function<void(int, int, int, int)> get_dists = [&](int u, int p, int c, int w) {
+        for(int v : adj[u]) {
+            if(v==p || rem[v]) continue;
+            get_dists(v, u, c, w+1);
+        }
+        ancestors[u].pb({c, w});
+    };
+    function<void(int)> build = [&](int u) {
+        int c = get_centroid(u, -1, get_size(u, -1));
+        for(int v : adj[c]) {
+            if(!rem[v]) get_dists(v, c, c, 1);
+        }
+        rem[c]=true;
+        for(int v : adj[c]) {
+            if(!rem[v]) build(v);
+        }
+    };
+    auto paint = [&](int u) {
+        for(auto& [c, w] : ancestors[u]) {
+            ckmn(dist[c], w);
+        }
+        dist[u] = 0;
+    };
+    auto query = [&](int u) {
+        int res = dist[u];
+        for(auto& [c, w] : ancestors[u]) {
+            ckmn(res, w + dist[c]);
+        }
+        cout<<res<<en;
+    };
+
+    build(0);
+    paint(0);
+    f(i, m) {
+        int t, v; cin>>t>>v; v--;
+        if(t==1) paint(v);
+        else query(v);
+    }
 }

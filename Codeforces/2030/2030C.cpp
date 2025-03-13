@@ -81,10 +81,21 @@ void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    str s; cin>>s;
+    if(s[0]=='1' || s[n-1]=='1') {
+        cout<<"YES"<<en; return;
+    }
+    f(i, n-1) {
+        if(s[i]=='1' && s[i+1]=='1') {
+            cout<<"YES"<<en;
+            return;
+        }
+    }
+    cout<<"NO"<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

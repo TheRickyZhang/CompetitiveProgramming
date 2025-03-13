@@ -73,18 +73,33 @@ tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  
 int ceil(int num, int den) { return (num+den-1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
-class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
-    Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
-    Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
-void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind& operator>>(T &x) { cin >> x; --x; return *this; }} cind;
+struct mint { int val; // Avg 2x slowdown over raw % operations
+    mint(int v=0) : val((v%MOD+MOD)%MOD) {} // NOLINT(google-explicit-constructor) (We want mint = 5 to be treated like int)
+    mint operator+(const mint& o) const { return mint(val+o.val >= MOD ? val+o.val-MOD : val+o.val); } mint operator-(const mint& o) const { return mint(val-o.val < 0 ? val-o.val+MOD : val-o.val); }
+    mint operator*() const { return mint(val); } mint operator*(const mint& o) const { return mint(val * o.val % MOD); } mint operator/(const mint& o) const { return *this * fastPow(o.val, MOD-2); }
+    friend ostream& operator<<(ostream& os, const mint& m) { return os << m.val; } bool operator<(const mint& o) const { return val < o.val; } bool operator<=(const mint& o) const { return val <= o.val; }
+    mint& operator+=(const mint& o) { val = (val+o.val >= MOD ? val+o.val-MOD : val+o.val); return *this; } mint& operator-=(const mint& o) { val = (val-o.val < 0 ? val-o.val+MOD : val-o.val); return *this; }
+};
 
 
 int t, k, n, m;
-void solve() {
-    
+void solve(){
+    cin>>n>>k;
+    vi a(n); f(i, n) cin>>a[i];
+    sort(all(a));
+    int x = 0; ll curr = 0, prev = 0;
+    f(i, n){
+        curr += 1LL * (a[i] - prev) * (n - i);
+        if(curr >= k) {
+            x = i; break;
+        }
+        prev = a[i];
+    }
+    cout<<k+x<<en;
 }
+
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

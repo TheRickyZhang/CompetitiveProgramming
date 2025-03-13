@@ -78,13 +78,30 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind& operator>>(T &x) { cin >> x; --x; return *this; }} cind;
 
-
 int t, k, n, m;
+
 void solve() {
-    
+    cin>>n>>k;
+    vi a = {0, 1, 1};
+    vi pos;
+    if(k==1) pos = {1, 2};
+    rep(i, 3, 6*k) {
+        a.pb((a[i-1] + a[i-2]) % k);
+        if(a[i]==0) pos.pb(i);
+        if((a[i]==1) && (a[i-1]==1)) {
+            a.pop_back(); a.pop_back();
+            break;
+        }
+    }
+    // cout<<a<<en<<pos<<en;
+    int c = a.size()-1; // Cycle size
+    int p = pos.size();
+    int cnt = (((n-1)/p % MOD) * c) % MOD;
+    int res = (cnt + pos[(n-1)%p]) % MOD;
+    cout<<res<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }
