@@ -30,6 +30,9 @@ if errorlevel 1 (
     exit /b 1
 )
 
+rem Kill any running instance of the executable
+taskkill /IM "%NAME%.exe" /F 2>nul
+
 rem Run the executable (this keeps the terminal open for input)
 "%DIR%%NAME%.exe"
 
