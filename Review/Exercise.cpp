@@ -49,8 +49,7 @@ struct mint { ll val; // Avg 2x slowdown over raw % operations
 };
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vll sieveList(int n){vb p=sieve(n);vll primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 
-int t, k, n, m;
-
+int t, n;
 int main() {
     setIO("exercise");
     ios::sync_with_stdio(false); cin.tie(nullptr);
@@ -58,19 +57,6 @@ int main() {
     vll p = sieveList(n);
 
     int m = p.size();
-    // current prime index, current val
-    // vvll dp(m+1, vll(n+1, 0));
-    // f(i, n+1) dp[0][i] = 1;
-    // f(i, m) {
-    //     f(j, n+1) {
-    //         dp[i+1][j] = dp[i][j] % MOD;
-    //         for(ll k = p[i]; k<=j; k = (k * (p[i]%MOD)) % MOD) {
-    //             dp[i+1][j] += (dp[i][j-k] * k) % MOD;
-    //         }
-    //     }
-    // }
-    // cout<<dp[m][n]<<en;
-
     vector dp(m+1, vector<mint>(n+1, 0));
     f(i, n+1) dp[0][i] = 1;
 
@@ -82,6 +68,5 @@ int main() {
             }
         }
     }
-    // cout<<dp<<en;
     cout << *dp[m][n] << en;
 }

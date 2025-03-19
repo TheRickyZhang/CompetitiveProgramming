@@ -15,8 +15,8 @@ using namespace std;
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
 #define setIO(name) ifstream cin(name".in"); ofstream cout(name".out");
-tpl_<tn_ T>        using v = vector<T>;  using ll=long long;  using pii=pair<int,int>;  using pll=pair<ll,ll>;  using t3=tuple<int,int,int>;       using t4=tuple<int,int,int,int>;
-using vi=v<int>;   using vb=v<bool>;     using vvb=v<vb>;     using vs=v<string>;       using vvi=v<vi>;        using vll=v<ll>;using vvll=v<vll>; using vpii=v<pii>; using vvpii=v<vpii>; using vpll=v<pll>; using vvpll=v<vpll>;
+tpl_<tn_ T>        using v = vector<T>;  using ll=long long;  using pii=pair<int,int>;  using pll=pair<ll,ll>;  using t3=tuple<int,int,int>;                using t4=tuple<int,int,int,int>;
+using vi=v<int>;   using vb=v<bool>;     using vs=v<string>;  using vvi=v<vi>;          using vll=v<ll>;        using vvll=v<vll>; using vpii=v<pii>;       using vvpii=v<vpii>; using vpll=v<pll>;   using vvpll=v<vpll>;
 tpl_<tn_ K,tn_ T>  using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>;  tpl_<tn_ K,tn_ T>    using rmap=map<K,T,greater<K>>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>; tpl_<tn_ T>using rmset=multiset<T,greater<T>>;
 tpl_<tn_ T>        using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;
 tpl_<class It, class T>     auto leq_bound  (It first, It last, T val) { auto it = upper_bound(first, last, val); return it != first ? prev(it) : last;} tpl_<class C, class T>auto leq_bound(C& c, T val) {auto it = c.upper_bound(val);return it != c.begin() ? prev(it) : c.end();}
@@ -38,17 +38,8 @@ template <typename T> struct Segtree { ll n; v<T> t; T z; function<T(T, T)> c;
     void update(ll i, ll a, ll b, ll p, T x) { if (a == b) { t[i] = x; return; } ll m = (a + b) / 2; (p <= m ? update(2 * i, a, m, p, x) : update(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); } void update(ll p, T x) { update(1, 0, n - 1, p, x); }
     T    query(ll i, ll a, ll b, ll l, ll r) { if (l > r) return z; if (a == l && b == r) return t[i]; ll m = (a + b) / 2; return c(query(2 * i, a, m, l, min(r, m)), query(2 * i + 1, m + 1, b, max(l, m + 1), r)); } T query(ll l, ll r) { return query(1, 0, n - 1, l, r); }
 };
-template <typename T> struct BIT { ll n; v<T> t; T z; function<T(T, T)> c;
-         BIT(ll sz, T zero, function<T(T, T)> combine) : n(sz), t(sz + 1, zero), z(zero), c(move(combine)) {}
-    void update(ll i, T x) {for (; i<=n; i+=(i & -i)) {t[i] = c(t[i], x);}} T query(ll i) {T res = z; for (; i > 0; i -= (i & -i)) { res = c(res, t[i]); }return res;}
-    T    query(ll l, ll r) {return c(query(r), l>1 ? query(l - 1) : z);}
-};
-template<class T, class U> T fstTrue(T l, T r, U ff) { while (l<r) { T m = (l + r)/2; ff(m) ? r=m : l = m+1; } return ff(l) ? l : r+1; }
-template<class T, class U> T lstTrue(T l, T r, U ff) { while (l<r) { T m = (l+r+1)/2; ff(m) ? l=m : r = m-1; } return ff(l) ? l : r+1; }
-template<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  template<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
-    ll N = 5000; ll MOD=1e9+7; constexpr int INF=1e9; constexpr ll INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
+constexpr ll N = 5000; ll MOD=1000000007; constexpr int INF=1000000000; constexpr ll INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
 ll ceil(ll num, ll den) { return (num + den - 1) / den; } ll fastPow(ll a, ll b, ll mod = MOD) { ll res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; }
-vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vll sieveList(int n){vb p=sieve(n);vll primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
 struct mint { ll val; // Avg 2x slowdown over raw % operations
     mint(ll v=0) : val((v%MOD+MOD)%MOD) {} // NOLINT(google-explicit-constructor) (We want mint = 5 to be treated like int)
     mint operator+(const mint& o) const { return mint(val + o.val >= MOD ? val + o.val - MOD : val + o.val); } mint operator-(const mint& o) const { return mint(val - o.val < 0 ? val - o.val + MOD : val - o.val); }
@@ -56,18 +47,68 @@ struct mint { ll val; // Avg 2x slowdown over raw % operations
     friend ostream& operator<<(ostream& os, const mint& m) { return os << m.val; } bool operator<(const mint& o) const { return val < o.val; } bool operator<=(const mint& o) const { return val <= o.val; }
     mint& operator+=(const mint& o) { val = (val + o.val >= MOD ? val + o.val - MOD : val + o.val); return *this; } mint& operator-=(const mint& o) { val = (val - o.val < 0 ? val - o.val + MOD : val - o.val); return *this; }
 };
+vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vll sieveList(int n){vb p=sieve(n);vll primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
+
+template<class T, class U> // Finds the first index in [lo, hi] where f(index) is true (monotonic false -> true).
+T fstTrue(T lo, T hi, U ff) {
+    for (++hi; lo < hi;) { ff(lo + (hi - lo) / 2) ? hi = lo + (hi - lo) / 2 : lo = lo + (hi - lo) / 2 + 1;} return lo;
+}
+template<class T, class U> // Finds the last index in [lo, hi] where f(index) is true (monotonic true -> false).
+T lstTrue(T lo, T hi, U ff) {
+    for (--lo; lo < hi;) {ff(lo + (hi - lo + 1) / 2) ? lo = lo + (hi - lo + 1) / 2 : hi = lo + (hi - lo + 1) / 2 - 1;} return lo;
+}
+template<class T> bool ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}
+template<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 
 int t, k, n, m;
 void solve() {
-    string a, b;
-    int lights = stoi(a), buttons = stoi(b);
-
+    
 }
 
 int main() {
+    setIO("nocross");
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>t>>n;
-    f(i, t) {
-        solve();
+    cin>>n;
+    vi a(n+1), b(n+1);
+    fe(i, n) cin>>a[i];
+    fe(i, n) cin>>b[i];
+    // Index a, minimum available index b
+    vvi dp(n+1, vi(n+1, 0));
+    fe(i, n) {
+        fe(j, n) {
+            dp[i][j] = max({dp[i-1][j], dp[i][j-1], dp[i-1][j-1] + (abs(a[i]-b[j]) <= 4)});
+        }
     }
+    cout<<dp[n][n]<<en;
 }
+
+//
+//// Better solution - instead of doing this weird difference array, do prefix from 1->n on min=(pre[i+k]-pre[i])
+//int main() {
+//    ios::sync_with_stdio(false); cin.tie(nullptr);
+//    ifstream cin("maxcross.in"); ofstream cout("maxcross.out");
+//    cin>>n>>k>>m;
+//    vi nums(m); f(i, m) cin>>nums[i];
+//    if (!binary_search(all(nums), 1)) nums.pb(1);
+//    if (!binary_search(all(nums), n)) nums.pb(n);
+//    sort(all(nums));
+//    m=nums.size();
+//    vi diff(m-1);
+//    f(i, m-1) diff[i] = nums[i+1]-nums[i];
+//
+//    // cout<<diff<<en;
+//    // Two pointer for smallest length subarray sum k+1 (due to nature of problem)
+//    int l = 0, r=0, curr=diff[0], res=INF;
+//    while(r < m-1) {
+//        if(r<l) r++;
+//        else {
+//            if(curr>=k+1) {
+//                res = min(res, r-l);
+//                curr-=diff[l++];
+//            } else {
+//                curr+=diff[++r];
+//            }
+//        }
+//    }
+//    cout<<res<<en;
+//}
