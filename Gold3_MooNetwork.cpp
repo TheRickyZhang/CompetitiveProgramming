@@ -34,6 +34,7 @@ struct DSU{ vi p,sz; explicit
          DSU(const int n){p.resize(n),sz.resize(n,1),iota(all(p),0);}
     int  par(int x){return x==p[x]?x:p[x]=par(p[x]);}
     void merge(int x,int y){x=par(x),y=par(y);if(x!=y){if(sz[x]<sz[y])swap(x,y);p[y]=x,sz[x]+=sz[y];}}
+    bool same(int x, int y){ return par(x) == par(y); }
 };
 tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; function<T(T, T)> c;
     Segtree() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
@@ -69,7 +70,7 @@ tpl_<class T, class U> T fstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r
 tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) l = m+1; else r = m; } return l-1; }
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 #define str string
-    int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
+    int N = 1000000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
 int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
@@ -86,23 +87,37 @@ void solve() {
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n>>k;
-    vi a(n); f(i, n) cin>>a[i];
-    int ln = log2(n);
-    vvi dp(n, vi(ln+1, INFL));
-    f(i, n) dp[i][0] = a[i];
-    fe(j, ln) {
-        for(int i = 0; i + (1<<j) <= n; ++i) {
-            dp[i][j] = min(dp[i][j-1], dp[i+(1<<(j-1))][j-1]);
-        }
+    cin>>n;
+    v<iii> points(n);
+    f(i, n) {
+        int x, y; cin>>x>>y;
+        points[i] = {x, y, i};
     }
-    auto query = [&](int l, int r) {
-        int x = log2(r-l+1);
-        return min(dp[l][x], dp[r-(1<<x)+1][x]);
+    sort(all(points));
+    v<iii> edges;
+    v<iii> prev(11, {-1, -1, -1});
+    auto calc = [&](int x, int y, int xx, int yy) {
+        int dx = abs(x-xx), dy = abs(y-yy);
+        return dx*dx + dy*dy;
     };
-    // cout<<dp<<en;
-    f(i, k) {
-        int l, r; cin>>l>>r; r--;
-        cout<<query(l, r)<<en;
+    f(i, n) {
+        auto [nx, ny, u] = points[i];
+        f(j, 11) {
+            auto [x, y, v] = prev[j];
+            if(x==-1) continue;
+            edges.pb({calc(x, y, nx, ny), u, v});
+        }
+        prev[ny] = points[i];
     }
+    // for(auto [w, u, v] : edges) cout<<w<<sp<<u<<sp<<v<<en;
+    sort(all(edges));
+    DSU d(n);
+    int cnt = 0, res = 0;
+    for(auto [w, u, v] : edges) {
+        if(d.same(u, v)) continue;
+        d.merge(u, v);
+        res += w; cnt++;
+    }
+    if(cnt < n-1) cout<<-1<<en;
+    else cout<<res<<en;
 }
