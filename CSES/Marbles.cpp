@@ -81,50 +81,21 @@ void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind
 
 
 int t, k, n, m;
-void solve() {
 
-}
-
+// Stars and bars
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vi a(n); f(i, n) cin>>a[i];
-    vvi adj(n);
-    f(i, n-1) {
-        int u, v; cind>>u>>v;
-        adj[u].pb(v); adj[v].pb(u);
-    }
-    vi in(n), out(n);
-    vi tour;
-    int t = 0;
-    autotree dfs = [&](int u, int p) {
-        in[u] = t++; tour.pb(u);
-        for(int v : adj[u]) {
-            if(v==p) continue;
-            dfs(v, u);
-        }
-        out[u] = t;
+    N = 1000000;
+    vi fact(N+1); fact[0] = 1;
+    fe(i, N) fact[i] = mult(fact[i-1], i);
+    vi inv(N+1); inv[N] = fastPow(fact[N], MOD-2, MOD);
+    repr(i, N-1, 0) inv[i] = mult(inv[i+1], i+1);
+    auto choose = [&](int n, int k) {
+        return mult(mult(fact[n], inv[n-k]), inv[k]);
     };
-    dfs(0, -1);
-
-    vi dup(n, 0);
-    BIT<int> bit(n, 0LL, [&](int x, int y) {
-        return x+y;
-    });
-    map<int, int> mp;
+    cin>>n;
     f(i, n) {
-        rep(j, in[i], out[i]-1) cout<<a[j]<<sp;
-        cout<<en;
+        int a, b; cin>>a>>b;
+        cout<<choose(a-1, b-1)<<en;
     }
-
-    vi res(n);
-    f(i, n){
-        int u = tour[i];
-        int c = a[u];
-        if(mp.count(c)) bit.add(mp[c], -1);
-        mp[c] = i;
-        bit.add(i, 1);
-        res[u] = bit.query(i, out[tour[i]]-1);
-    }
-    for(int x : res) cout<<x<<sp;
 }

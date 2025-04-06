@@ -84,13 +84,59 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
-
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
+    setIO("shortcut");
+    cin>>n>>m>>k;
+    vi a(n); read(a);
+    vvpii adj(n); read(adj, m);
+
+    // NOTE that the barn is at node 0
+    vi dist(n, INFL);
+    vi par(n, -1);
+    mpq<pii> q;
+    dist[0] = 0, q.push({0, 0});
+    while(!q.empty()) {
+        auto [w, u] = q.top(); q.pop();
+        if(dist[u] != w) continue;
+        for(auto [v, dw] : adj[u]) {
+            if(w + dw < dist[v]) {
+                dist[v] = w + dw;
+                par[v] = u;
+                q.push({dist[v], v});
+            } else if(w + dw == dist[v]) {
+                // This greedy comparison does NOT work if you go cow->barn, ONLY works if barn->cow
+                if(u < par[v]) par[v] = u;
+            }
+        }
+    }
+
+    vvi g(n); f(i, n) {
+        if(par[i] != -1) {
+            g[i].pb(par[i]);
+            g[par[i]].pb(i);
+        }
+    }
+    autotree dfs = [&](int u, int p) {
+        for(int v : g[u]) {
+            if(v==p) continue;
+            dfs(v, u);
+            a[u] += a[v];
+        }
+    };
+    dfs(0, -1);
+
+    // cout<<g<<en;
+    // cout<<dist<<en;
+    // cout<<a<<en;
+
+    int res = 0;
+    f(i, n) {
+        ckmx(res, a[i] * (dist[i] - k));
+    }
+    cout<<res<<en;
 }

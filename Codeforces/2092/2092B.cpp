@@ -34,7 +34,6 @@ struct DSU{ vi p,sz; explicit
          DSU(const int n){p.resize(n),sz.resize(n,1),iota(all(p),0);}
     int  par(int x){return x==p[x]?x:p[x]=par(p[x]);}
     void merge(int x,int y){x=par(x),y=par(y);if(x!=y){if(sz[x]<sz[y])swap(x,y);p[y]=x,sz[x]+=sz[y];}}
-    bool same(int x, int y){ return par(x) == par(y); }
 };
 tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; function<T(T, T)> c;
     Segtree() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
@@ -71,71 +70,35 @@ tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 #define str string
     int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
-int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
-inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
+int ceil(int num, int den) { return (num+den-1) / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
+inline int add(int a, int b, int m = MOD) { return (a+b < m ? a+b : a+b-m); } inline int mult(int a, int b, int m = MOD) { return (a*b < m ? a*b : a*b % m); }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
+pair<vi, vi> initFact(int n) { vi fa(n+1), ifa(n+1); fa[0] = 1; fe(i, n) fa[i] = mult(fa[i-1], i); ifa[n] = fastPow(fa[n], MOD-2, MOD); repr(i, n-1, 0) ifa[i] = mult(ifa[i+1], i+1); return {fa, ifa}; }
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind& operator>>(T &x) { cin >> x; --x; return *this; }} cind;
 
-
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    str a, b;
+    cin>>a>>b;
+    int x=0, y=0;
+    f(i, n) {
+        if(i & 1) {
+            x += b[i]=='1';
+            y += a[i]=='1';
+        } else {
+            x += a[i]=='1';
+            y += b[i]=='1';
+        }
+    }
+    if(x <= n/2 && y <= n-n/2) cout<<"YES"<<en;
+    else cout<<"NO"<<en;
 }
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    int n, m, x, k;
-    cin>>n>>m>>x>>k;
-    vvi grid(n, vi(m, 0));
-    f(i, x) {
-        int a, b; cin>>a>>b;
-        grid[a-1][b-1]++;
-    }
-    int res = INFL;
-    auto solve = [&]() {
-        // Prefix minimum perimeters
-        vi pre(m+1, INFL), suf(m+1, INFL);
-        f(i, n) {
-            vi jsum(m+1, 0);
-            rep(ii, i, n-1) {
-                int j = 0;
-                int curr = 0;
-                f(jj, m) {
-                    jsum[jj] += grid[ii][jj];
-                    curr += jsum[jj];
-                    // Messy implementation to get the end <= k sum
-                    while(curr >= k) {
-                        curr -= jsum[j++];
-                        if(curr < k) {
-                            curr += jsum[--j]; break;
-                        }
-                    }
-                    if(curr == k) {
-                        int peri = 2*(ii-i+1 + jj-j+1);
-                        ckmn(pre[jj+1], peri); ckmn(suf[j+1], peri);
-                    }
-                }
-            }
-        }
-        f(i, m) ckmn(pre[i+1], pre[i]);
-        repr(i, m-1, 0) ckmn(suf[i], suf[i+1]);
-        f(i, m) {
-            // if(pre[i] + suf[i+1] < res) {
-            //     cout<<pre[i]<<sp<<suf[i+1]<<sp<<i<<sp<<i+1<<en;
-            // }
-            ckmn(res, pre[i] + suf[i+1]);
-        }
-    };
-    solve();
-    vvi rotated(m, vi(n, 0));
-    f(i, n) f(j, m) rotated[j][i] = grid[i][j];
-    grid = rotated; swap(n, m);
-    // cout<<"rotated"<<en;
-    solve();
-
-    if(res == INFL) cout<<"NO"<<en;
-    else cout<<res<<en;
+    int t; cin>>t; f(i, t) solve();
 }

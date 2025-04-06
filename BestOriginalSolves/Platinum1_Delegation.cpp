@@ -72,28 +72,65 @@ tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  
 #define str string
     int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr int INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
 int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
-inline int mult(int a, int b, int m = MOD) {return (a % m * b % m) % m;} inline int add(int a, int b, int m = MOD) {return (a % m+b % m) % m;}
+inline int add(int a, int b, int m = MOD) { return (a+b < m ? a+b : a+b-m); } inline int mult(int a, int b, int m = MOD) { return (a*b < m ? a*b : a*b % m); }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
+pair<vi, vi> initFact(int n) { vi fa(n+1), ifa(n+1); fa[0] = 1; fe(i, n) fa[i] = mult(fa[i-1], i); ifa[n] = fastPow(fa[n], MOD-2, MOD); repr(i, n-1, 0) ifa[i] = mult(ifa[i+1], i+1); return {fa, ifa}; }
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 void read(vi &v) { for (auto &x : v) cin >> x; } struct cind { tpl_ <tn_ T> cind& operator>>(T &x) { cin >> x; --x; return *this; }} cind;
 
 
-ll t, n, m, k, a, b;
+int t, k, n, m;
+void solve() {
+    
+}
 
+// 2020
 int32_t main() {
-    cin>>n>>k;
-    vi a(n); f(i, n) cin>>a[i];
-    int l=0, cnt=0;
-    map<int, int> mp;
-    f(r, n) {
-        mp[a[r]]++;
-        while(mp.size() > k) {
-            if(--mp[a[l]] == 0) mp.erase(a[l]);
-            l++;
-        }
-        cnt += r-l+1;
+    setIO("deleg");
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+    cin>>n;
+    vvi adj(n);
+    f(i, n-1) {
+        int u, v; cin>>u>>v; u--; v--;
+        adj[u].pb(v); adj[v].pb(u);
     }
-    cout<<cnt<<en;
+
+    int res = lstTrue(1LL, n-1, [&](int x) {
+        vi dp(n, 0);
+        function<bool(int, int)> dfs = [&](int u, int p) {
+            vi a;
+            for(int v : adj[u]) {
+                if(v==p) continue;
+                if(!dfs(v, u)) return false;
+                a.pb(dp[v]+1);
+            }
+            // Check if pairwise sum >= x still holds over a, without index i
+            auto check = [&](int i) {
+                int l=0, r=a.size()-1;
+                while(l < r) {
+                    if(l==i) l++;
+                    if(r==i) r--;
+                    if(a[l++] + a[r--] < x) return false;
+                }
+                return true;
+            };
+            sort(all(a));
+            if(u==0) {
+                if(a.size() & 1) a.pb(0);
+                sort(all(a));
+                return check(-1);
+            }
+            if(a.size() % 2 == 0) a.pb(0);
+            sort(all(a));
+
+            int best = lstTrue(0LL, ll(a.size()-1), check);
+            if(best == -1) return false;
+            dp[u] = a[best];
+            return true;
+        };
+        return dfs(0, -1);
+    });
+    cout<<res<<en;
 }

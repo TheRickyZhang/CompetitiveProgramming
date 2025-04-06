@@ -13,6 +13,7 @@ using namespace std;
 #define trav(a, x) for (auto &a : x)
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
+void setIO(const string &name = "") {ios_base::sync_with_stdio(false); cin.tie(nullptr); if (!name.empty()) { freopen((name + ".in").c_str(), "r", stdin); freopen((name + ".out").c_str(), "w", stdout); }}
 
 #define int long long
 tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=tuple<int,int,int>;  using t4=tuple<int,int,int,int>;
@@ -22,7 +23,6 @@ tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_
 tpl_<class It, class T>     auto leq_bound  (It first, It last, T val) { auto it = upper_bound(first, last, val); return it != first ? prev(it) : last;} tpl_<class C, class T>auto leq_bound(C& c, T val) {auto it = c.upper_bound(val);return it != c.begin() ? prev(it) : c.end();}
 tpl_<class It, class T>     auto less_bound (It first, It last, T val) {auto it = lower_bound(first, last, val);return it != first ? prev(it) : last; }tpl_<class C, class T>auto less_bound(C& c, T val) {auto it = c.lower_bound(val);return it != c.begin() ? prev(it) : c.end();}
 
-void setIO(const string &name = "") {ios_base::sync_with_stdio(false); cin.tie(nullptr); if (!name.empty()) { freopen((name + ".in").c_str(), "r", stdin); freopen((name + ".out").c_str(), "w", stdout); }}
 tpl_<tn_ A, tn_ B> ostream& operator<<(ostream& os, const pair<A, B>& p){ return os<<"("<<p.ff<<", "<<p.ss<<")";}
 tpl_<tn_ A> ostream&        operator<<(ostream& os, const v<v<A>>& v)   { for (const auto& row : v) { os << "{ "; for (const auto& elem : row) {os<<elem<<" ";}os<<"}"; os<<"\n";} return os;}
 tpl_<tn_ K, tn_ T> ostream& operator<<(ostream& os, const map<K, T>& m) { os << "{"; string sep; for (const auto& kv : m) os << sep << kv.ff << ": " << kv.ss, sep = ", "; return os << "}"; }
@@ -86,11 +86,65 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int t, k, n, m;
-void solve() {
-    
+void solve(){
+    int n, m, k; cin >> n >> m >> k;
+    vi nums(n); read(nums);
+    vector<v<t4>> up(n); up.assign(n, {});
+    f(i, k){
+        int a, b, c, d, w; cind >> a >> b >> c >> d; cin >> w;
+        up[a].pb({b, c, d, w});
+    }
+    vector<map<int,int>> dp(n);
+    dp[0][0] = 0;
+    int ans = -INFL;
+    rep(i, 0, n - 1){
+        if(dp[i].empty()) continue;
+        vector<pii> st;
+        for(auto &p : dp[i]) st.pb(p);
+        sort(all(st));
+        int sz = st.size();
+        vector<int> left(sz), right(sz);
+        left[0] = st[0].second;
+        rep(j, 1, sz - 1) {
+            int diff = st[j].first - st[j - 1].first;
+            left[j] = max(st[j].second, left[j - 1] - diff * nums[i]);
+        }
+        right[sz - 1] = left[sz - 1];
+        repr(j, sz - 2, 0){
+            int diff = st[j + 1].first - st[j].first;
+            right[j] = max(left[j], right[j + 1] - diff * nums[i]);
+        }
+        auto query = [&](int pos) -> int {
+            int best = -INFL;
+            auto it = lower_bound(all(st), make_pair(pos, -INFL));
+            if(it != st.end()){
+                int idx = it - st.begin();
+                ckmx(best, right[idx] - (st[idx].first - pos) * nums[i]);
+            }
+            if(it != st.begin()){
+                it--;
+                int idx = it - st.begin();
+                ckmx(best, right[idx] - (pos - st[idx].first) * nums[i]);
+            }
+            return best;
+        };
+        if(i == n - 1) ckmx(ans, query(m - 1));
+        for(auto &p : up[i]){
+            int b, c, d, w; tie(b, c, d, w) = p;
+            int cur = query(b);
+            if(cur == -INFL) continue;
+            ckmx(dp[c][d], cur + w);
+        }
+    }
+    cout << (ans == -INFL ? "NO ESCAPE" : to_string(ans)) << "\n";
 }
 
-int32_t main() {
+int32_t main(){
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin >> t; f(i, t) solve();
 }
+
+
+
+
+
