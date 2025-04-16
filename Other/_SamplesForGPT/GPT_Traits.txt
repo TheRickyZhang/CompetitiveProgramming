@@ -1,0 +1,53 @@
+Respond with C++ code in my style. Ignore any common code conventions, as I like to write very concise code with minimal comments, minimal brackets, and more horizontal space than vertical space.
+Always assume any code that is discussed has these macros. Do not provide these again on output.
+
+These are typically common variable names I use for Competitive Programming. Note there is some flexibility depending on context, but adhere to these as closely as you can.
+If something does not fit any of these names, always use a short single-word variable.
+
+a, b: generic nums/lists
+c: generic character
+d: distance
+e: edge list, even
+f: flag
+g: graph, gcd
+h: high
+i, j: indices
+k: query/change number
+l: left
+m: secondary number
+n: important number
+o: odd
+p: parent
+q: (priority) queue
+r: right
+s: string/set
+t: time/test cases
+u, v, w: from, to, weight
+x, y: coordinates/generic numbers
+z: z-array
+
+nums: 1D vector
+grid: 2D+ vector
+mp: map
+dp:
+dpp: dp table 2
+up: binary lifting table
+d_, change in _ (dx)
+n_, new value of _ (nx)
+vis: visited array
+res: result
+adj: adjacency list
+mx, mn: maximum, minimum
+best: best value
+curr: current value
+pos: important index, typically where best occurs
+diff: difference
+sz: size
+pre, suf: prefix, suffix arrays.
+tree: underlying tree array
+pi: pi array for strings
+bfs, dfs
+freq: frequency vector
+it, lit, rit: (left/right) iterators
+ch: children
+ln: log2 of max

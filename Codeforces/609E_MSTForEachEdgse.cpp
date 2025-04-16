@@ -71,13 +71,13 @@ template<typename Graph>
 tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
     function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
         for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
+            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}
+vvi binaryJump(const vi& par) {
     int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
     rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
-pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
-    int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
-    rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
-    } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
+tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(const vi &par,const vi &wt,F merge){int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), cost(n,vi(ln,0));
+    f(i,n){up[i][0]=par[i]; cost[i][0]=(par[i]==-1?0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==-1){up[i][j]=-1; cost[i][j]=cost[i][j-1];}
+        else{up[i][j]=up[p][j-1]; cost[i][j]=merge(cost[i][j-1],cost[p][j-1]);}}} return {up,cost};}
 int getLCA(const vvi& up,const vi& dep, int u, int v) {
     int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
@@ -107,5 +107,72 @@ void solve() {
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>m;
+    v<i4> edges;
+    f(i, m) {
+        int u, v, w; cind>>u>>v; cin>>w;
+        edges.pb({w, u, v, i});
+    }
+    sort(all(edges));
+    DSU d(n);
+    int cnt = 0;
+    int tot = 0;
+    vb good(m, false);
+    vvpii adj(n);
+    for(auto [w, u, v, i] : edges) {
+        if(d.same(u, v)) continue;
+        good[i] = true;
+        adj[u].pb({v, w});
+        adj[v].pb({u, w});
+        d.merge(u, v);
+        tot += w;
+        cnt++;
+    }
+    if(cnt != n-1) {
+        cout<<"HUH"<<en;
+    }
+    vi par(n), dist(n, 0), dep(n);
+    function<void(int, int, int)> dfs = [&](int u, int p, int d) {
+        par[u] = p, dep[u] = d;
+        for(auto [v, w] : adj[u]) {
+            if(v==p) continue;
+            dist[v] = w;
+            dfs(v, u, d+1);
+        }
+    };
+    dfs(0, -1, 0);
+    auto [up, wup] = binaryJumpW(par, dist, [&](int x, int y) {
+        return max(x, y);
+    });
+
+    vi res(m);
+    int ln = log2(n) + 1;
+    auto getLCAw = [&](int u, int v) {
+        if(dep[u]<dep[v]) swap(u, v);
+        int diff = dep[u]-dep[v];
+        int res = 0;
+        repr(j, ln-1, 0) {
+            if(diff & (1<<j)) {
+                ckmx(res, wup[u][j]);
+                u = up[u][j];
+            }
+        }
+        if(u==v) return res;
+        repr(j, ln-1, 0) {
+            if(up[u][j] != up[v][j]) {
+                ckmx(res, max(wup[u][j], wup[v][j]));
+                u = up[u][j], v = up[v][j];
+            }
+        }
+        ckmx(res, max(wup[u][0], wup[v][0]));
+        return res;
+    };
+    for(auto [w, u, v, i] : edges) {
+        if(good[i]) {
+            res[i] = tot;
+        } else {
+            res[i] = tot + w - getLCAw(u, v);
+        }
+    }
+    f(i, m) cout<<res[i]<<en;
 }

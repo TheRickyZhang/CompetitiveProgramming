@@ -67,17 +67,16 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-template<typename Graph>
-tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
+tpl_<tn_ Graph> tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
     function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
         for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
+            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}
+vvi binaryJump(const vi& par) {
     int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
     rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
-pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
-    int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
-    rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
-    } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
+tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(const vi &par,const vi &wt,F merge){int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), cost(n,vi(ln,0));
+    f(i,n){up[i][0]=par[i]; cost[i][0]=(par[i]==-1?0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==-1){up[i][j]=-1; cost[i][j]=cost[i][j-1];}
+    else{up[i][j]=up[p][j-1]; cost[i][j]=merge(cost[i][j-1],cost[p][j-1]);}}} return {up,cost};}
 int getLCA(const vvi& up,const vi& dep, int u, int v) {
     int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
@@ -102,10 +101,32 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>m;
+    vvpii adj(n);
+    vi ww(n); read(ww);
+    read(adj, n-1);
+
+    vi best(n, 0);
+    autotree dfs = [&](int u, int p) {
+        for(auto [v, w] : adj[u]) {
+            if(v==p) continue;
+            dfs(v, u);
+            if(best[v] - 2 * w > 0) best[u] += (best[v]-2*w);
+        }
+    };
+    dfs(0, -1);
+
+    auto [par, dep, sz] = getAdj(adj);
+    vvi up = binaryJump(par);
+    f(i, m) {
+        int u, v; cind>>u>>v;
+        int p = getLCA(up, dep, u, v);
+
+    }
+
 }

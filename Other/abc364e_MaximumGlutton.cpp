@@ -15,7 +15,7 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 
 #define int long long
-tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 4>;
+tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=tuple<int,int,int>;  using t4=tuple<int,int,int,int>;
 tpl_<tn_ T>       using vv = v<v<T>>;  using vi=v<int>;    using vb=v<bool>; using vvb=v<vb>; using vs=v<string>;  using vvi=v<vi>; using vll=v<ll>;using vvll=v<vll>; using vpii=v<pii>; using vvpii=v<vpii>;
 tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>;  tpl_<tn_ K,tn_ T>    using rmap=map<K,T,greater<K>>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>; tpl_<tn_ T>using rmset=multiset<T,greater<T>>;
 tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;      using str = string;
@@ -67,20 +67,6 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-template<typename Graph>
-tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
-    function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
-        for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
-    int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
-    rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
-pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
-    int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
-    rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
-    } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
-int getLCA(const vvi& up,const vi& dep, int u, int v) {
-    int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
-    if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
 tpl_<class T, class U> T fstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) r = m; else l = m+1; } return l; }
 tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) l = m+1; else r = m; } return l-1; }
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
@@ -93,7 +79,6 @@ vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'
 int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 inline int add(int a, int b, int m = MOD) { return (a+b < m ? a+b : a+b-m); } inline int mult(int a, int b, int m = MOD) { return (a*b < m ? a*b : a*b % m); }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
-vi sieveSPF(int n) {vi spf(n+1); fe(i, n) spf[i] = i; for(int i = 2; i*i<=n; ++i) { if(spf[i] != i) continue;for(int j = i*i; j <= n; j += i) {if(spf[j]==j) spf[j]=i;}}return spf;}
 pair<vi, vi> initFact(int n) { vi fa(n+1), ifa(n+1); fa[0] = 1; fe(i, n) fa[i] = mult(fa[i-1], i); ifa[n] = fastPow(fa[n], MOD-2, MOD); repr(i, n-1, 0) ifa[i] = mult(ifa[i+1], i+1); return {fa, ifa}; }
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
@@ -107,5 +92,59 @@ void solve() {
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+
+    int xx, yy; cin>>n>>xx>>yy;
+    vpii a(n); read(a);
+    vvi dp(n+1, vi(xx+1, INFL));
+    dp[0][0] = 0;
+    vvi dpp(n+1, vi(xx+1));
+    f(i, n) {
+        auto [x, y] = a[i];
+        dpp = dp;
+        rep(j, 0, i) {
+            rep(k, 0, xx) {
+                // Take
+                if(x + k <= xx && dp[j][k] + y <= yy) {
+                    ckmn(dpp[j+1][k+x], dp[j][k] + y);
+                }
+            }
+        }
+        dp = dpp;
+    }
+
+    int res = 0;
+    repr(j, n, 0) {
+        rep(k, 0, xx) {
+            if(dp[j][k] != INFL) {
+                res = j; goto end;
+            }
+        }
+    }
+    end:
+    cout<<min(res+1, n)<<en;
+
+    // This approach is correct but TLEs. Since n << sweet, salt, we can reframe DP to use more n states -> shift larger states to values
+    // int xx, yy; cin>>n>>xx>>yy;
+    // map<pii, int> dp;
+    // dp[{xx, yy}] = 0;
+    // int res = 0;
+    // f(i, n) {
+    //     int a, b; cin>>a>>b;
+    //     v<iii> temp;
+    //     for(auto [p, val] : dp) {
+    //         auto [x, y] = p;
+    //         if(x - a >= 0 && y - b >= 0) {
+    //             temp.pb({x-a, y-b, val+1});
+    //         }
+    //     }
+    //     for(auto [x, y, val] : temp) {
+    //         if(!dp.count({x, y})) dp[{x, y}] = val;
+    //         else ckmx(dp[{x, y}], val);
+    //         if(dp[{x, y}] > res) {
+    //             res = dp[{x, y}];
+    //             // cout<<x<<sp<<y<<sp<<res<<en;
+    //         }
+    //     }
+    // }
+    // cout<<min(res+1, n)<<en;
 }

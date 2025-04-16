@@ -15,7 +15,7 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 
 #define int long long
-tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 4>;
+tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 3>;
 tpl_<tn_ T>       using vv = v<v<T>>;  using vi=v<int>;    using vb=v<bool>; using vvb=v<vb>; using vs=v<string>;  using vvi=v<vi>; using vll=v<ll>;using vvll=v<vll>; using vpii=v<pii>; using vvpii=v<vpii>;
 tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>;  tpl_<tn_ K,tn_ T>    using rmap=map<K,T,greater<K>>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>; tpl_<tn_ T>using rmset=multiset<T,greater<T>>;
 tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;      using str = string;
@@ -67,21 +67,16 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-template<typename Graph>
-tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
-    function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
-        for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
+tuple<vi, vi, vi> getAdj(vvi& adj, int a = 0){int n=adj.size(); vi par(n), dep(n), sz(n,0);
+    function<void(int,int,int)> dfs=[&](int u, int p, int d){ par[u]=p, dep[u]=d, sz[u]=1;
+        for(int v:adj[u]) if(v!=p){ dfs(v,u,d+1); sz[u]+=sz[v]; }}; dfs(a,-1,0); return {dep,par,sz};}
+vvi binaryJump(const vi& par) {
     int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
-    rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
+    rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}tpl_<class T, class U> T fstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) r = m; else l = m+1; } return l; }
 pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
     int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
     rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
     } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
-int getLCA(const vvi& up,const vi& dep, int u, int v) {
-    int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
-    if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
-tpl_<class T, class U> T fstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) r = m; else l = m+1; } return l; }
 tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) l = m+1; else r = m; } return l-1; }
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 
@@ -99,13 +94,83 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
-
 int t, k, n, m;
 void solve() {
-    
+
 }
 
 int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
+    setIO("gathering");
+    cin >> n >> k;
+    vvi adj(n);
+    vi in(n, 0), out(n, 0);
+    vi deg(n, 0);
+    map<int, vi> mp;
+
+    f(i, n-1) {
+        int u, v; cind >> u >> v;
+        adj[u].pb(v); adj[v].pb(u);
+    }
+    f(i, n) deg[i] = adj[i].size();
+    f(i, k) {
+        int u, v; cind >> u >> v;
+        mp[u].pb(v);
+        out[u]++; in[v]++;
+    }
+    vb bad(n, false);
+    f(i, n) {
+        if(out[i] > 0) bad[i] = true;
+    }
+
+    queue<int> q;
+    vb used(n, false);
+    f(i, n) if(deg[i] == 1 && in[i] == 0) {
+        q.push(i); used[i] = true;
+    }
+    int last = -1;
+    int cnt = 0;
+    while(!q.empty()) {
+        int u = q.front(); q.pop();
+        cnt++;
+        last = u;
+        // Process constraint outgoing from u:
+        if(mp.count(u)) {
+            for(int v : mp[u]) {
+                in[v]--;
+                // Minimal change: if v becomes free due to constraint update, add it to queue.
+                if(!used[v] && in[v] == 0 && deg[v] == 1) {
+                    q.push(v);
+                    used[v] = true;
+                }
+            }
+        }
+        // Update neighbors (edge removal)
+        for(int v : adj[u]) {
+            if(used[v]) continue;
+            if(in[v] == 0 && --deg[v] == 1) {
+                q.push(v);
+                used[v] = true;
+            }
+        }
+    }
+    // Minimal change: Uncomment the feasibility check.
+    if(cnt != n) {
+        f(i, n) cout << 0 << en;
+        return 0;
+    }
+
+    vb res(n, false);
+    // DFS for the connected component in last, ignoring bad nodes.
+    autotree dfs = [&](int u, int p) {
+        res[u] = true;
+        for(int v : adj[u]) {
+            if(v == p || bad[v]) continue;
+            dfs(v, u);
+        }
+    };
+    dfs(last, -1);
+    f(i, n) {
+        if(res[i]) cout << 1 << en;
+        else cout << 0 << en;
+    }
 }

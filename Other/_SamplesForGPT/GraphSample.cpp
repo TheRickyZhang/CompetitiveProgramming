@@ -27,9 +27,9 @@ struct pairHash { template <class T1, class T2> size_t operator()(const pair<T1,
 struct vectorHash { template <class T> size_t operator()(const vector<T>& v) const { size_t hashValue = 0; for (const T& i : v) hashValue ^= hash<T>{}(i) + 0x9e3779b9 + (hashValue<<6) + (hashValue >> 2); return hashValue; } };
 auto check = [](auto y, auto x, auto m, auto n) { return y >= 0 && y < m && x >= 0 && x < n; };
 
-int n, m, a, b;
-int main() {
-    cin>>n>>m; n;
+int n, m, k;
+int32_t main() {
+    cin>>n>>m;
     vi c(n+1, -1);
     vi in(n+1, 0);
     vvi adj(n+1);

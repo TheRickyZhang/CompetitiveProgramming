@@ -102,10 +102,14 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    vi a(n+1); f(i, n) cin>>a[i];
+    a[n] = a[0];
+    fe(i, n) cout<<a[i]<<sp;
+    cout<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

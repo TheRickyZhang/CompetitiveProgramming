@@ -102,10 +102,46 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>m;
+    vvi adj(n), radj(n);
+    f(i, n-1) adj[i].pb(i+1);
+    f(i, m) {
+        int u, v; cind>>u>>v;
+        adj[u].pb(v);
+        radj[v].pb(u);
+    }
+    vi dist(n, INFL);
+    queue<pii> q;
+    dist[0] = 0; q.push({0, 0});
+    while(!q.empty()) {
+        auto [u, t] = q.front(); q.pop();
+        for(int v : adj[u]) {
+            if(dist[v] == INFL) {
+                dist[v] = dist[u] + 1;
+                q.push({v, t+1});
+            }
+        }
+    }
+
+    vvi rem(n);
+    vb res(n-1, false);
+    multiset<int> s;
+    repr(i, n-1, 0) {
+        for(int j : radj[i]) {
+            int x = i - dist[j] - 1; // Note the -1, since dist represents when elsie can leave, not when arrives
+            s.insert(x), rem[j].pb(x);
+        }
+        for(int x : rem[i]) s.erase(s.find(x));
+        if(i < n-1) {
+            int best = (s.empty() ? -1 : *s.rbegin());
+            if(i >= best) res[i] = true;
+        }
+    }
+    f(i, n-1) cout<<(res[i] ? '1' : '0');
+    cout<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

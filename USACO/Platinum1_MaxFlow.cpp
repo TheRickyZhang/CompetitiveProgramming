@@ -15,7 +15,7 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 
 #define int long long
-tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 4>;
+tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 3>;
 tpl_<tn_ T>       using vv = v<v<T>>;  using vi=v<int>;    using vb=v<bool>; using vvb=v<vb>; using vs=v<string>;  using vvi=v<vi>; using vll=v<ll>;using vvll=v<vll>; using vpii=v<pii>; using vvpii=v<vpii>;
 tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>;  tpl_<tn_ K,tn_ T>    using rmap=map<K,T,greater<K>>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>; tpl_<tn_ T>using rmset=multiset<T,greater<T>>;
 tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;      using str = string;
@@ -67,17 +67,12 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-template<typename Graph>
-tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
-    function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
-        for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
+tuple<vi, vi, vi> getAdj(vvi& adj, int a = 0){int n=adj.size(); vi par(n), dep(n), sz(n,0);
+    function<void(int,int,int)> dfs=[&](int u, int p, int d){ par[u]=p, dep[u]=d, sz[u]=1;
+        for(int v:adj[u]) if(v!=p){ dfs(v,u,d+1); sz[u]+=sz[v]; }}; dfs(a,-1,0); return {dep,par,sz};}
+vvi binaryJump(const vi& par) {
     int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
     rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
-pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
-    int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
-    rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
-    } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
 int getLCA(const vvi& up,const vi& dep, int u, int v) {
     int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
@@ -101,11 +96,31 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int t, k, n, m;
-void solve() {
-    
-}
 
 int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
+    setIO("maxflow");
+    cin>>n>>k;
+    vvi adj(n);
+    read(adj, n-1);
+    auto [dep, par, sz] = getAdj(adj);
+    vvi up = binaryJump(par);
+    vi a(n, 0), b(n, 0);
+    f(i, k) {
+        int u, v; cind>>u>>v;
+        int p = getLCA(up, dep, u, v);
+        a[u]++, a[v]++;
+        b[p] -= 2;
+    }
+    int res = 0;
+    autotree dfs = [&](int u, int p) {
+        for(int v : adj[u]) {
+            if(v==p) continue;
+            dfs(v, u);
+            a[u] += a[v];
+        }
+        ckmx(res, a[u] + b[u] / 2);
+        a[u] += b[u];
+    };
+    dfs(0, -1);
+    cout<<res<<en;
 }

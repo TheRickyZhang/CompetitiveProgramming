@@ -15,7 +15,7 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 
 #define int long long
-tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 4>;
+tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 3>;
 tpl_<tn_ T>       using vv = v<v<T>>;  using vi=v<int>;    using vb=v<bool>; using vvb=v<vb>; using vs=v<string>;  using vvi=v<vi>; using vll=v<ll>;using vvll=v<vll>; using vpii=v<pii>; using vvpii=v<vpii>;
 tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>;  tpl_<tn_ K,tn_ T>    using rmap=map<K,T,greater<K>>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>; tpl_<tn_ T>using rmset=multiset<T,greater<T>>;
 tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;      using str = string;
@@ -67,20 +67,6 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-template<typename Graph>
-tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
-    function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
-        for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
-    int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
-    rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
-pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
-    int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
-    rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
-    } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
-int getLCA(const vvi& up,const vi& dep, int u, int v) {
-    int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
-    if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
 tpl_<class T, class U> T fstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) r = m; else l = m+1; } return l; }
 tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) l = m+1; else r = m; } return l-1; }
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
@@ -89,7 +75,7 @@ struct pairHash{tpl_<class T1,class T2>size_t operator()(const pair<T1,T2>&p)con
 typedef function<void(int, int)> autotree; auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}}; auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-    int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr ll INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
+    int N = 1000000; int MOD=1e9+7; constexpr int INF=1e9; constexpr ll INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
 int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; } int fastPow(int a, int b, int mod = MOD) { int res = 1; a %= mod; while (b > 0) { if (b & 1) res = res * a % mod; a = a * a % mod; b >>= 1; } return res; } int fastLog(int a, int b) {int res = 0; int p = 1; while (p <= b / a) { p *= a; res++;} return res; }
 inline int add(int a, int b, int m = MOD) { return (a+b < m ? a+b : a+b-m); } inline int mult(int a, int b, int m = MOD) { return (a*b < m ? a*b : a*b % m); }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes;for(int i=2;i<=n;++i)if(p[i])primes.pb(i);return primes;}
@@ -105,7 +91,82 @@ void solve() {
     
 }
 
+// The actual solution constructs a hash to mirror the MOD 3 property
+// Let x, y, z be p^0, p^1, p^2. Then if z = x XOR y, then XOR(x, y, z) = 0.
+// So we can do range XORS for queries
+
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>k;
+    int MOD2 = MOD+2;
+
+    vi spf = sieveSPF(N);
+    vi primes = sieveList(N);
+
+    // this inverse mapping doesn't work
+    map<int, int> roota, rootb;
+    for(int p : primes) {
+        int x = p*p*p % MOD, y = p*p*p % MOD2;
+        roota[x] = p, rootb[y] = p;
+    }
+
+    vi pre(n+1, 1), pre2(n+1, 1);
+    f(i, n) {
+        int a=1, b=1;
+        int x; cin>>x;
+        while(x > 1) {
+            int p = spf[x];
+            int cnt = 0;
+            while(x % p == 0) {
+                x /= p; cnt++;
+            }
+            cnt %= 3;
+            f(_, cnt) {
+                a = mult(a, p, MOD);
+                b = mult(b, p, MOD2);
+            }
+        }
+        pre[i+1] = mult(pre[i], a, MOD);
+        pre2[i+1] = mult(pre2[i], b, MOD2);
+    }
+    f(i, k) {
+        int l, r; cind>>l>>r;
+        int a = mult(pre[r+1], fastPow(pre[l], MOD-2, MOD), MOD);
+        int b = mult(pre2[r+1], fastPow(pre2[l], MOD2-2, MOD2), MOD2);
+        cout<<a<<sp<<b<<en;
+        if(roota.count(a) && rootb.count(b) && roota[a] == rootb[b]) {
+            cout<<"Yes"<<en;
+        }
+        else cout<<"No"<<en;
+    }
+
+    // vi primes = sieveList(N);
+    // int sz = primes.size();
+    // map<int, int> mp;
+    // f(i, sz) mp[primes[i]] = i;
+    //
+    // vvi pre(n+1, vi(sz, 0));
+    // f(i, n) {
+    //     pre[i+1] = pre[i];
+    //     int x; cin>>x;
+    //     while(x > 1) {
+    //         int p = spf[x];
+    //         int pos = mp[p];
+    //         // cout<<x<<sp<<p<<en;
+    //         while(x % p == 0) {
+    //             x /= p, pre[i+1][pos]++;
+    //         }
+    //     }
+    // }
+    // auto query = [&](int l, int r) {
+    //     f(i, sz) {
+    //         if((pre[r+1][i] - pre[l][i]) % 3 != 0) return false;
+    //     }
+    //     return true;
+    // };
+    // f(i, k) {
+    //     int l, r; cind>>l>>r;
+    //     if(query(l, r)) cout<<"Yes"<<en;
+    //     else cout<<"No"<<en;
+    // }
 }
