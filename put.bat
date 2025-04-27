@@ -1,45 +1,69 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal EnableExtensions EnableDelayedExpansion
 
-rem Process only *.cpp files in the current directory.
+rem ————————————————
+rem No‑arg: process every .cpp via :process
 if "%~1"=="" (
-    for %%F in (*.cpp) do call :process "%%F"
-    goto :eof
-) else (
-    set "prefix=%~1"
-    set "dest=Codeforces\%prefix%"
-    if not exist "%dest%" mkdir "%dest%"
-    move /y "%prefix%*.cpp" "%dest%"
+    for %%F in (*.cpp) do (
+        call :process "%%F"
+    )
     goto :eof
 )
 
+rem ————————————————
+rem One‑arg: move all %prefix%*.cpp into the proper Codeforces subfolder
+set "prefix=%~1"
+
+rem compute 50‑range
+set /a start=(prefix/50)*50
+set /a end=start+49
+set "rangeFolder=%start%-%end%"
+
+rem target dir: Codeforces\start-end\prefix
+set "contestDir=Codeforces\%rangeFolder%\%prefix%"
+
+rem mkdir -p equivalent
+mkdir "%contestDir%" 2>nul
+
+rem move the files
+move /y "%prefix%*.cpp" "%contestDir%" >nul
+if errorlevel 1 (
+    echo [err] No files matching "%prefix%*.cpp"
+) else (
+    echo [success] Moved "%prefix%*.cpp" to "%contestDir%"
+)
+goto :eof
+
+
 :process
+rem %~1 = full filename, %~n1 = basename
 set "file=%~1"
 set "name=%~n1"
 
-rem USACO: if name starts with Bronze, Silver, Gold, or Platinum
-echo !name! | findstr /R /I "^Bronze ^Silver ^Gold ^Platinum" >nul
+rem — USACO: Bronze/Silver/Gold/Platinum*
+echo !name! | findstr /R /C:"^Bronze" /C:"^Silver" /C:"^Gold" /C:"^Platinum" >nul
 if not errorlevel 1 (
-    if not exist "USACO" mkdir "USACO"
-    move /y "%~1" "USACO"
+    mkdir "USACO" 2>nul
+    move /y "%file%" "USACO" >nul
+    echo [USACO] Moved "%file%" → USACO
     goto :eof
 )
 
-rem Codeforces: if name starts with exactly 3, 4, or 6 digits then a letter.
-echo !name! | findstr /R /I "^[0-9][0-9][0-9][A-Za-z]" >nul && goto codeforces
-echo !name! | findstr /R /I "^[0-9][0-9][0-9][0-9][A-Za-z]" >nul && goto codeforces
-echo !name! | findstr /R /I "^[0-9][0-9][0-9][0-9][0-9][0-9][A-Za-z]" >nul && goto codeforces
-goto checkcses
+rem — Codeforces: 3‑ or 4‑digit contest ID + letter (e.g. 123A or 2087B)
+echo !name! | findstr /R /C:"^[0-9][0-9][0-9][A-Za-z]" /C:"^[0-9][0-9][0-9][0-9][A-Za-z]" >nul
+if not errorlevel 1 (
+    mkdir "Codeforces" 2>nul
+    move /y "%file%" "Codeforces" >nul
+    echo [CF] Moved "%file%" → Codeforces
+    goto :eof
+)
 
-:codeforces
-if not exist "Codeforces" mkdir "Codeforces"
-move /y "%~1" "Codeforces"
-goto :eof
-
-:checkcses
+rem — CSES: any dash in the basename
 echo !name! | findstr /C:"-" >nul
 if not errorlevel 1 (
-    if not exist "CSES" mkdir "CSES"
-    move /y "%~1" "CSES"
+    mkdir "CSES" 2>nul
+    move /y "%file%" "CSES" >nul
+    echo [CSES] Moved "%file%" → CSES
 )
+
 goto :eof

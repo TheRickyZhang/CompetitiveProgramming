@@ -98,27 +98,49 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
+    setIO();
     cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
+    vi a(n); read(a);
+
+    vvi dp(n, vi(n, -INFL)); // When i + j === parity(n-1), first player's turn
+    // fe(x,n){
+    //     bool f = (x%2==n%2);
+    //     f(i,n-x+1){
+    //         int j = i+x-1;
+    //         if(x == 1) {
+    //             if(f) dp[i][j] = a[i];
+    //             else dp[i][j] = 0;
+    //         } else if(f){
+    //             ckmx(dp[i][j], a[i] + (i+1<n ? dp[i+1][j] : 0));
+    //             ckmx(dp[i][j], a[j] + (j-1>=0 ? dp[i][j-1] : 0));
+    //         } else {
+    //             dp[i][j] = min(dp[i+1][j], dp[i][j-1]);
+    //         }
+    //     }
+    // }
+
+    // ALT Version: No need for any parity checks. We always play optimally from the POV of the current player
+    fe(x, n) {
+        f(i, n-x+1) {
+            int j = i+x-1;
+            if(x == 1) {
+                dp[i][j] = a[i];
+            } else {
+                ckmx(dp[i][j], max(a[i] - dp[i+1][j], a[j] - dp[i][j-1]));
             }
         }
     }
-    cout<<dp[n-1][n-1]<<en;
+    // Since we then have the best diff p1 can achieve, do:
+    int tot = accumulate(all(a), 0LL);
+    cout<<(tot + dp[0][n-1])/2<<en;
+
+    // cout<<dp<<en;
+    // cout<<dp[0][n-1]<<en;
 }

@@ -24,8 +24,8 @@ tpl_<class It, class T>     auto less_bound (It first, It last, T val) {auto it 
 
 void setIO(const string &name = "") {ios_base::sync_with_stdio(false); cin.tie(nullptr); if (!name.empty()) { freopen((name + ".in").c_str(), "r", stdin); freopen((name + ".out").c_str(), "w", stdout); }}
 tpl_<tn_ A, tn_ B> ostream& operator<<(ostream& os, const pair<A, B>& p){ return os<<"("<<p.ff<<", "<<p.ss<<")";}
-tpl_<tn_ A> ostream&        operator<<(ostream& os, const v<v<A>>& v)   { for (const auto& row : v) { os << "{ "; for (const auto& elem : row) {os<<elem<<" ";}os<<"}"; os<<"\n";} return os;}
-tpl_<tn_ K, tn_ T> ostream& operator<<(ostream& os, const map<K, T>& m) { os << "{"; string sep; for (const auto& kv : m) os << sep << kv.ff << ": " << kv.ss, sep = ", "; return os << "}"; }
+tpl_<tn_ A> ostream&        operator<<(ostream& os, const v<v<A>>& v)   { for (const auto& row : v) { os<<"{ "; for (const auto& elem : row) {os<<elem<<" ";}os<<"}"; os<<"\n";} return os;}
+tpl_<tn_ K, tn_ T> ostream& operator<<(ostream& os, const map<K, T>& m) { os<<"{"; string sep; for (const auto& kv : m) os<<sep<<kv.ff<<": "<<kv.ss, sep = ", "; return os<<"}"; }
 tpl_<tn_ C, tn_ T = enable_if_t<!is_same_v<C, string>, typename C::value_type>> ostream& operator<<(ostream& os, const C& v) { os<<"{"; string sep; for(const T& x : v) os<<sep<<x, sep=", "; return os<<"}";}
 struct cind{template<typename T> cind& operator>>(T &x){cin>>x;--x;return *this;}} cind;
 void read(vi &v){for(auto &x:v)cin>>x;} void read(vpii &v){for(auto &p:v)cin>>p.first>>p.second;} void read(vvi &mat){for(auto &r:mat)for(auto &x:r)cin>>x;}
@@ -67,16 +67,17 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-tpl_<tn_ Graph> tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
+template<typename Graph>
+tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
     function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
         for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}
-vvi binaryJump(const vi& par) {
+            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
     int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
     rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
-tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(const vi &par,const vi &wt,F merge){int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), cost(n,vi(ln,0));
-    f(i,n){up[i][0]=par[i]; cost[i][0]=(par[i]==-1?0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==-1){up[i][j]=-1; cost[i][j]=cost[i][j-1];}
-    else{up[i][j]=up[p][j-1]; cost[i][j]=merge(cost[i][j-1],cost[p][j-1]);}}} return {up,cost};}
+pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
+    int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
+    rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
+    } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
 int getLCA(const vvi& up,const vi& dep, int u, int v) {
     int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
@@ -98,27 +99,128 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
-int t, k, n, m;
-void solve() {
-    
+
+int t, k, n, m, q;
+const int MAX_N = 1e5 + 5;
+int a[MAX_N], p[MAX_N];
+bool canFormTwoTriangles(int l, int r) {
+    int t = 0;
+    for (int i = l; i <= r; i++)
+        p[++t] = a[i];
+    sort(p + 1, p + t + 1);
+    for (int i = 1; i <= t - 5; i++)
+        for (int j = i + 1; j <= i + 5; j++)
+            for (int k = j + 1; k <= i + 5; k++) {
+                int q[4], c = 0;
+                for (int m = i + 1; m <= i + 5; m++)
+                    if (m != j && m != k)
+                        q[++c] = p[m];
+                if (p[i] + p[j] > p[k] && q[1] + q[2] > q[3])
+                    return true;
+            }
+    int triangleCount = 0;
+    for (int i = 1; i <= t - 2; i++)
+        if (p[i] + p[i + 1] > p[i + 2]) {
+            i += 2;
+            triangleCount++;
+        }
+    return triangleCount > 1;
+}
+int32_t main() {
+    cin >> n >> q;
+    for (int i = 1; i <= n; i++)
+        cin >> a[i];
+    while (q--) {
+        int l, r;
+        cin >> l >> r;
+        if (r - l + 1 >= 48 || canFormTwoTriangles(l, r))
+            cout << "YES" << '\n';
+        else
+            cout << "NO" << '\n';
+    }
 }
 
-int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
-        }
-    }
-    cout<<dp[n-1][n-1]<<en;
-}
+// int32_t main() {
+    // setIO();
+    // cin>>n>>k;
+    // vi a(n); read(a);
+    // v<iii> queries;
+    // f(i, k) {
+    //     int l, r; cind>>l>>r;
+    //     queries.pb({l, r, i});
+    // }
+    // // SORT by Moe's order!!!
+    // int bl = sqrt(n);
+    // sort(all(queries), [&](iii a, iii b) {
+    //     auto [l1, r1, i1] = a;
+    //     auto [l2, r2, i2] = b;
+    //     int b1 = l1 / bl, b2 = l2 / bl;
+    //     if(b1 != b2) return b1 < b2;
+    //     return (b1 & 1) ? (r1 > r2) : (r1 < r2);
+    // });
+    // int l=0, r=-1;
+    // vi best = {-INFL, -INFL, -INFL, -INFL};
+    // mset<int> s;
+    // auto add = [&](int x) {
+    //     if(x > best[3]) {
+    //         best.pb(x);
+    //         sort(rall(best));
+    //         s.insert(best.back()); best.pop_back();
+    //     } else {
+    //         s.insert(x);
+    //     }
+    // };
+    // auto sub = [&](int x) {
+    //     int pos = -1;
+    //     f(i, 4) if(best[i] == x) pos = i;
+    //     if(pos == -1) {
+    //         if(!s.count(x)) {
+    //             cout<<"assertion failed "<<x<<en;
+    //         }
+    //         s.erase(s.find(x));
+    //     } else {
+    //         best[pos] = *s.rbegin();
+    //         sort(rall(best));
+    //         s.erase(*s.rbegin());
+    //     }
+    // };
+    // vb res(k, false);
+    // f(_, k) {
+    //     auto [nl, nr, pos] = queries[_];
+    //     while(r < nr) {
+    //         add(a[++r]);
+    //     }
+    //     while(l > nl) {
+    //         add(a[--l]);
+    //     }
+    //     while(l < nl) {
+    //         sub(a[l++]);
+    //     }
+    //     while(r > nr) {
+    //         sub(a[r--]);
+    //     }
+    //     function<pii(int, int)> range = [&](int x, int y) {
+    //         return make_pair(y-x+1, y+x-1);
+    //     };
+    //     auto find = [&](pii x, pii y) {
+    //         auto [l1, r1] = x;
+    //         auto [l2, r2] = y;
+    //         auto i = s.lower_bound(l1), j = s.lower_bound(l2);
+    //         if(i == s.end() || *i > r1) return false;
+    //         if(j == s.end() || *j > r2) return false;
+    //         if(i != j) return true;
+    //         auto k = next(i);
+    //         return k != s.end() && (*k <= r1 || *k <= r2);
+    //     };
+    //     if(find(range(best[3], best[2]), range(best[1], best[0])) ||
+    //         find(range(best[3], best[1]), range(best[2], best[0])) ||
+    //         find(range(best[3], best[0]), range(best[2], best[1]))) {
+    //         cout<<pos<<sp<<best<<en;
+    //         res[pos] = true;
+    //     }
+    // }
+    // f(i, k) {
+    //     if(res[i]) cout<<"YES"<<en;
+    //     else cout<<"NO"<<en;
+    // }
+// }

@@ -98,27 +98,42 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
-        }
+    setIO();
+    cin>>n>>m;
+    vi a(n); read(a);
+    sort(all(a));
+    int med = n/2;
+    int res = 0;
+    for(int i = 0; i < med; i += m) {
+        res += 2 * (a[med] - a[i]);
     }
-    cout<<dp[n-1][n-1]<<en;
+    for(int i = n-1; i > med; i -= m) {
+        res += 2 * (a[i] - a[med]);
+    }
+    cout<<res<<en;
+    // auto dist = [&](int i) {
+    //     if(i == n) return INFL;
+    //     int right = 2 * (a[n-1] - a[i]);
+    //     for(int j = i+m; j < n-1; j += m) {
+    //         right += 2*(a[j] - a[i]);
+    //     }
+    //     int left = 2 * (a[i] - a[0]);
+    //     for(int j = i - m; j > 0; j -= m) {
+    //         left += 2*(a[i] - a[j]);
+    //     }
+    //     // cout<<i<<sp<<left+right<<en;
+    //     return left + right;
+    // };
+    // int res = fstTrue(0LL, n-1, [&](int m) {
+    //       return dist(m) < dist(m+1);
+    // });
+    // cout<<res<<en;
+    // cout<<dist(res)<<en;
 }

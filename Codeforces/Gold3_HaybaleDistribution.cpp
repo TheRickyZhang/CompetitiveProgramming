@@ -98,27 +98,37 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
+    setIO();
     cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
-        }
+    vi a(n); read(a);
+    sort(all(a));
+    int mn = a[0], mx = a[n-1];
+    vi pre(n+1, 0);
+    f(i, n) pre[i+1] = pre[i] + a[i];
+    auto query = [&](int l, int r) {
+        return pre[r+1] - pre[l];
+    };
+
+    cin>>k;
+    f(_, k) {
+        int xx, yy; cin>>xx>>yy;
+        auto cost = [&](int i) {
+            if(i == n) return INFL;
+            int x = a[i];
+            int left = i * x - query(0, i-1);
+            int right = query(i, n-1) - (n-i) * x;
+            return left * xx + right * yy;
+        };
+        int res = fstTrue(0LL, n-1,[&](int m) {
+            return cost(m) < cost(m+1);
+        });
+        cout<<cost(res)<<en;
     }
-    cout<<dp[n-1][n-1]<<en;
 }

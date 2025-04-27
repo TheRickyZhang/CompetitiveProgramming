@@ -67,16 +67,17 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-tpl_<tn_ Graph> tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
+template<typename Graph>
+tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
     function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
         for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}
-vvi binaryJump(const vi& par) {
+            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
     int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
     rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
-tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(const vi &par,const vi &wt,F merge){int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), cost(n,vi(ln,0));
-    f(i,n){up[i][0]=par[i]; cost[i][0]=(par[i]==-1?0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==-1){up[i][j]=-1; cost[i][j]=cost[i][j-1];}
-    else{up[i][j]=up[p][j-1]; cost[i][j]=merge(cost[i][j-1],cost[p][j-1]);}}} return {up,cost};}
+pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
+    int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
+    rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
+    } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
 int getLCA(const vvi& up,const vi& dep, int u, int v) {
     int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
@@ -98,27 +99,83 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
-int t, k, n, m;
-void solve() {
-    
-}
 
-int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
+int t, k, n, m;
+void solve(){
+    int n,m,k; cin>>n>>m>>k;
+    vpii a(k+1);
+    f(i, k+1) cind>>a[i].ff>>a[i].ss;
+    vvi mids(k); // Each segment’s candidate midpoint‐IDs
+    map<pii,int> mp; // midpoint -> unique ID
+    int M=0;
+    f(i,k){
+        auto [x1,y1]=a[i];
+        auto [x2,y2]=a[i+1];
+        for(auto [dy, dx]: dirs){
+            int u=x1+dx, v=y1+dy;
+            if(!check(u,v,n,m)) continue;
+            if(abs(u-x2)+abs(v-y2)==1){
+                pii p={u,v};
+                if(!mp.count(p)) mp[p]=M++;
+                mids[i].pb(mp[p]);
             }
         }
+        if(mids[i].empty()){
+            cout<<0<<en; return;
+        }
     }
-    cout<<dp[n-1][n-1]<<en;
+    vi first(M,k), last(M,-1);
+    f(i,k) for(int mid: mids[i]){
+        ckmn(first[mid], i);
+        ckmx(last[mid],  i);
+    }
+    vvi startAt(k), endAt(k);
+    f(md,M){
+        startAt[first[md]].pb(md);
+        endAt[last[md]].pb(md);
+    }
+    vi active;
+    vi dp(1,1); // dp[mask] = ways; mask up to 2 bits => dp.size() <= 4
+    f(i,k){
+        // forget dead mids
+        vi keep;
+        f(j, active.size()) if(last[active[j]]>=i) keep.pb(j);
+        if(keep.size()<active.size()){
+            vi na; for(int j:keep) na.pb(active[j]);
+            vi ndp(1<<keep.size());
+            f(mask, dp.size()) if(dp[mask]){
+                int c=dp[mask], nm=0;
+                f(t, keep.size()) if(mask&(1<<keep[t])) nm|=1<<t;
+                ndp[nm]=add(ndp[nm], c);
+            }
+            dp=move(ndp);
+            active=move(na);
+        }
+        // activate new mids
+        for(int md: startAt[i]) active.pb(md);
+        // ensure dp has room for new bit
+        if(dp.size() < (1<<active.size()))
+            dp.resize(1<<active.size());
+        // transition on this segment
+        vi dpp(1<<active.size());
+        vi cand;
+        for(int md: mids[i]) f(j, active.size())
+            if(active[j]==md){ cand.pb(j); break; }
+        f(mask, dp.size()) if(dp[mask]){
+            int c=dp[mask];
+            for(int j: cand) if(!(mask&(1<<j))){
+                dpp[mask|(1<<j)] = add(dpp[mask|(1<<j)], c);
+            }
+        }
+        dp=move(dpp);
+    }
+    int res=0;
+    for(int x: dp) res=add(res, x);
+    cout<<res<<en;
+}
+
+int32_t main(){
+    setIO();
+    int t; cin>>t; f(_,t) solve();
+    return 0;
 }

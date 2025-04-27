@@ -98,27 +98,63 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
-    
+
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
+    setIO();
+    cin>>n>>m;
+    int sz = 0.5 * sqrt(m) + 1;
+    vi start(n, -1);
+    vi a(n), b(n);
+    f(i, n) cin>>a[i]>>b[i];
+    vvi freq(sz);
+    f(i, sz) freq[i].assign(i, 0);
+
+    // NOTE that this 1D way of propagating large ranges through diff results in stale entries
+    // vi diff(m+1, 0);
+    vi cum(m+1, 0);
+    int curr = 0; // Running large sum
+    f(i, m) {
+        curr += cum[i];
+
+        int t, pos; cin>>t>>pos; pos--;
+        int l;
+        if(t==1) {
+            start[pos] = i;
+            l = start[pos];
+        }
+        else {
+            l = start[pos];
+            start[pos] = -1;
+        }
+        int x = a[pos], y = b[pos];
+        int z = x+y;
+        int d = t==1 ? 1 : -1;
+        if(z >= sz) {
+            // for(int j = l; j+x < m; j += x+y) {
+            //     diff[j+x] += d;
+            //     if(j+z < m) diff[j+z] -= d;
+            // }
+            for(int j = l; j+x < m; j += x + y) {
+                int L = j + x, R = j + z;
+                if(L <= i) curr += d;
+                else cum[L] += d;
+                if(R <= i) curr -= d;
+                else if (R < m) cum[R] -= d;
             }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
+        } else {
+            for(int j = l+x; j < l+z; ++j) {
+                freq[z][j % z] += d;
             }
         }
+        // if(i > 0) diff[i] += diff[i-1];
+        // int res = diff[i];
+        int res = curr;
+        rep(j, 1, sz-1) res += freq[j][i % j];
+        cout<<res<<en;
     }
-    cout<<dp[n-1][n-1]<<en;
 }

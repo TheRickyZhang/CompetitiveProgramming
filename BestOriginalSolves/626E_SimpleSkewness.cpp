@@ -98,27 +98,82 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
+    setIO();
     cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
+    vi a(n); read(a);
+    sort(all(a));
+    vi pre(n+1, 0), suf(n+1, 0);
+    f(i, n) pre[i+1] = pre[i] + a[i];
+    repr(i, n-1, 0) suf[i] = suf[i+1] + a[i];
+    auto query = [&](int l, int r) {
+        return pre[r+1] - pre[l];
+    };
+
+    // USE long double (or cross multiply??)
+    function<long double(int, int, int)> calc = [&](int x, int i, int j) {
+        if(j == -1) {
+            long double tot = query(i-x, i-1) + query(n-x, n-1) - (x * 2*a[i]);
+            return tot / (2*x+1);
+        } else {
+            long double tot = query(i-x, i-1) + query(n-x, n-1) - x * (a[i] + a[j]);
+            return tot / (2*x + 2);
+        }
+    };
+    long double res = -1;
+    int ii=-1, jj=-1, dd=-1;
     f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
+        int l = 0, r =min(i, n-i-1);
+        while(r-l > 3) {
+            int ml = l + (r-l)/3, mr = r - (r-l)/3;
+            if(calc(ml, i, -1) < calc(mr, i, -1)) {
+                l = ml;
+            } else {
+                r = mr;
             }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
+        }
+        rep(x, l, r) {
+            long double val = calc(x, i, -1);
+            // cout<<i<<sp<<x<<sp<<val<<en;
+            if(val > res) {
+                res = val, ii=i, jj=-1, dd=x;
             }
         }
     }
-    cout<<dp[n-1][n-1]<<en;
+    f(i, n-1) {
+        int l = 0, r = min(i, n-i-2);
+        while(r-l > 3) {
+            int ml = l + (r-l)/3, mr = r - (r-l)/3;
+            if(calc(ml, i, i+1) < calc(mr, i, i+1)) {
+                l = ml;
+            } else {
+                r = mr;
+            }
+        }
+        rep(x, l, r) {
+            long double val = calc(x, i, i+1);
+            if(val > res) {
+                res = val, ii=i, jj=i+1, dd=x;
+            }
+        }
+    }
+    // cout<<res<<sp<<ii<<sp<<jj<<sp<<dd<<en;
+    if(jj==-1) {
+        cout<<2*dd+1<<en;
+        cout<<a[ii]<<sp;
+        fe(i, dd) cout<<a[ii-i]<<sp;
+        fe(i, dd) cout<<a[n-i]<<sp;
+    } else {
+        cout<<2*dd+2<<en;
+        cout<<a[ii]<<sp<<a[jj]<<sp;
+        fe(i, dd) cout<<a[ii-i]<<sp;
+        fe(i, dd) cout<<a[n-i]<<sp;
+    }
+    cout<<en;
 }

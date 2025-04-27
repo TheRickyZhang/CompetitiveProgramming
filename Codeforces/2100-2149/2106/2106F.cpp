@@ -67,16 +67,17 @@ tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c;   //
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-tpl_<tn_ Graph> tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
+template<typename Graph>
+tuple<vi,vi,vi> getAdj(Graph &adj,int a=0){int n=adj.size();vi par(n),dep(n),sz(n,0);
     function<void(int,int,int)>dfs=[&](int u,int p,int d){par[u]=p,dep[u]=d,sz[u]=1;
         for(auto &x:adj[u]){ int v=[&](){if constexpr(std::is_same_v<std::decay_t<decltype(x)>,int>)return x;else return x.ff;}();
-            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}
-vvi binaryJump(const vi& par) {
+            if(v!=p){dfs(v,u,d+1);sz[u]+=sz[v];}}};dfs(a,-1,0);return {dep,par,sz};}vvi binaryJump(const vi& par) {
     int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
     rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
-tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(const vi &par,const vi &wt,F merge){int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), cost(n,vi(ln,0));
-    f(i,n){up[i][0]=par[i]; cost[i][0]=(par[i]==-1?0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==-1){up[i][j]=-1; cost[i][j]=cost[i][j-1];}
-    else{up[i][j]=up[p][j-1]; cost[i][j]=merge(cost[i][j-1],cost[p][j-1]);}}} return {up,cost};}
+pair<vvi, vvi> binaryJumpW(const vi& par, const vi& wt) {
+    int n = par.size(), ln = log2(n) + 1; vvi up(n, vi(ln, 0)), cost(n, vi(ln, 0)); f(i, n) {up[i][0] = par[i];cost[i][0] = (par[i] == -1 ? 0 : wt[i]); }
+    rep(j, 1, ln - 1) {f(i, n) {int p = up[i][j - 1];if (p == -1) { up[i][j] = -1; cost[i][j] = cost[i][j - 1];
+    } else {up[i][j] = up[p][j - 1];cost[i][j] = cost[i][j - 1] + cost[p][j - 1]; } } } return {up, cost}; }
 int getLCA(const vvi& up,const vi& dep, int u, int v) {
     int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
@@ -98,27 +99,70 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    str s; cin>>s;
+    DSU d(3*n);
+    int it = 0;
+    int pit = 0;
+    map<pii, int> mp;
+    f(i, n) {
+        if(s[i]=='1') continue;
+        int j = i+1; while(j < n && s[j]=='0') j++;
+        j--;
+        auto calc = [&](int x) {
+            if(x < 0) return 0LL;
+            return x * (x+1) / 2;
+        };
+        int usz = calc(j+1) - calc(i) - (j-i+1);
+        int dsz = (j-i+1) * (n-1) - usz;
+        // cout<<i<<sp<<j<<sp<<usz<<sp<<dsz<<en;
+        rep(pos, i, j) {
+            if(pos - 1 >= 0) {
+                mp[{pos-1, pos}] = it;
+                d.p[it] = pit;
+                d.sz[it] = usz;
+                it++;
+            }
+        }
+        pit = it;
+        rep(pos, i, j) {
+            if(pos + 1 < n) {
+                mp[{pos+1, pos}] = it;
+                d.p[it] = pit;
+                d.sz[it] = dsz;
+                it++;
+            }
+        }
+        pit = it;
+        i=j;
+    }
+    f(i, n) {
+        if(s[i] == '1') {
+            for(auto [dy, dx] : dirs) {
+                int ny=i+dy, nx = i+dx;
+                if(check(ny, nx, n, n) && s[nx]=='0') {
+                    d.merge(it, mp[{ny, nx}]);
+                }
+            }
+            it++;
+        }
+    }
+    assert(it <= 3*n);
+    // cout<<"it "<<it<<en;
+    // cout<<mp<<en;
+    // cout<<d.p<<en;
+    // cout<<d.sz<<en;
+    int res = 0;
+    f(i, it) {
+        ckmx(res, d.sz[i]);
+    }
+    cout<<res<<en;
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
-        }
-    }
-    cout<<dp[n-1][n-1]<<en;
+    setIO();
+    int t; cin>>t; f(i, t) solve();
 }

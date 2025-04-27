@@ -14,7 +14,7 @@ using namespace std;
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
 
-#define int long long
+// #define int long long
 tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 4>;
 tpl_<tn_ T>       using vv = v<v<T>>;  using vi=v<int>;    using vb=v<bool>; using vvb=v<vb>; using vs=v<string>;  using vvi=v<vi>; using vll=v<ll>;using vvll=v<vll>; using vpii=v<pii>; using vvpii=v<vpii>;
 tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>;  tpl_<tn_ K,tn_ T>    using rmap=map<K,T,greater<K>>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>; tpl_<tn_ T>using rmset=multiset<T,greater<T>>;
@@ -28,6 +28,7 @@ tpl_<tn_ A> ostream&        operator<<(ostream& os, const v<v<A>>& v)   { for (c
 tpl_<tn_ K, tn_ T> ostream& operator<<(ostream& os, const map<K, T>& m) { os << "{"; string sep; for (const auto& kv : m) os << sep << kv.ff << ": " << kv.ss, sep = ", "; return os << "}"; }
 tpl_<tn_ C, tn_ T = enable_if_t<!is_same_v<C, string>, typename C::value_type>> ostream& operator<<(ostream& os, const C& v) { os<<"{"; string sep; for(const T& x : v) os<<sep<<x, sep=", "; return os<<"}";}
 struct cind{template<typename T> cind& operator>>(T &x){cin>>x;--x;return *this;}} cind;
+struct bout{tpl_<tn_ T> bout& operator<<(T x){if constexpr(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;}if(y<0){cout<<'-';y=-y;}string s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
 void read(vi &v){for(auto &x:v)cin>>x;} void read(vpii &v){for(auto &p:v)cin>>p.first>>p.second;} void read(vvi &mat){for(auto &r:mat)for(auto &x:r)cin>>x;}
 void read(vvi &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v;cin>>u>>v;if(dec){u--;v--;}g[u].pb(v);if(!dir)g[v].pb(u);}}
 void read(vvpii &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v,w;cin>>u>>v>>w;if(dec){u--;v--;}g[u].pb({v,w});if(!dir)g[v].pb({u,w});}}
@@ -75,8 +76,7 @@ vvi binaryJump(const vi& par) {
     int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0)); f(i, n) up[i][0] = par[i];
     rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
 tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(const vi &par,const vi &wt,F merge){int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), cost(n,vi(ln,0));
-    f(i,n){up[i][0]=par[i]; cost[i][0]=(par[i]==-1?0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==-1){up[i][j]=-1; cost[i][j]=cost[i][j-1];}
-    else{up[i][j]=up[p][j-1]; cost[i][j]=merge(cost[i][j-1],cost[p][j-1]);}}} return {up,cost};}
+    f(i,n){up[i][0]=par[i]; cost[i][0]=(par[i]==-1?0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==-1){up[i][j]=-1; cost[i][j]=cost[i][j-1];} else{up[i][j]=up[p][j-1]; cost[i][j]=merge(cost[i][j-1],cost[p][j-1]);}}} return {up,cost};}
 int getLCA(const vvi& up,const vi& dep, int u, int v) {
     int ln = log2(up.size()) + 1; if(dep[u] < dep[v]) swap(u, v); int diff = dep[u]-dep[v]; rep(j, 0, ln-1) { if(diff & (1<<j)) u = up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
@@ -98,27 +98,83 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
-    
+
 }
 
+
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
+    setIO();
+    cin>>n>>m;
+    vvi adj(n), radj(n);
+    vll a(n); f(i, n) cin>>a[i];
+    f(i, m) {
+        int u, v; cind>>u>>v;
+        adj[u].pb(v); radj[v].pb(u);
+    }
+    vi nodes;
+    vb vis(n, false);
+    function<void(int)> dfs = [&](int u) {
+        if(vis[u]) return; vis[u] = true;
+        for(int v : adj[u]) {
+            dfs(v);
+        }
+        nodes.pb(u);
+    };
+
+    f(i, n) if(!vis[i]) dfs(i);
+    reverse(all(nodes));
+    vi ids(n, -1);
+    autotree dfs2 = [&](int u, int i) {
+        if(ids[u] != -1) return;
+        ids[u] = i;
+        for(int v : radj[u]) {
+            dfs2(v, i);
+        }
+    };
+    int id = 0;
+    for(int u : nodes) {
+        if(ids[u] == -1) dfs2(u, id++);
+    }
+
+    // cout<<ids<<en;
+
+    // id is the new size now
+    vvi nadj(id);
+    vll b(id);
     f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
+        b[ids[i]] += a[i];
+    }
+    vi in(id, 0);
+    f(u, n) {
+        for(int v : adj[u]) {
+            if(ids[u] == ids[v]) continue;
+            nadj[ids[u]].pb(ids[v]);
+            in[ids[v]]++;
         }
     }
-    cout<<dp[n-1][n-1]<<en;
+    // Extra: remove parallel edges
+    f(i, id) {
+        sort(all(nadj[i]));
+        nadj[i].erase(unique(all(nadj[i])), nadj[i].end());
+    }
+    // cout<<nadj<<en;
+
+    vll dp(id, 0);
+    f(i, id) dp[i] = b[i];
+    queue<int> q;
+    f(i, id) if(in[i] == 0) q.push(i);
+
+    while(!q.empty()) {
+        int u = q.front(); q.pop();
+        for(int v : nadj[u]) {
+            ckmx(dp[v], dp[u] + b[v]);
+            q.push(v);
+        }
+    }
+    ll res = 0;
+    f(i, id) ckmx(res, dp[i]);
+    cout<<res<<en;
 }

@@ -28,6 +28,7 @@ tpl_<tn_ A> ostream&        operator<<(ostream& os, const v<v<A>>& v)   { for (c
 tpl_<tn_ K, tn_ T> ostream& operator<<(ostream& os, const map<K, T>& m) { os << "{"; string sep; for (const auto& kv : m) os << sep << kv.ff << ": " << kv.ss, sep = ", "; return os << "}"; }
 tpl_<tn_ C, tn_ T = enable_if_t<!is_same_v<C, string>, typename C::value_type>> ostream& operator<<(ostream& os, const C& v) { os<<"{"; string sep; for(const T& x : v) os<<sep<<x, sep=", "; return os<<"}";}
 struct cind{template<typename T> cind& operator>>(T &x){cin>>x;--x;return *this;}} cind;
+struct bout{tpl_<tn_ T> bout& operator<<(T x){if constexpr(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;}if(y<0){cout<<'-';y=-y;}string s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
 void read(vi &v){for(auto &x:v)cin>>x;} void read(vpii &v){for(auto &p:v)cin>>p.first>>p.second;} void read(vvi &mat){for(auto &r:mat)for(auto &x:r)cin>>x;}
 void read(vvi &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v;cin>>u>>v;if(dec){u--;v--;}g[u].pb(v);if(!dir)g[v].pb(u);}}
 void read(vvpii &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v,w;cin>>u>>v>>w;if(dec){u--;v--;}g[u].pb({v,w});if(!dir)g[v].pb({u,w});}}
@@ -98,27 +99,96 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
+//
+// int32_t main() {
+//     setIO();
+//     int x, y; cin>>x>>y;
+//     vi d1, d2;
+//     while(y > 0) {
+//         d2.pb(y % 10);
+//         y /= 10;
+//     }
+//     while(x > 0) {
+//         d1.pb(x % 10);
+//         x /= 10;
+//     }
+//     while(d1.size() < d2.size()) d1.pb(0);
+//     reverse(all(d1)), reverse(all(d2));
+//     int sz = d1.size();
+//     int best = 0;
+//     int res = 0;
+//     // i, l, r, start
+//     int dp[sz+1][2][2][2];
+//     memset(dp, -1, sizeof dp);
+//     dp[0][1][1][0] = 1;
+//     function<void(int, int, int, int, int, int)> solve = [&](int i, int lb, int rb, int s, int curr, int num) {
+//         if(i == sz) {
+//             if(s && curr > best) {
+//                 best = curr, res = num;
+//             }
+//             return;
+//         }
+//         int l = lb ? d1[i] : 0;
+//         int r = rb ? d2[i] : 9;
+//         if(dp[i][lb][rb][s]<0) return;
+//         rep(d, l, r) {
+//             bool ns = s || d>0;
+//             int next = ns ? curr * d : curr;
+//             int nlb = lb && (d==l), nrb = rb && (d==r);
+//             ckmx(dp[i+1][nlb][nrb][ns], next);
+//             solve(i+1, nlb, nrb, ns, next, 10*num + d);
+//         }
+//     };
+//     solve(0, 1, 1, 0, 1, 0);
+//     cout<<res<<en;
+// }
 
-int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
+int prod(str s){
+    bool start = false;
+    int res = 1;
+    f(i, s.size()){
+        if(!start && s[i] == '0') continue;
+        if(s[i] != '0') start = true;
+        res *= (s[i] - '0');
+    }
+    if(!start) return -1;
+    return res;
+}
+
+int32_t main(){
+    setIO();
+    str l, r; cin>>l>>r;
+    int m = r.size();
+    l = string(m - l.size(), '0') + l;
+    int best = -1;
+    str res;
+    bool eq = true;
+    f(i, m+1){
+        str curr = r.substr(0, i);
+        eq = eq && l[i] == r[i];
+
+        if(i < m && eq) continue;
+        if(i < m) {
+            curr += static_cast<char>(r[i]-1);
+            // assert(curr.back() >= '0');
+        }
+        curr += string(m - curr.size(), '9');
+        int val = prod(curr);
+        // cout<<curr<<sp<<val<<en;
+        if(val > best){
+            best = val;
+            res = curr;
         }
     }
-    cout<<dp[n-1][n-1]<<en;
+    f(i, res.size()){
+        if(res[i] != '0'){
+            cout<<res.substr(i)<<en;
+            return 0;
+        }
+    }
 }

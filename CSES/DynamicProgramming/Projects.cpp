@@ -98,27 +98,43 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
+    setIO();
     cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
+    v<iii> a(n);
+    set<int> s;
     f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
+        cin>>a[i][0]>>a[i][1]>>a[i][2];
+        s.insert(a[i][0]); s.insert(a[i][1]);
+    }
+    int sz = s.size();
+    map<int, int> mp;
+    vi to(sz);
+    int i=0;
+    for(int x : s) {
+        to[i] = x;
+        mp[x] = i++;
+    }
+    vvpii ends(sz);
+    f(i, n) {
+        a[i][0] = mp[a[i][0]];
+        a[i][1] = mp[a[i][1]];
+        ends[a[i][1]].pb({a[i][0], a[i][2]});
+    }
+    // cout<<ends<<en;
+    vi dp(sz+1, 0); // Shifted by 1 from sz
+    f(i, sz) {
+        dp[i+1] = dp[i];
+        for(auto [l, x] : ends[i]) {
+            ckmx(dp[i+1], dp[l] + x);
         }
     }
-    cout<<dp[n-1][n-1]<<en;
+    // cout<<sz<<en;
+    cout<<dp[sz]<<en;
 }

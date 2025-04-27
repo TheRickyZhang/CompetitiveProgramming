@@ -98,27 +98,67 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>m;
+    vi a(n), b(m); read(a), read(b);
+    sort(all(a)), sort(all(b));
+    int cnt = min((n+m)/3, min(n, m));
+    vi prea(n+1, 0), preb(m+1, 0);
+    f(i, n) prea[i+1] = prea[i] + (a[n-i-1] - a[i]);
+    f(i, m) preb[i+1] = preb[i] + (b[m-i-1] - b[i]);
+
+    cout<<cnt<<en;
+    rep(x, 1, cnt) {
+        // Bounds for how many a ops we can do
+        int l = max(0LL, 2*x - m);
+        int r = min(x, n-x);
+        if(l > r) break;
+        auto area = [&](int k) {
+            return prea[k] + preb[x-k];
+        };
+        while(r-l > 3) {
+            int ml = l + (r-l)/3, mr = r - (r-l)/3;
+            if(area(ml) > area(mr)) r = mr;
+            else l = ml;
+        }
+        int res = 0;
+        rep(i, l, r) {
+            ckmx(res, area(i));
+        }
+        cout<<res<<sp;
+    }
+    cout<<en;
+
+    // int al = 0, ar = n-1;
+    // int bl = 0, br = m-1;
+    // vb useda(n, false), usedb(m, false);
+    // int res = 0;
+    // int ma = n/2, ii = 0;
+    // int mb = m/2, jj = 0;
+    // cout<<cnt<<en;
+    // f(i, cnt) {
+    //     if(2 * (m-jj) > (n-ii) && (useda[al] || useda[ar] || al >= ar || (a[ar] - a[al]) < (b[br] - b[bl]))) {
+    //         res += b[br] - b[bl];
+    //         int pos = ma + ((ii & 1) ? -1 : 1) * (ii+1)/2;
+    //         // cout<<i<<sp<<pos<<en;
+    //         useda[pos] = true;
+    //         bl++; br--; ii++;
+    //     } else {
+    //         assert(bl < br);
+    //         res += a[ar] - a[al];
+    //         int pos = mb + (jj & 1 ? -1 : 1) * (jj+1)/2;
+    //         assert(pos >= 0 && pos < m);
+    //         usedb[pos] = true;
+    //         al++; ar--; jj++;
+    //     }
+    //     cout<<res<<sp;
+    // }
+    // cout<<en;
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
-        }
-    }
-    cout<<dp[n-1][n-1]<<en;
+    setIO();
+    int t; cin>>t; f(i, t) solve();
 }

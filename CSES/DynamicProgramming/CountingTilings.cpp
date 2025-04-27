@@ -28,6 +28,7 @@ tpl_<tn_ A> ostream&        operator<<(ostream& os, const v<v<A>>& v)   { for (c
 tpl_<tn_ K, tn_ T> ostream& operator<<(ostream& os, const map<K, T>& m) { os << "{"; string sep; for (const auto& kv : m) os << sep << kv.ff << ": " << kv.ss, sep = ", "; return os << "}"; }
 tpl_<tn_ C, tn_ T = enable_if_t<!is_same_v<C, string>, typename C::value_type>> ostream& operator<<(ostream& os, const C& v) { os<<"{"; string sep; for(const T& x : v) os<<sep<<x, sep=", "; return os<<"}";}
 struct cind{template<typename T> cind& operator>>(T &x){cin>>x;--x;return *this;}} cind;
+struct bout{tpl_<tn_ T> bout& operator<<(T x){if constexpr(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;}if(y<0){cout<<'-';y=-y;}string s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
 void read(vi &v){for(auto &x:v)cin>>x;} void read(vpii &v){for(auto &p:v)cin>>p.first>>p.second;} void read(vvi &mat){for(auto &r:mat)for(auto &x:r)cin>>x;}
 void read(vvi &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v;cin>>u>>v;if(dec){u--;v--;}g[u].pb(v);if(!dir)g[v].pb(u);}}
 void read(vvpii &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v,w;cin>>u>>v>>w;if(dec){u--;v--;}g[u].pb({v,w});if(!dir)g[v].pb({u,w});}}
@@ -98,27 +99,55 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
+    setIO();
+    cin>>n>>m;
+    if((n*m) % 2 == 1) {
+        cout<<0<<en; return 0;
+    }
+    map<int, vi> mp;
+    auto gen = [&](int h){
+        if(mp.count(h)) return mp[h];
+        vi r;
+        function<void(int,int)> dfs = [&](int i,int nxt){
+            if(i==n){
+                r.pb(nxt);
+                return;
             }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
+            if((h>>i)&1){
+                dfs(i+1,nxt);
+            } else {
+                if(i+1<n && !((h>>(i+1))&1)) dfs(i+2,nxt);
+                dfs(i+1,nxt | (1<<i));
+            }
+        };
+        dfs(0,0);
+        return mp[h] = r;
+    };
+    // bout<<0<<en;
+    // for(int x : gen(0)) bout<<x<<sp;
+    // cout<<en;
+
+    int nn = 1<<n;
+    vi dp(nn, 0);
+    vi dpp = dp;
+    dp[0] = 1;
+    f(j, m) {
+        f(i, nn) {
+            if(dp[i] == 0) continue;
+            for(int ii : gen(i)) {
+                dpp[ii] = add(dpp[ii], dp[i]);
             }
         }
+        // cout<<dpp<<en;
+        dp = dpp;
+        f(i, nn) dpp[i] = 0;
     }
-    cout<<dp[n-1][n-1]<<en;
+    cout<<dp[0]<<en;
 }

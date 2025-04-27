@@ -98,27 +98,41 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
+    setIO();
     cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
+    vi a(n); read(a);
+    sort(all(a));
+    vi pre(n+1, 0), suf(n+1, 0);
+    f(i, n) pre[i+1] = a[i] + pre[i];
+    repr(i, n-1, 0) suf[i] = a[i] + suf[i+1];
+
+    cin>>k;
+    f(_, k) {
+        int x, y; cin>>x>>y;
+        auto calc = [&](int pos) {
+            int i = lower_bound(all(a), pos);
+            if(i==n) return INFL;
+            int left = i * pos - pre[i];
+            int right = suf[i] - i * pos;
+        };
+        int res = INFL;
+        int best = fstTrue(a[0], a[n-1], [&](int m) {
+            int l = calc(m), r = calc(m+1);
+            cout<<m<<sp<<l<<sp<<r<<en;
+            if(l < r) {
+                ckmn(res, l);
             }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
-        }
+            return l < r;
+        });
+        assert(res != INFL);
+        cout<<best<<en;
+        cout<<res<<en;
     }
-    cout<<dp[n-1][n-1]<<en;
 }

@@ -98,27 +98,46 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
-    
+
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
+    setIO();
+    int a, b, c; cin>>n>>a>>b>>c;
+    ckmn(c, a+b);
+    vi h(n); read(h);
+    sort(all(h));
+    vi v, freq;
+    v.pb(h[0]), freq.pb(1);
+    rep(i, 1, n-1) {
+        if(h[i] == h[i-1]) {
+            freq.back()++;
+        } else {
+            v.pb(h[i]), freq.pb(1);
         }
     }
-    cout<<dp[n-1][n-1]<<en;
+    auto calc = [&](int pos) {
+        int x=0, y=0;
+        f(i, n) {
+            if(v[i] < pos) x += freq[i] * (pos-v[i]);
+            else if(v[i] > pos) y += freq[i] * (v[i]-pos);
+        }
+        int mn = min(x, y);
+        return mn * c + (x-mn) * a + (y-mn) * b;
+    };
+    n = v.size();
+    int l = v[0], r = v[n-1];
+    while(r-l > 3) {
+        int ml = l + (r-l)/3;
+        int mr = r - (r-l)/3;
+        if(calc(ml) > calc(mr)) l = ml;
+        else r = mr;
+        // cout<<ml<<sp<<mr<<sp<<calc(ml)<<sp<<calc(mr)<<en;
+    }
+    int res = INFL;
+    rep(x, l, r) ckmn(res, calc(x));
+    cout<<res<<en;
 }

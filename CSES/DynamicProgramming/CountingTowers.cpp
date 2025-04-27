@@ -98,27 +98,20 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
-void solve() {
-    
-}
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
-    f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
-            }
-        }
+    setIO();
+    n = 1e6;
+    vvi dp(n, vi(2, 0));
+    dp[0][0] = dp[0][1] = 1;
+    fe(i, n-1) {
+        dp[i][0] = (4 * dp[i-1][0] + dp[i-1][1]) % MOD;
+        dp[i][1] = (dp[i-1][0] + 2 * dp[i-1][1]) % MOD;
     }
-    cout<<dp[n-1][n-1]<<en;
+    int t; cin>>t; f(i, t) {
+        cin>>n;
+        cout<<(dp[n-1][0] + dp[n-1][1]) % MOD<<en;
+    }
 }

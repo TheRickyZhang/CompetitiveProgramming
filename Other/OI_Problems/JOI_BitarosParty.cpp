@@ -98,27 +98,97 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+
 int t, k, n, m;
 void solve() {
     
 }
 
 int32_t main() {
-    ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vvi dp(n, vi(n, 0));
-    dp[0][0] = 1;
+    setIO();
+    cin>>n>>m>>k;
+    vvi adj(n), radj(n);
+    vi in(n, 0);
+    f(i, m) {
+        int u, v; cind>>u>>v;
+        if(u > v) swap(u, v);
+        adj[u].pb(v); in[v]++;
+        radj[v].pb(u);
+    }
+    int x = 100;
+    vvpii far(n);
+    f(i, n) far[i].pb({0, i});
+    auto merge = [&](vpii& a, vpii& b) {
+        for(auto [d, u] : a) {
+            b.push_back({d+1, u});
+        }
+        sort(rall(b));
+        while(b.size() > x) {
+            b.pop_back();
+        }
+    };
+    vi order;
+    queue<pii> q;
     f(i, n) {
-        string s; cin>>s;
-        f(j, n) {
-            if(i==0 && j==0 && s[j] =='*') {
-                cout<<0<<en; return 0;
-            }
-            if(s[j] != '*') {
-                if(i>0) dp[i][j] = add(dp[i][j], dp[i-1][j]);
-                if(j>0) dp[i][j] = add(dp[i][j], dp[i][j-1]);
+        if(in[i]==0) q.push({i, 0});
+    }
+    while(!q.empty()) {
+        auto [u, d] = q.front(); q.pop();
+        order.pb(u);
+        for(int v : adj[u]) {
+            merge(far[u], far[v]);
+            if(--in[v]==0) {
+                q.push({v, d+1});
             }
         }
     }
-    cout<<dp[n-1][n-1]<<en;
+    // cout<<far<<en;
+
+    f(i, k) {
+        auto solve = [&]() {
+            int u, cnt; cin>>u>>cnt; u--;
+            vi a(cnt);
+            f(i, cnt) cind>>a[i];
+            sort(all(a));
+            set<int> s(all(a));
+            if(cnt > x) {
+                vi dp(n, -1);
+                dp[u] = 0;
+                for(int j : a) if(j != u) dp[j] = -INFL;
+                repr(i, order.size()-1, 0) {
+                    int uu = order[i];
+                    if(dp[uu] < 0) continue;
+                    for(int v : radj[uu]) {
+                        ckmx(dp[v], dp[uu] + 1);
+                    }
+                }
+                int res = -1;
+                f(i, n) if(!s.count(i)) ckmx(res, dp[i]);
+                cout<<res<<en;
+                // No need to to dijkstras in DAG
+                // vi dist(n, -1);
+                // pq<pii> q;
+                // q.push({0, u}); dist[u] = 0;
+                // while(!q.empty()) {
+                //     auto [w, u] = q.top(); q.pop();
+                //     if(dist[u] > w) continue;
+                //     for(int v : radj[u]) {
+                //         if(s.count(v)) continue;
+                //         dist[v] = w+1;
+                //         q.push({w+1, v});
+                //     }
+                //     // cout<<"HUH"<<en;
+                // }
+                // cout<<*max_element(all(dist))<<en;
+            } else {
+                f(i, far[u].size()) {
+                    if(s.count(far[u][i].ss)) continue;
+                    cout<<far[u][i].ff<<en;
+                    return;
+                }
+                cout<<-1<<en;
+            }
+        };
+        solve();
+    }
 }
