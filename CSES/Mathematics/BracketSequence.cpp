@@ -86,7 +86,7 @@ tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 
 struct pairHash{tpl_<class T1,class T2>size_t operator()(const pair<T1,T2>&p)const{return hash<T1>{}(p.first)^ (hash<T2>{}(p.second)<<1);}}; struct vectorHash{tpl_<class T>size_t operator()(const v<T>&v)const{size_t hashTalue=0;for(const T&i:v)hashTalue^=hash<T>{}(i)+0x9e3779b9+(hashTalue<<6)+(hashTalue>>2);return hashTalue;}};
-typedef function<void(int, int)> autotree; auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
+typedef function<void(int, int)> fvii; typedef function<void(int)> fvi; auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}}; auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
     int N = 100000; int MOD=1e9+7; constexpr int INF=1e9; constexpr ll INFL=0x3f3f3f3f3f3f3f3f; constexpr auto en = "\n"; constexpr auto sp = " ";
@@ -108,51 +108,14 @@ void solve() {
 int32_t main() {
     setIO();
     cin>>n;
-    vs a(n); f(i, n) cin>>a[i];
-    map<str, vi> mp; // Map the first 2 prefix
-    f(i, n) {
-        str s = a[i];
-        mp[s.substr(0, 2)].pb(i);
+    if(n & 1) quit(0);
+    // auto [fa, ifa] = initFact(n);
+    vi dp(n+1, 0);
+    dp[0] = 1;
+    rep(i, 1, n/2) {
+        // dp[i] = dp[i-1] * 2*(2*i - 1) / (i+1);
+        dp[i] = mult(dp[i-1], mult(2*(2*i-1), fastPow(i+1, MOD-2)));
     }
-    vvi adj(n);
-    vi in(n, 0), out(n, 0);
-    f(u, n) {
-        str s = s.substr(1);
-        for(int v : mp[s]) {
-            adj[u].pb(v);
-            in[v]++, out[u]++;
-        }
-    }
-    int x=-1, y=-1;
-    f(i, n) {
-        if(out[i] == in[i]+1) {
-            if(x != -1) {
-                cout<<"no"<<en;
-                return 0;
-            }
-            x = i;
-        } else if(in[i] == out[i] + 1) {
-            if(y != -1) {
-                cout<<"no"<<en; return 0;
-            }
-            y = i;
-        }
-    }
-    if(x == -1) x = 0;
-    if(y == -1) y = n-1;
-    vi path;
-    auto dfs = [&](int u) {
-        while(!adj[u].empty()) {
-            int v = adj[u].back(); adj[u].pop_back();
-            dfs(v);
-        }
-        path.pb(u);
-    };
-    dfs(x);
-    reverse(all(path));
-    if(path.size() != n+1 || path.back() != y) {
-        cout<<"no"<<en; return 0;
-    }
-
-
+    // cout<<dp<<en;
+    cout<<dp[n/2]<<en;
 }

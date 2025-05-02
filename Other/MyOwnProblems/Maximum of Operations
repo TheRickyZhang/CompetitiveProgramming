@@ -1,5 +1,0 @@
-You have a sequence of numbers where the following operations:
-- Optionally reverse one subsequence of numbers
-- Set a[1], ... a[n] to a[2]-a[1], ...a[n]-a[n-1]
-
-What is the maximum sum after single element left?

@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
+#include <filesystem>
 
 #define tpl_ template
 #define tn_ typename
@@ -25,6 +26,7 @@ tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_
 tpl_<class It, class T>     auto leq_bound  (It first, It last, T val) { auto it = upper_bound(first, last, val); return it != first ? prev(it) : last;}
 tpl_<class It, class T>     auto less_bound (It first, It last, T val) {auto it = lower_bound(first, last, val);return it != first ? prev(it) : last; }
 using str = string; typedef fn<void(int, int, int)> fviii;  typedef fn<void(int, int)> fvii; typedef fn<void(int)> fvi;
+auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
 
 void setIO(const str &name = "") {ios_base::sync_with_stdio(false); cin.tie(nullptr); if (!name.empty()) { freopen((name + ".in").c_str(), "r", stdin); freopen((name + ".out").c_str(), "w", stdout); }}
 tpl_<tn_ A, tn_ B> ostream& operator<<(ostream& os, const pair<A, B>& p){ return os<<"("<<p.ff<<", "<<p.ss<<")";}
@@ -81,18 +83,17 @@ vvi binaryJump(const vi& par) { int n = par.size(); int ln = log2(n)+1; vvi up(n
 tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(const vi &par,const vi &wt, F merge){int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), cost(n,vi(ln,0));
     f(i,n){up[i][0]=par[i]; cost[i][0]=(par[i]==-1?0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==-1){up[i][j]=-1; cost[i][j]=cost[i][j-1];} else{up[i][j]=up[p][j-1];
         cost[i][j]=merge(cost[i][j-1],cost[p][j-1]);}}} return {up,cost};}
-pair<int,int> getLCA(const vvi& up,const vi& dep,int u,int v,const vvi* wup=nullptr){ int ln=up[0].size(), dist=0; if(dep[u]<dep[v]) swap(u,v); int d=dep[u]-dep[v];
-    rep(j,0,ln-1) if(d&(1<<j)){ if(wup) dist+=(*wup)[u][j]; u=up[u][j]; } if(u==v) return {u,dist};
-    repr(j,ln-1,0) if(up[u][j]!=up[v][j]){ if(wup) dist+=(*wup)[u][j]+(*wup)[v][j]; u=up[u][j]; v=up[v][j]; }
-    if(wup) dist+=(*wup)[u][0]+(*wup)[v][0]; return { up[u][0], dist }; }
+pair<int,int> getLCA(const vvi& up,const vi& dep,int u,int v,const vvi* wup=nullptr, const fn<int(int, int)>& F=ad){
+    int ln=up[0].size(), dist=0; if(dep[u]<dep[v])swap(u,v); int d=dep[u]-dep[v]; rep(j,0,ln-1) if(d&(1<<j)){ if(wup) dist=F(dist,(*wup)[u][j]); u=up[u][j]; }
+    if(u==v) return {u,dist}; repr(j,ln-1,0) if(up[u][j]!=up[v][j]){ if(wup){ dist=F(dist,(*wup)[u][j]); dist=F(dist,(*wup)[v][j]); } u=up[u][j]; v=up[v][j]; }
+    if(wup){ dist=F(dist,(*wup)[u][0]); dist=F(dist,(*wup)[v][0]); } return {up[u][0],dist}; }
 tpl_<class T, class U> T fstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) r = m; else l = m+1; } return l; }
 tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) l = m+1; else r = m; } return l-1; }
 tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 
 struct pairHash{tpl_<class T1,class T2>size_t operator()(const pair<T1,T2>&p)const{return hash<T1>{}(p.ff)^ (hash<T2>{}(p.ss)<<1);}};
 struct vectorHash{tpl_<class T>size_t operator()(const v<T>&v)const{size_t val=0;for(const T&i:v)val^=hash<T>{}(i)+0x9e3779b9+(val<<6)+(val>>2);return val;}};
-auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
-vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}}; auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
+vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}}; auto bound=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
     cx_ int N = 100000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ auto en = "\n"; cx_ auto sp = " ";
 inline int fpow(int a, int b) { int res = 1; a %= MOD; while (b > 0) { if (b & 1) res = res * a % MOD; a = a * a % MOD; b >>= 1; } return res; } inline int inv(int x) { return fpow(x, MOD-2); }
@@ -105,12 +106,121 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
 
-int t, k, n, m;
-void solve() {
+string run(const string& cmd) {
+    FILE* f = _popen(cmd.c_str(), "r");
+    str s;
+    char buf[4096]; // Should be enough per line
+    while(fgets(buf, sizeof buf, f)) s += buf;
+    _pclose(f);
+    return s;
+}
 
+std::mt19937 gen; // Generator
+// gen.seed(); // NOTE: cannot call gen in global scope bc already default initialized
+
+int rand(int l, int r) {
+    return uniform_int_distribution<int>(l, r)(gen);
+}
+
+int solve(int n, vvpii& adj) {
+    vi sz(n, 1);
+    function<void(int, int)> dfs = [&](int u, int p) {
+        for(auto [v, w] : adj[u]) {
+            if(v==p) continue;
+            dfs(v, u);
+            sz[u] += sz[v];
+        }
+    };
+    int res = 0;
+    function<void(int, int)> dfs2 = [&](int u, int p) {
+        for(auto [v, w] : adj[u]) {
+            if(v==p) continue;
+            res += min(sz[v], n - sz[v]) * w;
+            dfs2(v, u);
+        }
+    };
+    dfs(0, -1);
+    dfs2(0, -1);
+    return res;
+}
+
+bool check(int n, vvpii& adj, const vi& colors, int expected) {
+    auto [sz, dep, par, dist] = getAdj(adj);
+    auto [up, wup] = binaryJumpW(par, dist, [&](int x, int y) {
+        return x + y;
+    });
+    vvi pos(n/2);
+    f(i, n) {
+        if(colors[i] < 0 || colors[i] >= n/2 || pos[colors[i]].size() >= 2) {
+            return false;
+        }
+        pos[colors[i]].pb(i);
+    }
+    int res = 0;
+    f(i, n/2) {
+        int u = pos[i][0], v = pos[i][1];
+        auto [p, w] = getLCA(up, dep, u, v);
+        res += w;
+    }
+    return res == expected;
 }
 
 int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
+    const char* fileName = "out.txt";
+    // absolute paths to your solver source & exe:
+    const string solutionFile = "C:\\Users\\ricky\\CompetitiveProgramming\\Tester\\MaximumSumMatchingNodes.cpp";
+    const string exe          = "C:\\Users\\ricky\\CompetitiveProgramming\\Tester\\MaximumSumMatchingNodes.exe";
+
+    ofstream out(fileName);
+    int t = 1;
+    vector<int> expected(t);
+    v<vvpii> graphs(t);
+
+    out << t << "\n";
+    for(int i=0;i<t;++i){
+        int n = rand(2,100);
+        vector<iii> edges;
+        for(int v=1; v<=n-1; ++v){
+            int u = rand(0,v-1), w = rand(1,100);
+            edges.push_back({u,v,w});
+        }
+        vvpii adj(n);
+        for(auto [u,v,w]:edges){
+            adj[u].push_back({v,w});
+            adj[v].push_back({u,w});
+        }
+        graphs[i] = adj;
+        expected[i] = solve(n, adj);
+        out << n << "\n";
+        for(auto [u,v,w]:edges) out<<u<<" "<<v<<" "<<w<<"\n";
+    }
+    out.close();
+
+    // compile with g++
+    string compileCmd = "g++ -std=c++17 -O2 \"" + solutionFile + "\" -o \"" + exe + "\"";
+    system(compileCmd.c_str());
+
+    // run solver: no extra quotes, just exe < input
+    string runCmd = exe + " < " + fileName;
+    string stdout_of_solution = run(runCmd);
+    stringstream res(stdout_of_solution);
+
+    f(i,t){
+        int n; res>>n;
+        vi colors(n);
+        for(int j=0;j<n;++j) res>>colors[j];
+        if(!check(n, graphs[i], colors, expected[i])){
+            cout<<"Incorrect on test case "<<i+1<<en;
+            cout<<"Expected: "<<expected[i]<<en;
+            cout<<"Got: "<<n<<en;
+            for(auto& row:graphs[i]){
+                for(auto [v,w]:row) cout<<'('<<v<<','<<w<<") ";
+                cout<<"\n";
+            }
+            return 1;
+        }
+    }
+    cout<<"Passed all test cases"<<en;
+    return 0;
 }
+

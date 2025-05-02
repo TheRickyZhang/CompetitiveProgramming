@@ -1,11 +1,34 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
+rem - clear out executables in the cmake directory
+if exist "*.exe" (
+    echo Clearing executables
+    del /Q "*.exe"
+)
+if exist "cmake-build-debug\*.exe" (
+    echo Clearing executables in cmake-build-debug
+    del /Q "cmake-build-debug\*.exe"
+)
+
+
+rem —––––––––––––––––––––––––––––––––––––
+rem List of excluded basenames, space-separated
+set "EXCLUDE=Template.cpp Checker.cpp"
+
 rem ————————————————
 rem No‑arg: process every .cpp via :process
 if "%~1"=="" (
     for %%F in (*.cpp) do (
-        call :process "%%F"
+        set "skip=0"
+        for %%E in (%EXCLUDE%) do (
+          if /I "%%~nxF"=="%%E" set "skip=1"
+        )
+        if "!skip!"=="0" (
+          call :process "%%F"
+        ) else (
+          echo [skip] %%~nxF
+        )
     )
     goto :eof
 )

@@ -3,14 +3,21 @@ project(CompetitiveProgramming)
 
 set(CMAKE_CXX_STANDARD 17)
 
-file(GLOB CPP_FILES "*.cpp")
-foreach(CPP_FILE ${CPP_FILES})
-    get_filename_component(EXECUTABLE_NAME ${CPP_FILE} NAME_WE)
-    add_executable(${EXECUTABLE_NAME} ${CPP_FILE})
-endforeach()
+file(GLOB CPP_FILES
+        "${CMAKE_SOURCE_DIR}/*.cpp"
+        "${CMAKE_SOURCE_DIR}/Tester/*.cpp"
+        "${CMAKE_SOURCE_DIR}/Notes_CIS4930/Notes/*.cpp"
+)
 
-file(GLOB NOTES_CPP_FILES "Notes_CIS4930/Notes/*.cpp")
-foreach(CPP_FILE ${NOTES_CPP_FILES})
-    get_filename_component(EXECUTABLE_NAME ${CPP_FILE} NAME_WE)
-    add_executable(NOTE_${EXECUTABLE_NAME} ${CPP_FILE}) # Prefix 'NOTE_'
+foreach(_f IN LISTS CPP_FILES)
+    get_filename_component(_n ${_f} NAME_WE)
+
+    # prefix if it lives under Notes_CIS4930/Notes
+    if(_f MATCHES "Notes_CIS4930/Notes/")
+        set(_t NOTE_${_n})
+    else()
+        set(_t ${_n})
+    endif()
+
+    add_executable(${_t} ${_f})
 endforeach()

@@ -1,5 +1,5 @@
-Respond with C++ code in my style. Ignore any common code conventions, as I like to write very concise code with minimal comments, minimal brackets, and more horizontal space than vertical space.
-Always assume any code that is discussed has these macros. Do not provide these again on output.
+For coding questions respond with C++ as the default and Windows commands. I like intuitive explanations for problem solving. Ignore most common code conventions, as I like concise code with minimal comments, minimal brackets.
+Always assume any code that is discussed has these macros.
 
 These are typically common variable names I use for Competitive Programming. Note there is some flexibility depending on context, but adhere to these as closely as you can.
 If something does not fit any of these names, always use a short single-word variable.

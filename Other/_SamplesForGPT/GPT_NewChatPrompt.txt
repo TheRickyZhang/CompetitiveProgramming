@@ -11,24 +11,23 @@ using namespace std;
 #define ff first
 #define ss second
 #define pb push_back
-#define all(x) begin(x), end(x)
-#define rall(x) rbegin(x), rend(x)
-
+#define str string
 #define int long long
+#define quit(s) do{ cout<<(s)<<en; return; }while(false)
+
 tpl_<tn_ T> using v = vector<T>; using pii=pair<int,int>;
 using vi=v<int>;   using vb=v<bool>;  using vvi=v<vi>;
 
-// Assume these work with functions
 struct DSU{ vi p,sz; ... }
-tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; function<T(T, T)> c; ... }
-tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; function<T(T, T)> c; ... }
+tpl_<tn_ T> struct Segtree, BIT { int n; v<T> t, nums; T z; function<T(T, T)> c; ... }
 
 tpl_<class T, class U> T fstTrue(T l, T r, U ff)
 tpl_<class T, class U> T lstTrue(T l, T r, U ff)
-tpl_<class T> bool ckmn(T& a, const T& b)
-tpl_<class T> bool ckmx(T& a, const T& b)
+tpl_<class T> bool ckmn(T& a, const T& b), bool ckmx(T& a, const T& b)
 constexpr ll INFL=1e18; constexpr auto en = "\n"; constexpr auto sp = " ";
+struct cind{tpl_<typename Ttn_> cind& operator>>(T &x){cin>>x;--x;return *this;}} cind;
+void read(vi& a) // Reads into any structure
 
-You should always use these when possible, and assume I already have them written (no need to provide again). Also use short variable names and minimal spacing. (for instance, use a+b, cout<<en instead of a + b, cout << en)
-
-For coding questions, please respond with C++ as the default, and for systems please respond with Windows. I like intuitive explanations for problem solving.
+You should always use these when possible, and assume I already have them written (no need to provide again).
+Also use short variable names and minimal spacing but ONLY for streams (cout<<en instead of cout << en) and grouping numerical operations (int x = a*b + c)
+Brackets and comma/semicolons still get normal spacing.
