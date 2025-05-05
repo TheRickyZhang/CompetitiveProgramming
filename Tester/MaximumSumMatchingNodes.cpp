@@ -134,53 +134,152 @@ void solve() {
 // }
 
 vvpii adj;
-vi col;
-vector<char> remd;
-pair<int,long long> best;
 
-void dfsFar(int u,int p,long long d){
-    if(d>best.second) best={u,d};
-    for(auto &e: adj[u]){
-        int v=e.first,w=e.second;
-        if(v==p||remd[v]) continue;
-        dfsFar(v,u,d+w);
+// 1) find centroid
+vi sub_size;
+void dfs_size(int u, int p){
+    sub_size[u] = 1;
+    for(auto [v,w]:adj[u]) if(v!=p){
+        dfs_size(v,u);
+        sub_size[u] += sub_size[v];
     }
 }
 
-// Gets the sum AND color assignment in n^2 by repeatedly removing the diameter
-int32_t main(){
-    setIO();
 
-    int t; cin>>t;
+int find_centroid(int u, int p){
+    for(auto [v,w]:adj[u]) if(v!=p){
+        if(sub_size[v] > n/2)
+            return find_centroid(v,u);
+    }
+    return u;
+}
+
+// 2) compute distances from centroid
+vll distC;
+void dfs_dist(int u, int p){
+    for(auto [v,w]:adj[u]) if(v!=p){
+        distC[v] = distC[u] + w;
+        dfs_dist(v,u);
+    }
+}
+
+int32_t main(){
+    ios::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int t;
+    if(!(cin>>t)) return 0;
     while(t--){
         cin>>n;
         adj.assign(n,{});
-        f(i,n-1){
+        for(int i=0;i<n-1;i++){
             int u,v,w;
             cin>>u>>v>>w;
             --u;--v;
             adj[u].push_back({v,w});
             adj[v].push_back({u,w});
         }
-        remd.assign(n,0);
-        col.assign(n,-1);
-        long long sum=0;
-        f(c,n/2){
-            int start=0;
-            while(remd[start]) ++start;
-            best={start,0}; dfsFar(start,-1,0);
-            int u=best.first;
-            best={u,0}; dfsFar(u,-1,0);
-            int v=best.first;
-            long long dist=best.second;
-            sum+=dist;
-            col[u]=col[v]=c;
-            remd[u]=remd[v]=1;
+
+        // centroid
+        sub_size.assign(n,0);
+        dfs_size(0,-1);
+        int c = find_centroid(0,-1);
+
+        // distances from centroid
+        distC.assign(n,0);
+        dfs_dist(c,-1);
+
+        // group nodes by subtree of centroid (plus centroid itself as group 0)
+        vi group_of(n,-1);
+        vector<vector<int>> groups;
+        groups.push_back({c});
+        group_of[c] = 0;
+        for(auto [v,w]:adj[c]){
+            if(group_of[v]!=-1) continue;
+            int gid = groups.size();
+            groups.emplace_back();
+            // dfs collect subtree rooted at v
+            function<void(int,int)> dfs_group = [&](int u, int p){
+                group_of[u] = gid;
+                groups[gid].push_back(u);
+                for(auto [x,wx]:adj[u]) if(x!=p && x!=c){
+                    dfs_group(x,u);
+                }
+            };
+            dfs_group(v,c);
         }
-        cout<<sum<<en;
-        f(i,n){
-            cout<<col[i]<<(i+1<n?' ':'\n');
+
+        int G = groups.size();
+        // per-group max-heaps of (distC,node)
+        vector<priority_queue<pair<ll,int>>> pq(G);
+        for(int gid=0;gid<G;gid++){
+            for(int u:groups[gid]){
+                pq[gid].push({distC[u], u});
+            }
+        }
+        // global heap of (topDist, gid)
+        priority_queue<pair<ll,int>> heap;
+        for(int gid=0;gid<G;gid++){
+            if(!pq[gid].empty()){
+                heap.push({pq[gid].top().first, gid});
+            }
+        }
+
+        vector<int> color(n,-1);
+        ll total = 0;
+        int color_id = 0;
+
+        // match until fewer than 2 groups remain
+        while(true){
+            // get first valid
+            pair<ll,int> a;
+            bool ok = false;
+            while(!heap.empty()){
+                a = heap.top(); heap.pop();
+                ll d = a.first;
+                int gid = a.second;
+                if(!pq[gid].empty() && pq[gid].top().first == d){
+                    ok = true;
+                    break;
+                }
+            }
+            if(!ok) break;
+
+            // get second valid
+            pair<ll,int> b;
+            ok = false;
+            while(!heap.empty()){
+                b = heap.top(); heap.pop();
+                ll d = b.first;
+                int gid = b.second;
+                if(!pq[gid].empty() && pq[gid].top().first == d && gid != a.second){
+                    ok = true;
+                    break;
+                }
+            }
+            if(!ok){
+                // push back a for cleanliness
+                heap.push(a);
+                break;
+            }
+
+            // pop nodes
+            int g1 = a.second, g2 = b.second;
+            int u = pq[g1].top().second; pq[g1].pop();
+            int v = pq[g2].top().second; pq[g2].pop();
+            total += distC[u] + distC[v];
+            color[u] = color[v] = color_id++;
+            // reinsert tops if exist
+            if(!pq[g1].empty()) heap.push({pq[g1].top().first, g1});
+            if(!pq[g2].empty()) heap.push({pq[g2].top().first, g2});
+        }
+
+        // output
+        cout<<total<<"\n";
+        for(int i=0;i<n;i++){
+            cout<<color[i]<<(i+1<n?' ':'\n');
         }
     }
+
     return 0;
 }

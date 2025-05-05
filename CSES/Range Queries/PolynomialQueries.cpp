@@ -13,8 +13,8 @@ using namespace std;
 #define ss second
 #define pb push_back
 #define fora(a, x) for (auto &a : x)
-#define all(x) begin(x), end(x)
-#define rall(x) rbegin(x), rend(x)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
 #define int long long
@@ -44,13 +44,13 @@ struct DSU{ vi p,sz; explicit
     void merge(int x,int y){x=par(x),y=par(y);if(x!=y){if(sz[x]<sz[y])swap(x,y);p[y]=x,sz[x]+=sz[y];}}
     bool same(int x, int y){ return par(x) == par(y); }
 };
-tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; fn<T(T, T)> c;
-    Segtree() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
-    Segtree(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(4 * sz, zero), nums(sz, zero), z(zero), c(move(combine)) { if (!init.empty()) { nums = init; build(1, 0, n-1); } }
+tpl_<tn_ T> struct Segtree      { int n; v<T> t, nums; fn<T(T, T)> c;
+    Segtree() : n(0), c([](T a, T b) { return a + b; }) {}
+    Segtree(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(4 * sz, zero), nums(sz, zero), c(move(combine)) { if (!init.empty()) { nums = init; build(1, 0, n-1); } }
     void build (int i, int a, int b) { if (a == b) { t[i] = nums[a]; return; } int m = (a + b) / 2; build(2 * i, a, m); build(2 * i + 1, m + 1, b); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void add   (int i, int a, int b, int p, T x) { if(a==b) { t[i] = c(t[i], x); return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void update(int i, int a, int b, int p, T x) { if(a==b) { t[i] = x;          return; } int m = (a + b) / 2; (p <= m ? update(2 * i, a, m, p, x) : update(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    T query(int i, int a, int b, int l, int r) { if (l > r) return z; if (a == l && b == r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, min(r, m)), query(2 * i + 1, m + 1, b, max(l, m + 1), r)); }
+    void add   (int i, int a, int b, int p, T x) { if (a == b) { t[i] = c(t[i], x); return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    void update(int i, int a, int b, int p, T x) { if (a == b) { t[i] = x; return; } int m = (a + b) / 2; (p <= m ? update(2 * i, a, m, p, x) : update(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    T query  (int i, int a, int b, int l, int r) { if (r < a || b < l) return T(); if (l <= a && b <= r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, r), query(2 * i + 1, m + 1, b, l, r)); }
     friend ostream& operator<<(ostream& os, const Segtree<T>& seg) {
     int maxRows=20, rowCount=0, maxDepth=4; fn<void(int,int,int,int)> pt; pt=[maxRows, maxDepth, &rowCount, &os, &seg, &pt](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return;
         os<<str(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os;}
@@ -58,24 +58,43 @@ tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; fn<T(T, T)> c;
     void update(int p, T x) { update(1,0,n-1,p,x); }
     T query(int l, int r) { return query(1, 0, n-1, l, r); }
 };
-tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; fn<T(T, T)> c;   // All 0-indexed
-    BIT() : n(0), z(0), c([](T a, T b) { return a+b; }) {}
-    BIT(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(sz+1, zero), nums(sz, zero), z(zero), c(std::move(combine)) { if (!init.empty()) { nums = init; f(i, n) add(i, nums[i]); } }
+tpl_<tn_ T, tn_ U>
+struct LazySegtree {            // NOTE this "apply" passes in [l, r] by default! ap and cmp use {old, new op ... }
+    int n; v<T> t, nums; v<U> ops; fn<T(T,T)> c; fn<T(T, U, int,int)> ap; fn<U(U,U)> cmp;
+    LazySegtree(int sz, fn<T(T,T)> cmb, fn<T(T, U, int, int)> _ap, fn<U(U,U)> _cmp, const v<T>& init={}) :
+    n(sz), t(4*sz), nums(sz), ops(4*sz), c(move(cmb)), ap(move(_ap)), cmp(move(_cmp)) { if(!init.empty()){ nums=init; build(1,0,n-1); } }
+    void build(int i,int a,int b){
+        if(a==b){ t[i]=nums[a]; return; } int m=(a+b)/2; build(2*i,a,m); build(2*i+1,m+1,b); t[i]=c(t[2*i],t[2*i+1]); }
+    void applyNode(int i, const U& u,int a,int b){   t[i]=ap(t[i], u, a,b); ops[i]=cmp(ops[i], u); }
+    void push(int i,int a,int b){
+        int m=(a+b)/2; applyNode(2*i, ops[i], a,m); applyNode(2*i+1, ops[i], m+1, b); ops[i]=U(); }
+    void add(int i,int a,int b,int l,int r,const U& u){
+        if(r<a||b<l) return; if(l<=a && b<=r){ applyNode(i,u,a,b); return; } push(i,a,b); int m=(a+b)/2;
+        add(2*i,   a,   m, l, r, u); add(2*i+1, m+1, b, l, r, u); t[i]=c(t[2*i],t[2*i+1]); }
+    T query(int i,int a,int b,int l,int r){
+        if(r<a||b<l) return T(); if(l<=a&&b<=r) return t[i]; push(i,a,b); int m=(a+b)/2;
+        T L=query(2*i, a,m, l, r), R=query(2*i+1, m+1, b, l, r); return c(L,R); }
+    void add(int l,int r,U u){ add(1,0,n-1,l,r,u); }
+    T    query(int l, int r){ return query(1,0,n-1,l,r); }
+};
+tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; fn<T(T, T)> c;
+    BIT() : n(0), c([](T a, T b) { return a+b; }) {}
+    BIT(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(sz+1, zero), nums(sz, zero), c(std::move(combine)) { if (!init.empty()) { nums = init; f(i, n) add(i, nums[i]); } }
     friend ostream& operator<<(ostream& os, const BIT<T>& bit) {
         os<<"BIT:\n"; int maxCol = 16, lvls = 0; while ((1<<lvls) <= min(bit.n, maxCol)) lvls++; int cols = min(bit.n, maxCol); v<vs> grid(lvls, vs(cols, string(4, ' ')));
         fe(i, cols) { int row = __builtin_ctz(i); if (row<lvls) {ostringstream oss; oss<<setw(4)<<bit.t[i]; grid[row][i-1] = oss.str(); } } f(r, lvls) { f(c, cols) os<<grid[r][c]; os<<"\n"; } return os;}
     void add(int i, T x) { nums[i] += x; for (i += 1; i <= n; i += (i & -i)) t[i] = c(t[i], x); }
     void update(int i, T x) { T diff = x-nums[i]; nums[i] = x; for (i += 1; i <= n; i += (i & -i)) t[i] = c(t[i], diff); }
-    T query(int i) { T res = z; for (i += 1; i > 0; i -= (i & -i)) res = c(res, t[i]); return res; }
+    T query(int i) { T res = T(); for (i += 1; i > 0; i -= (i & -i)) res = c(res, t[i]); return res; }
     T query(int l, int r) { return query(r)-query(l-1); }
 };
 
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-tuple<vi,vi,vi> getAdj(vvi &adj,int a=0){int n=adj.size(); vi sz(n,1), par(n,-1), dep(n,0);
+tuple<vi,vi,vi> _dfs(vvi &adj,int a=0){int n=adj.size(); vi sz(n,1), par(n,-1), dep(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(int v:adj[u]) if(v!=p){dfs(v,u,d+1); sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par};}
-tuple<vi,vi,vi,vi> getAdj(vvpii &adj,int a=0){int n=adj.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
+tuple<vi,vi,vi,vi> _dfs(vvpii &adj,int a=0){int n=adj.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:adj[u]) if(v!=p){dist[v]=w; dfs(v,u,d+1); sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
 vvi binaryJump(const vi& par) { int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0));
     f(i, n) up[i][0] = par[i]; rep(j, 1, ln-1) { f(i, n) { int p = up[i][j-1]; if(p==-1) up[i][j] = -1; else up[i][j] = up[p][j-1]; } } return up;}
@@ -110,7 +129,38 @@ void solve() {
     
 }
 
+
+// Each int stores  mi - b -> pending sum
+// Default when applying to [l, r] is m=1, b=l-1
+struct op {
+    int m, b;
+    op(int m, int b) : m(m), b(b) {}
+    op() : m(0), b(0) {}
+};
+
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>k;
+    vi a(n); read(a);
+    LazySegtree<int, op> tree(n,
+        ad,
+        [&](int x, op o, int l, int r) {
+            int len = r-l+1;
+            int sum = len * (l+r)/2;
+            return x + o.m * sum - o.b * len;
+        },
+        [&](op o, op p) {
+            return op(o.m + p.m, o.b + p.b);
+        },
+        a
+    );
+
+    f(i, k) {
+        int t, l, r; cin>>t; cind>>l>>r;
+        if(t == 1) {
+            tree.add(l, r, op(1, l-1));
+        } else {
+            cout<< tree.query(l, r) <<en;
+        }
+    }
 }

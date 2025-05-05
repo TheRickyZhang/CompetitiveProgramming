@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 file(GLOB CPP_FILES
         "${CMAKE_SOURCE_DIR}/*.cpp"
         "${CMAKE_SOURCE_DIR}/Tester/*.cpp"
+        "${CMAKE_SOURCE_DIR}/Other/Leetcode/*.cpp"
         "${CMAKE_SOURCE_DIR}/Notes_CIS4930/Notes/*.cpp"
 )
 

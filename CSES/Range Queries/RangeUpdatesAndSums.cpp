@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+
+#include <utility>
 using namespace std;
 
 #define tpl_ template
@@ -13,8 +15,8 @@ using namespace std;
 #define ss second
 #define pb push_back
 #define fora(a, x) for (auto &a : x)
-#define all(x) begin(x), end(x)
-#define rall(x) rbegin(x), rend(x)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
 #define int long long
@@ -38,19 +40,20 @@ void read(vi &v){for(auto &x:v)cin>>x;} void read(vpii &v){for(auto &p:v)cin>>p.
 void read(vvi &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v;cin>>u>>v;if(dec){u--;v--;}g[u].pb(v);if(!dir)g[v].pb(u);}}
 void read(vvpii &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v,w;cin>>u>>v>>w;if(dec){u--;v--;}g[u].pb({v,w});if(!dir)g[v].pb({u,w});}}
 
+// All 0-indexed
 struct DSU{ vi p,sz; explicit
          DSU(const int n){p.resize(n),sz.resize(n,1),iota(all(p),0);}
     int  par(int x){return x==p[x]?x:p[x]=par(p[x]);}
     void merge(int x,int y){x=par(x),y=par(y);if(x!=y){if(sz[x]<sz[y])swap(x,y);p[y]=x,sz[x]+=sz[y];}}
     bool same(int x, int y){ return par(x) == par(y); }
 };
-tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; fn<T(T, T)> c;
-    Segtree() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
-    Segtree(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(4 * sz, zero), nums(sz, zero), z(zero), c(move(combine)) { if (!init.empty()) { nums = init; build(1, 0, n-1); } }
+tpl_<tn_ T> struct Segtree      { int n; v<T> t, nums; fn<T(T, T)> c;
+    Segtree() : n(0), c([](T a, T b) { return a + b; }) {}
+    Segtree(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(4 * sz, zero), nums(sz, zero), c(move(combine)) { if (!init.empty()) { nums = init; build(1, 0, n-1); } }
     void build (int i, int a, int b) { if (a == b) { t[i] = nums[a]; return; } int m = (a + b) / 2; build(2 * i, a, m); build(2 * i + 1, m + 1, b); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void add   (int i, int a, int b, int p, T x) { if(a==b) { t[i] = c(t[i], x); return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void update(int i, int a, int b, int p, T x) { if(a==b) { t[i] = x;          return; } int m = (a + b) / 2; (p <= m ? update(2 * i, a, m, p, x) : update(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    T query(int i, int a, int b, int l, int r) { if (l > r) return z; if (a == l && b == r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, min(r, m)), query(2 * i + 1, m + 1, b, max(l, m + 1), r)); }
+    void add   (int i, int a, int b, int p, T x) { if (a == b) { t[i] = c(t[i], x); return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    void update(int i, int a, int b, int p, T x) { if (a == b) { t[i] = x; return; } int m = (a + b) / 2; (p <= m ? update(2 * i, a, m, p, x) : update(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    T query  (int i, int a, int b, int l, int r) { if (r < a || b < l) return T(); if (l <= a && b <= r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, r), query(2 * i + 1, m + 1, b, l, r)); }
     friend ostream& operator<<(ostream& os, const Segtree<T>& seg) {
     int maxRows=20, rowCount=0, maxDepth=4; fn<void(int,int,int,int)> pt; pt=[maxRows, maxDepth, &rowCount, &os, &seg, &pt](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return;
         os<<str(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os;}
@@ -58,15 +61,34 @@ tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; fn<T(T, T)> c;
     void update(int p, T x) { update(1,0,n-1,p,x); }
     T query(int l, int r) { return query(1, 0, n-1, l, r); }
 };
-tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; T z; fn<T(T, T)> c;   // All 0-indexed
-    BIT() : n(0), z(0), c([](T a, T b) { return a+b; }) {}
-    BIT(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(sz+1, zero), nums(sz, zero), z(zero), c(std::move(combine)) { if (!init.empty()) { nums = init; f(i, n) add(i, nums[i]); } }
+tpl_<tn_ T, tn_ U>
+struct LazySegtree {
+    int n; v<T> t, nums; v<U> ops; fn<T(T,T)> c; fn<T(U,T,int)> ap; fn<U(U,U)> cmp;
+    LazySegtree(int sz, fn<T(T,T)> cmb, fn<T(U,T,int)> _ap, fn<U(U,U)> _cmp, const v<T>& init={}) :
+    n(sz), t(4*sz), nums(sz), ops(4*sz), c(move(cmb)), ap(move(_ap)), cmp(move(_cmp)) { if(!init.empty()){ nums=init; build(1,0,n-1); } }
+    void build(int i,int a,int b){
+        if(a==b){ t[i]=nums[a]; return; } int m=(a+b)/2; build(2*i,a,m); build(2*i+1,m+1,b); t[i]=c(t[2*i],t[2*i+1]); }
+    void applyNode(int i, const U& u,int a,int b){ t[i]=ap(u,t[i],b-a+1); ops[i]=cmp(u, ops[i]); }
+    void push(int i,int a,int b){
+        int m=(a+b)/2; applyNode(2*i,   ops[i], a,  m); applyNode(2*i+1, ops[i], m+1, b); ops[i]=U(); }
+    void add(int i,int a,int b,int l,int r,const U& u){
+        if(r<a||b<l) return; if(l<=a&&b<=r){ applyNode(i,u,a,b); return; } push(i,a,b); int m=(a+b)/2;
+        add(2*i,   a,   m, l, r, u); add(2*i+1, m+1, b, l, r, u); t[i]=c(t[2*i],t[2*i+1]); }
+    T query(int i,int a,int b,int l,int r){
+        if(r<a||b<l) return T(); if(l<=a&&b<=r) return t[i]; push(i,a,b); int m=(a+b)/2;
+        T L=query(2*i,   a,   m, l, r), R=query(2*i+1, m+1, b, l, r); return c(L,R); }
+    void add(int l,int r,U u){ add(1,0,n-1,l,r,u); }
+    T    query(int l, int r){ return query(1,0,n-1,l,r); }
+};
+tpl_<tn_ T> struct BIT     { int n; v<T> t, nums; fn<T(T, T)> c;
+    BIT() : n(0), c([](T a, T b) { return a+b; }) {}
+    BIT(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(sz+1, zero), nums(sz, zero), c(std::move(combine)) { if (!init.empty()) { nums = init; f(i, n) add(i, nums[i]); } }
     friend ostream& operator<<(ostream& os, const BIT<T>& bit) {
         os<<"BIT:\n"; int maxCol = 16, lvls = 0; while ((1<<lvls) <= min(bit.n, maxCol)) lvls++; int cols = min(bit.n, maxCol); v<vs> grid(lvls, vs(cols, string(4, ' ')));
         fe(i, cols) { int row = __builtin_ctz(i); if (row<lvls) {ostringstream oss; oss<<setw(4)<<bit.t[i]; grid[row][i-1] = oss.str(); } } f(r, lvls) { f(c, cols) os<<grid[r][c]; os<<"\n"; } return os;}
     void add(int i, T x) { nums[i] += x; for (i += 1; i <= n; i += (i & -i)) t[i] = c(t[i], x); }
     void update(int i, T x) { T diff = x-nums[i]; nums[i] = x; for (i += 1; i <= n; i += (i & -i)) t[i] = c(t[i], diff); }
-    T query(int i) { T res = z; for (i += 1; i > 0; i -= (i & -i)) res = c(res, t[i]); return res; }
+    T query(int i) { T res = T(); for (i += 1; i > 0; i -= (i & -i)) res = c(res, t[i]); return res; }
     T query(int l, int r) { return query(r)-query(l-1); }
 };
 
@@ -110,7 +132,165 @@ void solve() {
     
 }
 
-int32_t main() {
+struct op {
+    int a, s;
+    op(int _a, int _s) : a(_a), s(_s) {}
+    op() : a(0), s(INFL) {}
+};
+
+// REVIEW: Lazy segment tree for supporting update, add, range sum operations
+int32_t main(){
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>k;
+    vi a(n); read(a);
+    LazySegtree<int, op> tree(
+        n,
+        ad,
+        [&](op u,ll x,int len) {
+            if(u.s!=INFL) return u.s*len + u.a*len;
+            return x + u.a *len;
+        },
+        [&](op p,op c) {
+            if(p.s!=INFL) return op(p.a,p.s);
+            return op(c.a+p.a,c.s);
+        },
+        a
+    );
+    tree.build(1, 0, n-1);
+    f(i,k){
+        int t; cin>>t;
+        if(t==1){
+            int l,r,x; cind>>l>>r; cin>>x;
+            tree.add(l,r,op(x,INFL));
+        }
+        else if(t==2){
+            int l,r,x; cind>>l>>r; cin>>x;
+            tree.add(l,r,op(0,x));
+        }
+        else{
+            int l,r; cind>>l>>r;
+            cout<<tree.query(l,r)<<en;
+        }
+    }
 }
+
+
+//
+// template<typename T, typename U>
+// struct LazySegtree {
+//     int n;
+//     v<T>   t;
+//     v<U>   ops;
+//     function<T(T, T)>       combine;
+//     function<T(U, T, int)>  push;    // op, current sum, segment-length
+//     function<U(U, U)>       compose; // childOp, parentOp
+//
+//     LazySegtree(int _n,
+//                 function<T(T, T)>       _combine,
+//                 function<T(U, T, int)>  _push,
+//                 function<U(U, U)>       _compose
+//     ) : n(_n),
+//         t(4*n, T()),
+//         ops(4*n, U()),
+//         combine(move(_combine)),
+//         push(move(_push)),
+//         compose(move(_compose))
+//     {}
+//
+//     // build from initial array a[]
+//     void build(int i, int l, int r, const vi &a) {
+//         if(l == r) {
+//             t[i] = a[l];
+//         } else {
+//             int m = (l+r)/2;
+//             build(2*i,   l,   m, a);
+//             build(2*i+1, m+1, r, a);
+//             t[i] = combine(t[2*i], t[2*i+1]);
+//         }
+//     }
+//
+//     // apply op x to node i covering [l..r]
+//     void applyNode(int i, U x, int l, int r) {
+//         t[i]   = push(x, t[i], r-l+1);
+//         ops[i] = compose(x, ops[i]);
+//     }
+//
+//     void addLazy(int i, int l, int r, int a, int b, U x) {
+//         if(r < a || l > b) return;
+//         if(a <= l && r <= b) {
+//             applyNode(i, x, l, r); return;
+//         }
+//         int m = (l+r)/2;
+//         // push current tag down before recursing
+//         if(ops[i].a != 0 || ops[i].s != INFL) {
+//             applyNode(2*i,   ops[i], l,   m);
+//             applyNode(2*i+1, ops[i], m+1, r);
+//             ops[i] = U();
+//         }
+//         addLazy(2*i,   l,   m, a, b, x);
+//         addLazy(2*i+1, m+1, r, a, b, x);
+//         t[i] = combine(t[2*i], t[2*i+1]);
+//     }
+//
+//     T query(int i, int l, int r, int a, int b) {
+//         if(r < a || l > b) return T();
+//         if(a <= l && r <= b) return t[i];
+//         int m = (l+r)/2;
+//         // push before diving
+//         if(ops[i].a || ops[i].s != INFL) {
+//             applyNode(2*i,   ops[i], l,   m);
+//             applyNode(2*i+1, ops[i], m+1, r);
+//             ops[i] = U();
+//         }
+//         T L = query(2*i,   l,   m, a, b);
+//         T R = query(2*i+1, m+1, r, a, b);
+//         return combine(L, R);
+//     }
+// };
+//
+// struct op {
+//     int a, s;
+//     op(int _a, int _s) : a(_a), s(_s) {}
+//     op() : a(0), s(INFL) {}
+// };
+//
+// int32_t main(){
+//     setIO();
+//     cin>>n>>k;
+//     vi a(n); read(a);
+//
+//     LazySegtree<ll, op> tree(
+//         n,
+//         ad,
+//         [&](op u, ll x, int len)->ll{
+//             if(u.s != INFL) return (u.s)*len + (u.a)*len;
+//             return x + (u.a)*len;
+//         },
+//         // Order of add, set is important. If parent has set -> overwrite, otherwise add p.a (and we consider set first -> add in all calculations)
+//         [&](op p, op c)->op{
+//             if (p.s != INFL) {
+//               return op(p.a, p.s);
+//             } else {
+//               return op(c.a + p.a, c.s);
+//             }
+//         }
+//     );
+//
+//     tree.build(1, 0, n-1, a);
+//
+//     f(i, k){
+//         int t; cin>>t;
+//         if(t == 1){
+//             int l, r, x; cind>>l>>r; cin>>x;
+//             tree.addLazy(1, 0, n-1, l, r, op(x, INFL));
+//         }
+//         else if(t == 2){
+//             int l, r, x; cind>>l>>r; cin>>x;
+//             tree.addLazy(1, 0, n-1, l, r, op(0, x));
+//         }
+//         else{
+//             int l, r; cind>>l>>r;
+//             cout<<tree.query(1, 0, n-1, l, r)<<en;
+//         }
+//     }
+// }

@@ -107,10 +107,23 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>k;
+    if(k==0) quit(0);
+    int cnt = 1;
+    k -= n;
+    int curr = n-1;
+    while(k > 0) {
+        if(k - curr <= 0) {
+            quit(cnt+1);
+        }
+        k -= 2*curr;
+        curr--;
+        cnt+=2;
+    }
+    cout<<cnt<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

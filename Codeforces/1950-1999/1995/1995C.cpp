@@ -107,10 +107,30 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    vi a(n); read(a);
+    vi pow(n, 0);
+    fe(i, n-1) {
+        int x = a[i], y = a[i-1];
+        int cnt = 0;
+        if(x == 1 && a[i] < a[i-1]) quit(-1);
+        if(y == 1) continue;
+        if(x < y) {
+            while(x < y) {
+                cnt++; x *= x;
+            }
+        } else {
+            while(y*y <= x) {
+                cnt--; y *= y;
+            }
+        }
+        pow[i] = max(0LL, pow[i-1] + cnt);
+    }
+    // cout<<pow<<en;
+    cout<<accumulate(all(pow), 0LL)<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

@@ -94,7 +94,7 @@ struct pairHash{tpl_<class T1,class T2>size_t operator()(const pair<T1,T2>&p)con
 struct vectorHash{tpl_<class T>size_t operator()(const v<T>&v)const{size_t val=0;for(const T&i:v)val^=hash<T>{}(i)+0x9e3779b9+(val<<6)+(val>>2);return val;}};
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}}; auto bound=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-    cx_ int N = 100000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ auto en = "\n"; cx_ auto sp = " ";
+    cx_ int N = 200000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ auto en = "\n"; cx_ auto sp = " ";
 inline int fpow(int a, int b) { int res = 1; a %= MOD; while (b > 0) { if (b & 1) res = res * a % MOD; a = a * a % MOD; b >>= 1; } return res; } inline int inv(int x) { return fpow(x, MOD-2); }
 cx_ int add(int a, int b) { return (a+b < MOD ? a+b : a+b-MOD); } cx_ int mult(int a, int b) { return (a*b < MOD ? a*b : a*b % MOD); } cx_ int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes; rep(i, 2, n) if(p[i]) primes.pb(i); return primes;}
@@ -106,11 +106,34 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int t, k, n, m;
+vi fq(N+1, 0);
+vi cnt(N+1, 0);
 void solve() {
-    
+    cin>>n;
+    vi a(n); read(a);
+    int res = 0;
+    auto mad = [&]() {
+        int best = 0;
+        f(i, n+1) fq[i] = cnt[i] = 0;
+        f(i, n) {
+            if(++fq[a[i]] >= 2) {
+                ckmx(best, a[i]);
+            }
+            a[i] = best;
+            if(best > 0) cnt[best]++;
+        }
+    };
+    res += accumulate(all(a), 0LL);
+    mad();
+    res += accumulate(all(a), 0LL);
+    mad();
+    f(i, n) {
+        res += (n-i) * a[i];
+    }
+    cout<<res<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

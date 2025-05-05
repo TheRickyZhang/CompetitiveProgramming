@@ -118,6 +118,10 @@ string run(const string& cmd) {
 std::mt19937 gen; // Generator
 // gen.seed(); // NOTE: cannot call gen in global scope bc already default initialized
 
+constexpr int MAXW = 10;
+constexpr int MAXN = 20;
+constexpr int MAXT = 10;
+
 int rand(int l, int r) {
     return uniform_int_distribution<int>(l, r)(gen);
 }
@@ -144,76 +148,101 @@ int solve(int n, vvpii& adj) {
     return res;
 }
 
-bool check(int n, vvpii& adj, const vi& colors, int expected) {
+void populate(int n, vvpii& adj, v<iii>* edges) {
+    rep(v, 1, n-1) {
+        int u = rand(0, v-1), w = rand(1, MAXW);
+        adj[u].pb({v, w}); adj[v].pb({u, w});
+        if(edges) edges->pb({u, v, w});
+    }
+}
+
+int check(int n, vvpii& adj, const vi& colors) {
+    assert(colors.size() == n && adj.size() == n);
     auto [sz, dep, par, dist] = getAdj(adj);
+
     auto [up, wup] = binaryJumpW(par, dist, [&](int x, int y) {
         return x + y;
     });
+
     vvi pos(n/2);
     f(i, n) {
         if(colors[i] < 0 || colors[i] >= n/2 || pos[colors[i]].size() >= 2) {
-            return false;
+            cout<<"HUH ";
+            f(i, n) cout<<colors[i]<<sp;
+            cout<<en;
+            return -1;
         }
         pos[colors[i]].pb(i);
     }
     int res = 0;
     f(i, n/2) {
         int u = pos[i][0], v = pos[i][1];
-        auto [p, w] = getLCA(up, dep, u, v);
+        auto [p, w] = getLCA(up, dep, u, v, &wup);
         res += w;
     }
-    return res == expected;
+    return res;
 }
 
 int32_t main() {
-    const char* fileName = "out.txt";
+    string prefix = "C:\\Users\\ricky\\CompetitiveProgramming\\Tester\\";
+    auto fileName = "out.txt";
     // absolute paths to your solver source & exe:
-    const string solutionFile = "C:\\Users\\ricky\\CompetitiveProgramming\\Tester\\MaximumSumMatchingNodes.cpp";
-    const string exe          = "C:\\Users\\ricky\\CompetitiveProgramming\\Tester\\MaximumSumMatchingNodes.exe";
+    const string solutionFile = prefix + "MaximumSumMatchingNodes.cpp";
+    const string exe          = prefix + "MaximumSumMatchingNodes.exe";
 
     ofstream out(fileName);
-    int t = 1;
+    int t = rand(1, MAXT);
     vector<int> expected(t);
-    v<vvpii> graphs(t);
+    vector<mt19937> savedGen(t);
+    vector<int> ns(t); // N values
 
     out << t << "\n";
     for(int i=0;i<t;++i){
-        int n = rand(2,100);
+        int n = 2*rand(1,MAXN / 2);
+        savedGen[i] = gen;
+        ns[i] = n;
+
         vector<iii> edges;
-        for(int v=1; v<=n-1; ++v){
-            int u = rand(0,v-1), w = rand(1,100);
-            edges.push_back({u,v,w});
-        }
         vvpii adj(n);
-        for(auto [u,v,w]:edges){
-            adj[u].push_back({v,w});
-            adj[v].push_back({u,w});
-        }
-        graphs[i] = adj;
+        populate(n, adj, &edges);
+
         expected[i] = solve(n, adj);
         out << n << "\n";
-        for(auto [u,v,w]:edges) out<<u<<" "<<v<<" "<<w<<"\n";
+        for(auto [u,v,w]:edges) out<<u+1<<" "<<v+1<<" "<<w<<"\n";
     }
     out.close();
 
     // compile with g++
-    string compileCmd = "g++ -std=c++17 -O2 \"" + solutionFile + "\" -o \"" + exe + "\"";
+    string compileCmd = "g++ -std=c++23 -O2 \"" + solutionFile + "\" -o \"" + exe + "\"";
     system(compileCmd.c_str());
 
     // run solver: no extra quotes, just exe < input
     string runCmd = exe + " < " + fileName;
     string stdout_of_solution = run(runCmd);
-    stringstream res(stdout_of_solution);
+    stringstream solutionStream(stdout_of_solution);
 
-    f(i,t){
-        int n; res>>n;
+    f(i, t) {
+        cout<<"Test case "<<i+1<<en;
+        int sum; solutionStream >> sum;
+        int n = ns[i];
+        gen = savedGen[i];
+        vvpii adj(n);
+        populate(n, adj, nullptr);
+
         vi colors(n);
-        for(int j=0;j<n;++j) res>>colors[j];
-        if(!check(n, graphs[i], colors, expected[i])){
+        f(i, n) solutionStream>>colors[i];
+        int checkedColorSum = check(n, adj, colors);
+
+        // Note we need to check that the sum is the correct sum AND that the colors indeed produce that sum
+        if(sum != expected[i] || sum != checkedColorSum){
             cout<<"Incorrect on test case "<<i+1<<en;
             cout<<"Expected: "<<expected[i]<<en;
-            cout<<"Got: "<<n<<en;
-            for(auto& row:graphs[i]){
+            if(sum != expected[i]) {
+                cout<<"Got different sum of "<<sum<<en;
+            } else {
+                cout<<"Colors produced sum of "<<checkedColorSum<<en;
+            }
+            for(auto& row: adj){
                 for(auto [v,w]:row) cout<<'('<<v<<','<<w<<") ";
                 cout<<"\n";
             }

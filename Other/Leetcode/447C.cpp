@@ -17,7 +17,6 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
-#define int long long
 tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 4>;
 tpl_<tn_ T>       using vv = v<v<T>>;  using vi=v<int>;    using vb=v<bool>; using vvb=v<vb>; using vs=v<string>;  using vvi=v<vi>; using vll=v<ll>; using vpii=v<pii>; using vvpii=v<vpii>;
 tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>;
@@ -105,12 +104,38 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
 
-int t, k, n, m;
-void solve() {
-    
-}
-
-int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
-}
+class Solution {
+public:
+    vector<int> concatenatedDivisibility(vector<int>& nums, int k){
+        int n=nums.size();
+        vi a=nums;
+        sort(all(a));
+        vi len(n);
+        f(i,n) len[i]=to_string(a[i]).size();
+        vi rem(11); rem[0]=1%k;
+        rep(i,1,10) rem[i]=rem[i-1]*10%k;
+        int full=(1<<n)-1;
+        vector<vb> vis(1<<n,vb(k));
+        vi ans;
+        function<bool(int,int)> go=[&](int m,int r){
+            if(m==full) return r==0;
+            if(vis[m][r]) return false;
+            vis[m][r]=1;
+            f(i,n) if(!(m>>i&1)){
+                int nr=((long long)r*rem[len[i]]+a[i]%k)%k;
+                if(go(m|1<<i,nr)){
+                    ans.pb(i);
+                    return true;
+                }
+            }
+            return false;
+        };
+        if(go(0,0)){
+            reverse(all(ans));
+            vi res;
+            for(int i:ans) res.pb(a[i]);
+            return res;
+        }
+        return {};
+    }
+};

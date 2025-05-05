@@ -13,8 +13,8 @@ using namespace std;
 #define ss second
 #define pb push_back
 #define fora(a, x) for (auto &a : x)
-#define all(x) begin(x), end(x)
-#define rall(x) rbegin(x), rend(x)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
 #define int long long
@@ -107,10 +107,42 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>m;
+    vpii a(n);
+    f(i, n) cin>>a[i].ff;
+    f(i, n) cin>>a[i].ss;
+    sort(all(a));
+    int best = 0;
+    f(i, n) {
+        auto [x, f] = a[i];
+        ckmx(best, min(m / x, f) * x);
+    }
+    f(i, n-1) {
+        auto [x, f1] = a[i];
+        auto [y, f2] = a[i+1];
+        if(x + 1 != y) continue;
+        bool f = false;
+        int _ = lstTrue(0LL, f1+f2, [&](int freq) {
+            int l = x * freq + max(0LL, freq-f1);
+            int r = x*freq + min(freq, f2);
+            // cout<<freq<<sp<<l<<sp<<r<<en;
+            if(l <= m && m <= r) f = true;
+            return l <= m;
+        });
+        if(f) quit(m);
+
+        int curr = lstTrue(0LL, f1+f2, [&](int freq) {
+            int val = x*freq + min(freq, f2);
+            if(val < m) {
+                ckmx(best, val);
+            }
+            return val < m;
+        });
+    }
+    cout<<best<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

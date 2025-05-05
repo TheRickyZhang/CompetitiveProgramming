@@ -110,6 +110,28 @@ void solve() {
     
 }
 
+class Solution {
+public:
+    vector<bool> pathExistenceQueries(int n, vector<int>& nums, int maxDiff, vector<vector<int>>& queries) {
+        int d = maxDiff;
+        vi ids(n);
+        ids[0] = 0;
+        rep(i, 1, n-1) {
+            ids[i] = ids[i-1];
+            if(nums[i] - nums[i-1] > d) {
+                ids[i]++;
+            }
+        }
+        int k = queries.size();
+        vb res(k, false);
+        f(i, queries.size()) {
+            int u = queries[i][0], v = queries[i][1];
+            if(ids[u] == ids[v]) res[i] = true;
+        }
+        return res;
+    }
+};
+
 int32_t main() {
     setIO();
     // int t; cin>>t; f(i, t) solve();

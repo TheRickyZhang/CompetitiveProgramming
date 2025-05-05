@@ -107,10 +107,59 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    vi a(n); read(a);
+    if(n == 1) {
+        quit(a[0] > 0);
+    }
+
+    int res = 0;
+    vi upper(n, 0); // {0 -> unaffected, 1 -> at bottom
+    f(i, n) {
+        if(a[i] == 0) continue;
+        res++;
+        if(a[i] >= 5 || (upper[i] > 0 && a[i] >= 3)) {
+            continue;
+        }
+        if(a[i] <= 2) {
+            if(upper[i]==1 || upper[i]==0){
+                if(i+1 < n) {
+                    upper[i+1] = 2;
+                    a[i+1] = max(a[i+1]-2, 0LL);
+                }
+            } else if(upper[i] == 2) {
+                if(i+1 < n && a[i+1] > 2) {
+                    upper[i+1] = 1;
+                    a[i+1] = max(a[i+1]-2, 2LL);
+                }
+            }
+        }
+    }
+    cout<<res<<en;
+    // cout<<a<<en;
+    // cout<<upper<<en;
+    // 0 = unfilled, 1 = filled
+    // vvi dp(n+1, vi(2, 0));
+    // vi dp(n+1, INFL);
+    // dp[0] = 0;
+    // int prev = -1; // Index of previously seen 3-4 protrusion
+    // auto good = [&](int x){
+    //     return x == 3 || x == 4;
+    // };
+    // fe(i, n) {
+    //     if(a[i] <= 2 && prev != -1 && i-prev >= 2) {
+    //         ckmn(a[i], )
+    //     }
+    //     if(i-2 >= 0) ckmn(dp[i], dp[i-2] + ceil(max(a[i], a[i-1]), 2));
+    //     ckmn(dp[i], dp[i-1] + (a[i] > 0));
+    //     if(i > 0 && !good(a[i]) && !good(a[i-1])) prev = -1;
+    //     else if(good(a[i])) prev = i;
+    // }
+    // cout<<dp<<en;
+    // cout<<dp[n]<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

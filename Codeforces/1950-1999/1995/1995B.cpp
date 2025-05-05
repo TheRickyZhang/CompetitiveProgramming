@@ -13,8 +13,8 @@ using namespace std;
 #define ss second
 #define pb push_back
 #define fora(a, x) for (auto &a : x)
-#define all(x) begin(x), end(x)
-#define rall(x) rbegin(x), rend(x)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
 #define int long long
@@ -107,10 +107,42 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n>>m;
+    vi a(n); read(a);
+    sort(all(a));
+    int r = -1;
+    int res = 0, curr = 0;
+    f(l, n) {
+        while(r+1 < n && a[r+1] <= a[l]+1 && curr + a[r+1] <= m) {
+            curr += a[++r];
+        }
+        ckmx(res, curr);
+        curr -= a[l];
+    }
+    cout<<res<<en;
+    // vi pre(n+1, 0);
+    // f(i, n) pre[i+1] = pre[i] + a[i];
+    // auto query = [&](int l, int r) {
+    //     return pre[r+1]-pre[l];
+    // };
+    // vi end(n);
+    // f(i, n) {
+    //     int it = lower_bound(all(a), a[i]+2) - a.begin();
+    //     int x = a[i];
+    //     while(i < n && a[i] == x) {
+    //         end[i] = it;
+    //         i++;
+    //     }
+    //     i--;
+    // }
+    // int res = 0;
+    // f(i, n) {
+    //     ckmx(res, query(i, end[i]-1));
+    // }
+    // cout<<res<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

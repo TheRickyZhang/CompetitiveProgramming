@@ -107,10 +107,44 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    int c;
+    cin>>n>>c>>k;
+    int m = 1<<c;
+    str s; cin>>s;
+    vvi pre(n+1, vi(c, 0));
+    f(i, n) {
+        f(j, c) pre[i+1][j] = pre[i][j];
+        pre[i+1][s[i]-'A']++;
+    }
+    auto query = [&](int l, int r, int cc) {
+        return pre[r+1][cc] - pre[l][cc];
+    };
+    vi a(n-k+1, 0);
+    f(i, n-k+1) {
+        f(j, c) {
+            if(query(i, i+k-1, j) > 0) a[i] = a[i] | (1<<j);
+        }
+    }
+    a.pb(1 << (s[n-1]-'A')); // We also need to include the last letter as well
+    vb bad(m, false);
+    for(int x : a) {
+        bad[~x & (m-1)] = true;
+    }
+    repr(i, m-1, 0) {
+        f(j, c) {
+            if(i & (1<<j)) bad[i ^ (1<<j)] = bad[i ^ (1<<j)] | bad[i];
+        }
+    }
+    int res = INFL;
+    f(i, m) {
+        if(!bad[i]) {
+            ckmn(res, ll(__builtin_popcount(i)));
+        }
+    }
+    cout<<res<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

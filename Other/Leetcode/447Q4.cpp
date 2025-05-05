@@ -105,12 +105,49 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
 
-int t, k, n, m;
-void solve() {
-    
-}
-
-int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
-}
+class Solution {
+public:
+    vector<int> pathExistenceQueries(int n, vector<int>& nums, int maxDiff, vector<vector<int>>& queries) {
+        int d = maxDiff;
+        vpii a(n);
+        f(i, n) a[i] = {nums[i], i};
+        sort(all(a));
+        vi to(n);
+        f(i, n) to[a[i].ss] = i;
+        vi b(n); f(i, n) b[i] = a[i].ff;
+        int ln = log2(n) + 1;
+        cout<<b<<en;
+        vvi up(n, vi(ln, INFL));
+        f(i, n) {
+            auto rit = leq_bound(all(b), b[i] + d);
+            if(rit != b.end()) up[i][0] = rit-b.begin();
+            if(up[i][0] == i) up[i][0] = INFL;
+        }
+        fe(j, ln-1) {
+            f(i, n) {
+                int p = up[i][j-1];
+                if(p != INFL) up[i][j] = up[p][j-1];
+                if(up[i][j] == i) up[i][j] = INFL;
+            }
+        }
+        cout<<up<<en;
+        int k = queries.size();
+        vi res(k, -1);
+        f(i, k) {
+            int l = to[queries[i][0]], r = to[queries[i][1]];
+            cout<<"q "<<l<<sp<<r<<en;
+            if(l > r) swap(l, r);
+            int u = l;
+            int curr = 0;
+            repr(j, ln-1, 0) {
+                if(up[u][j] <= r) {
+                    curr += 1<<j;
+                    u = up[u][j];
+                }
+                if(u == r) break;
+            }
+            if(u==r) res[i] = curr;
+        }
+        return res;
+    }
+};

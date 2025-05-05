@@ -13,8 +13,8 @@ using namespace std;
 #define ss second
 #define pb push_back
 #define fora(a, x) for (auto &a : x)
-#define all(x) begin(x), end(x)
-#define rall(x) rbegin(x), rend(x)
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
 #define int long long
@@ -48,9 +48,9 @@ tpl_<tn_ T> struct Segtree { int n; v<T> t, nums; T z; fn<T(T, T)> c;
     Segtree() : n(0), z(0), c([](T a, T b) { return a + b; }) {}
     Segtree(int sz, T zero, fn<T(T, T)> combine, const v<T>& init = {}) : n(sz), t(4 * sz, zero), nums(sz, zero), z(zero), c(move(combine)) { if (!init.empty()) { nums = init; build(1, 0, n-1); } }
     void build (int i, int a, int b) { if (a == b) { t[i] = nums[a]; return; } int m = (a + b) / 2; build(2 * i, a, m); build(2 * i + 1, m + 1, b); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void add   (int i, int a, int b, int p, T x) { if(a==b) { t[i] = c(t[i], x); return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void update(int i, int a, int b, int p, T x) { if(a==b) { t[i] = x;          return; } int m = (a + b) / 2; (p <= m ? update(2 * i, a, m, p, x) : update(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    T query(int i, int a, int b, int l, int r) { if (l > r) return z; if (a == l && b == r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, min(r, m)), query(2 * i + 1, m + 1, b, max(l, m + 1), r)); }
+    void add   (int i, int a, int b, int p, T x) { if (a == b) { t[i] = c(t[i], x); return; } int m = (a + b) / 2; (p <= m ? add(2 * i, a, m, p, x) : add(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    void update(int i, int a, int b, int p, T x) { if (a == b) { t[i] = x; return; } int m = (a + b) / 2; (p <= m ? update(2 * i, a, m, p, x) : update(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    T query  (int i, int a, int b, int l, int r) { if (r < a || b < l) return z; if (l <= a && b <= r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, r), query(2 * i + 1, m + 1, b, l, r)); }
     friend ostream& operator<<(ostream& os, const Segtree<T>& seg) {
     int maxRows=20, rowCount=0, maxDepth=4; fn<void(int,int,int,int)> pt; pt=[maxRows, maxDepth, &rowCount, &os, &seg, &pt](int i,int a,int b,int d){ if(a>b||rowCount>=maxRows||d>maxDepth)return;
         os<<str(d*2,' ')<<"["<<a<<","<<b<<"]: "<<seg.t[i]<<"\n"; rowCount++; if(a!=b){ int m=(a+b)/2; pt(2*i,a,m,d+1); pt(2*i+1,m+1,b,d+1); } }; os<<"Segtree:\n"; pt(1,0,seg.n-1,0); return os;}
@@ -110,7 +110,64 @@ void solve() {
     
 }
 
+template<typename T>
+struct CustomSegTree {
+    int n;
+    v<T> t;
+    T z;
+    fn<T(T, T)> c;
+    CustomSegTree(int n, T z, fn<T(T, T)> c) : n(n), t(4*n), z(z), c(move(c)) {}
+    void build(int i, int l, int r, const v<T>& a) {
+        if(l == r) {
+            t[i] = a[l]; return;
+        }
+        int m = (l+r) /2 ;
+        build(2*i, l, m, a);
+        build(2*i+1, m+1, r, a);
+        t[i] = c(t[2*i], t[2*i+1]);
+    }
+    void update(int i, int l, int r, int p, T v) {
+        if(l == r) {
+            t[i] = v; return;
+        }
+        int m = (l+r) / 2;
+        if(p <= m) update(2*i, l, m, p, v);
+        else update(2*i+1, m+1, r, p, v);
+        t[i] = c(t[2*i], t[2*i+1]);
+    }
+    T query(int i, int l, int r, int a, int b) {
+        if(l > b || r < a) return z;
+        if(a <= l && r <= b) return t[i];
+        int m = (l+r) / 2;
+        return c(query(2*i, l, m, a, b), query(2*i+1, m+1, r, a, b));
+    }
+};
+
+struct node {
+    int x, l, r, tot;
+    node(int x, int l, int r, int tot) : x(x), l(l), r(r), tot(tot) {}
+    node() : x(-INFL), l(-INFL), r(-INFL), tot(0) {}
+};
+
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n>>k;
+    vi a(n); read(a);
+    v<node> b(n);
+    f(i, n) b[i] = node(a[i], a[i], a[i], a[i]);
+    CustomSegTree<node> tree(n, node(), [&](node a, node b) {
+        node c;
+        c.l = max(a.l, a.tot + b.l);
+        c.r = max(b.r , b.tot + a.r);
+        c.x = max({a.x, b.x, a.r + b.l});
+        c.tot = a.tot + b.tot;
+        return c;
+    });
+    tree.build(1, 0, n-1, b);
+    f(_, k) {
+        int i, x; cin>>i>>x;
+        tree.update(1, 0, n-1, i-1, node(x, x, x, x));
+        node res = tree.query(1, 0, n-1, 0, n-1);
+        cout<<max(res.x, 0LL)<<endl;
+    }
 }

@@ -8,9 +8,12 @@
   into the Codeforces subfolder grouped by 50-range.  If omitted, it
   processes *all* .cpp files with your USACO/CF/CSES/OI/Gym logic.
 #>
+
 param(
     [string] $Prefix
 )
+
+Set-Location $PSScriptRoot
 
 # —— 0) Clean out any stray executables ——
 Remove-Item "*.exe"                   -Force -ErrorAction SilentlyContinue
@@ -18,10 +21,14 @@ Remove-Item "cmake-build-debug\*.exe" -Force -ErrorAction SilentlyContinue
 Remove-Item "*.out"                   -Force -ErrorAction SilentlyContinue
 
 # —— 1) Exclusions ——
-$Exclude = @("Template.cpp","Checker.cpp")
+$Exclude = @('Template.cpp')
 
-$files = Get-ChildItem -Filter '*.cpp'
+# ——— No args = move everything by your USACO/CF/CSES/OI/Gym logic ———
+$files = Get-ChildItem -Path . -Filter '*.cpp' -File |
+        Where-Object { $Exclude -notcontains $_.Name }
 
+Write-Host "Found $($files.Count) .cpp files:"
+$files | ForEach-Object { Write-Host "  $($_.Name)" }
 
 # —— ONE-ARG MODE: move <Prefix>*.cpp into Codeforces\<range>\<prefix> ——
 if($Prefix -and $Prefix -match '^\d+$') {
@@ -89,9 +96,10 @@ foreach ($f in $files) {
         if (-not (Test-Path $dest)) {
             New-Item -ItemType Directory -Path $dest | Out-Null
         }
-        Move-Item $_.FullName -Destination $dest -Force
-        Write-Host "[$dest] Moved $($_.Name) → $dest"
-    } else {
-        Write-Host "[$base] Doesn't match any"
+        Move-Item $f.FullName -Destination $dest -Force
+        Write-Host "[$dest] Moved $($f.Name) → $dest"
+    }
+    else {
+        Write-Host "[$($f.BaseName)] Doesn't match any"
     }
 }

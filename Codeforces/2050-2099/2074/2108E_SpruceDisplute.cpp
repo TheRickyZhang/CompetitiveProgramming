@@ -34,7 +34,7 @@ tpl_<tn_ K, tn_ T> ostream& operator<<(ostream& os, const map<K, T>& m) { os << 
 tpl_<tn_ C, tn_ T = enable_if_t<!is_same_v<C, str>, typename C::value_type>> ostream& operator<<(ostream& os, const C& v) { os<<"{"; str sep; for(const T& x : v) os<<sep<<x, sep=", "; return os<<"}";}
 struct cind{template<typename T> cind& operator>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& operator<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;}if(y<0){cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
-void read(vi &v){for(auto &x:v)cin>>x;} void read(vpii &v){for(auto &p:v)cin>>p.first>>p.second;} void read(vvi &mat){for(auto &r:mat)for(auto &x:r)cin>>x;}
+void read(vi &v){for(auto &x:v)cin>>x;} void read(vpii &v){for(auto &p   :v)cin>>p.first>>p.second;} void read(vvi &mat){for(auto &r:mat)for(auto &x:r)cin>>x;}
 void read(vvi &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v;cin>>u>>v;if(dec){u--;v--;}g[u].pb(v);if(!dir)g[v].pb(u);}}
 void read(vvpii &g, int m, bool dec=true, bool dir=false){f(i, m){int u,v,w;cin>>u>>v>>w;if(dec){u--;v--;}g[u].pb({v,w});if(!dir)g[v].pb({u,w});}}
 
@@ -107,10 +107,62 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-    
+    cin>>n;
+    vvi adj(n);
+    read(adj, n-1);
+    auto [szz, _, __] = getAdj(adj);
+    fn<int(int, int)> centroid = [&](int u, int p) {
+        for(int v : adj[u]) {
+            if(v == p) continue;
+            if(szz[v] > n/2) return centroid(v, u);
+        }
+        return u;
+    };
+    int a = centroid(0, -1);
+    // cout<<"picking centroid "<<a<<en;
+    auto [sz, dep, par] = getAdj(adj, a);
+
+    int leaf = -1, best = INFL;
+    f(u, n) {
+        if(u != a && adj[u].size()==1 && dep[u] < best) {
+             best = dep[u], leaf = u;
+        }
+    }
+    assert(leaf != -1);
+    // cout<<par<<en;
+    // cout<<"leaf "<<leaf+1<<en;
+    int j = par[leaf];
+    while(j != -1) {
+        sz[j]--; j = par[j];
+    }
+    cout<<leaf+1<<sp<<par[leaf]+1<<en;
+    auto& vv = adj[leaf];
+    vv.erase(find(all(vv), par[leaf]));
+    auto& ww= adj[par[leaf]];
+    ww.erase(find(all(ww), leaf));
+    // a = centroid(a, -1);
+    // tie(sz, dep, par) = getAdj(adj, a);
+
+    int it = 0;
+    // int res = 0;
+    vi col(n, -1);
+    fvii dfs = [&](int u, int p) {
+        col[u] = it;
+        it = (it+1) % (n/2);
+        for(int v : adj[u]) {
+            if(v==p) continue;
+            // res += min(sz[v], n-1 - sz[v]);
+            dfs(v, u);
+        }
+    };
+    dfs(a, -1);
+
+    if(leaf < par[leaf]) swap(col[leaf], col[par[leaf]]);
+    for(int c : col) cout<<c+1<<sp;
+    cout<<en;
 }
 
 int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
+     setIO();
+     int t; cin>>t; f(i, t) solve();
 }
