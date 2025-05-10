@@ -186,7 +186,6 @@ int check(int n, vvpii& adj, const vi& colors) {
 int32_t main() {
     string prefix = "C:\\Users\\ricky\\CompetitiveProgramming\\Tester\\";
     auto fileName = "out.txt";
-    // absolute paths to your solver source & exe:
     const string solutionFile = prefix + "MaximumSumMatchingNodes.cpp";
     const string exe          = prefix + "MaximumSumMatchingNodes.exe";
 
@@ -212,11 +211,9 @@ int32_t main() {
     }
     out.close();
 
-    // compile with g++
     string compileCmd = "g++ -std=c++23 -O2 \"" + solutionFile + "\" -o \"" + exe + "\"";
     system(compileCmd.c_str());
 
-    // run solver: no extra quotes, just exe < input
     string runCmd = exe + " < " + fileName;
     string stdout_of_solution = run(runCmd);
     stringstream solutionStream(stdout_of_solution);

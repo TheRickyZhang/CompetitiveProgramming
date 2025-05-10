@@ -82,6 +82,8 @@ int t, k, n, m;
 int neg(int x) {
     return 2*m-x-1;
 }
+
+// 2SAT
 void solve() {
     cin>>n>>m;
     vvi adj(2*m), radj(2*m);

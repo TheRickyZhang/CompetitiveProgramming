@@ -1,29 +1,55 @@
-# run.ps1 — compile & run a .cpp, then delete the exe
+param([string]$src)
+if (-not (Test-Path $src)) { Write-Error "File not found: $src"; exit 1 }
 
-if ($args.Count -lt 1) {
-  Write-Error "Usage: run.ps1 <source.cpp>"
-  exit 1
+$full = Resolve-Path $src
+$dir  = Split-Path  $full
+$name = [IO.Path]::GetFileNameWithoutExtension($full)
+$ext  = [IO.Path]::GetExtension($full).ToLower()
+
+# init
+$compile = $null
+$run     = $null
+$kill    = ''
+$cleanup = $null
+
+switch ($ext) {
+  '.cpp' {
+    $compile = { g++ $full -O2 -std=c++23 -o "$dir\$name.exe" }
+    $run     = { & "$dir\$name.exe" }
+    $kill    = $name
+    $cleanup = { Remove-Item "$dir\$name.exe" -Force -ErrorAction SilentlyContinue }
+  }
+  '.java' {
+    $compile = { javac $full }
+    $run     = { & java -cp $dir $name }
+    $kill    = 'java'
+    $cleanup = { Get-ChildItem $dir "$name*.class" | Remove-Item -Force -ErrorAction SilentlyContinue }
+  }
+  '.py' {
+    # no compile step
+    $run     = { & python $full }
+    # don't kill all python processes
+    $kill    = ''
+    $cleanup = $null
+  }
+  default {
+    Write-Error "Unsupported extension: $ext"
+    exit 1
+  }
 }
-$cpp = $args[0]
 
-if (-not $cpp.EndsWith('.cpp')) {
-  Write-Error "I only compile .cpp files, got: $cpp"
-  exit 1
+try {
+  if ($compile) {
+    & $compile
+    if ($LASTEXITCODE -ne 0) { throw "compile-failed" }
+  }
+
+  if ($kill) {
+    Stop-Process -Name $kill -ErrorAction SilentlyContinue -Force
+  }
+
+  & $run
 }
-
-$FullPath = Resolve-Path $cpp
-$Dir      = Split-Path $FullPath
-$Name     = [IO.Path]::GetFileNameWithoutExtension($FullPath)
-$Exe      = Join-Path $Dir "$Name.exe"
-
-# 4) compile
-g++ $FullPath -O2 -std=c++23 -o $Exe
-if ($LASTEXITCODE -ne 0) {
-  Write-Error "Compilation failed."
-  exit 1 # Any way to still have this goto 5 THEN exit 1 so that we stil clearn up oldinstances regardless?
+finally {
+  if ($cleanup) { & $cleanup }
 }
-
-# 5) kill old instances, run, then clean up
-Stop-Process -Name $Name -ErrorAction SilentlyContinue -Force
-& $Exe
-if (Test-Path $Exe) { Remove-Item $Exe -Force }
