@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="Codeforces" target="23" />
+      <module name="Codeforces.main" target="23" />
+      <module name="Codeforces.test" target="23" />
+      <module name="CSES" target="23" />
+      <module name="CSES.main" target="23" />
+      <module name="CSES.test" target="23" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

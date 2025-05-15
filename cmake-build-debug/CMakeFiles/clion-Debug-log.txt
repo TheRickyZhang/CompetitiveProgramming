@@ -1,4 +1,105 @@
-"C:\Program Files\JetBrains\CLion 2024.3\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2024.3/bin/ninja/win/x64/ninja.exe" -G Ninja -S C:\Users\ricky\CompetitiveProgramming -B C:\Users\ricky\CompetitiveProgramming\cmake-build-debug
--- Configuring done (0.2s)
--- Generating done (0.1s)
--- Build files have been written to: C:/Users/ricky/CompetitiveProgramming/cmake-build-debug
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=C:/Users/ricky/AppData/Local/Programs/CLion/bin/ninja/win/x64/ninja.exe -G Ninja -S C:\Users\ricky\CompetitiveProgramming -B C:\Users\ricky\CompetitiveProgramming\cmake-build-debug
+-- Configuring done (0.1s)
+CMake Error at CMakeLists.txt:23 (add_executable):
+  Cannot find source file:
+
+    fjsdklfd.cpp
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 1630C_PaintTheMiddle
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 1635E_Cars
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 2108D
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 2108F_FallenTowers
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: MaximumAverageSubarrays
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: MountainRange
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: NOTE_DP
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: NOTE_Graphs
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: NOTE_Notes
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: NOTE_NumberTheory
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: NOTE_RangeQueries
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: NOTE_SortingSearching
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: NOTE_Strings
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: NOTE_Trees
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 447C
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 447Q1_CountCoveredBuildings
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 447Q2
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 447Q3
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: 447Q4
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: CountBalancedPermutations
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: LeetcodeTemplate
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: Template
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: Checker
+
+
+CMake Error at CMakeLists.txt:23 (add_executable):
+  No SOURCES given to target: MaximumSumMatchingNodes
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.

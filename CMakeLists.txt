@@ -20,5 +20,13 @@ foreach(_f IN LISTS CPP_FILES)
         set(_t ${_n})
     endif()
 
-    add_executable(${_t} ${_f})
+    add_executable(${_t} ${_f}
+            MaximumAverageSubarrays.cpp
+            1630C_PaintTheMiddle.cpp
+            MountainRange.cpp
+            Template.cpp
+            Template.cpp
+            fjsdklfd.cpp
+            Template.cpp
+            Template.cpp)
 endforeach()
