@@ -1,0 +1,3 @@
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\LeetcodeTemplate.dir/objects.a
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\LeetcodeTemplate.dir/objects.a @CMakeFiles\LeetcodeTemplate.dir\objects1.rsp
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\LeetcodeTemplate.dir/objects.a -Wl,--no-whole-archive -o LeetcodeTemplate.exe -Wl,--out-implib,libLeetcodeTemplate.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\LeetcodeTemplate.dir\linkLibs.rsp

@@ -1,9 +1,6 @@
-C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/1630C_PaintTheMiddle.dir
-C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/1635E_Cars.dir
-C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/2108D.dir
-C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/2108F_FallenTowers.dir
-C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/MaximumAverageSubarrays.dir
-C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/MountainRange.dir
+C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/DistinctValueQueries2.dir
+C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/MissingCoinSumQueries.dir
+C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/MovieFestivalQueries.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/NOTE_DP.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/NOTE_Graphs.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/NOTE_Notes.dir
@@ -19,9 +16,11 @@ C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/447Q3.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/447Q4.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/CountBalancedPermutations.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/LeetcodeTemplate.dir
+C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/RangeIntervalQueries.dir
+C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/SubarraySumQuieries2.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/Template.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/Checker.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/MaximumSumMatchingNodes.dir
-C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/fjsdklfd.dir
+C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/VisibleBuildingsQueries.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/edit_cache.dir
 C:/Users/ricky/CompetitiveProgramming/cmake-build-debug/CMakeFiles/rebuild_cache.dir

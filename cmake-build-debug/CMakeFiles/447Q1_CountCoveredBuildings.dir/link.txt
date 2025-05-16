@@ -1,0 +1,3 @@
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\447Q1_CountCoveredBuildings.dir/objects.a
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\447Q1_CountCoveredBuildings.dir/objects.a @CMakeFiles\447Q1_CountCoveredBuildings.dir\objects1.rsp
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\447Q1_CountCoveredBuildings.dir/objects.a -Wl,--no-whole-archive -o 447Q1_CountCoveredBuildings.exe -Wl,--out-implib,lib447Q1_CountCoveredBuildings.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\447Q1_CountCoveredBuildings.dir\linkLibs.rsp

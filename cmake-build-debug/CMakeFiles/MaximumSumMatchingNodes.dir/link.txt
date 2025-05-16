@@ -1,0 +1,3 @@
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\MaximumSumMatchingNodes.dir/objects.a
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\MaximumSumMatchingNodes.dir/objects.a @CMakeFiles\MaximumSumMatchingNodes.dir\objects1.rsp
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\MaximumSumMatchingNodes.dir/objects.a -Wl,--no-whole-archive -o MaximumSumMatchingNodes.exe -Wl,--out-implib,libMaximumSumMatchingNodes.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\MaximumSumMatchingNodes.dir\linkLibs.rsp

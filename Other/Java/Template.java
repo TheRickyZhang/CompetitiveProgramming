@@ -55,6 +55,31 @@ public class Template {
             return _query(1, 0, n-1, a, b);
         }
     }
+    public static class BIT {
+        int n;
+        long[] t;
+        public BIT(int n) {
+            this.n = n;
+            this.t = new long[n+1];
+        }
+        void updateAdd(int pos, long x) {
+            for(int i = pos + 1; i <= n; i += (i & -i)) {
+                t[i] = add(t[i], x);
+            }
+        }
+        long _query(int pos) {
+            long res = 0;
+            for(int i = pos+1; i > 0; i -= (i & -i)) {
+                res = add(res, t[i]);
+            }
+            return res;
+        }
+        long query(int l, int r) {
+            if(r < l) return 0;
+            return (_query(r) - _query(l-1) + MOD) % MOD;
+        }
+    }
+
     static final long MOD  = 1000000007L;
     static final int  INF  = 1000000000;
     static final long INFL = 1_000_000_000_000_000_000L;
