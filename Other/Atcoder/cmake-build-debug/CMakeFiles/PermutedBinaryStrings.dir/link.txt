@@ -1,0 +1,3 @@
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\PermutedBinaryStrings.dir/objects.a
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\PermutedBinaryStrings.dir/objects.a @CMakeFiles\PermutedBinaryStrings.dir\objects1.rsp
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\PermutedBinaryStrings.dir/objects.a -Wl,--no-whole-archive -o PermutedBinaryStrings.exe -Wl,--out-implib,libPermutedBinaryStrings.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\PermutedBinaryStrings.dir\linkLibs.rsp

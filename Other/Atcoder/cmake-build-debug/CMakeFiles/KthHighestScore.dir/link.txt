@@ -1,0 +1,3 @@
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\KthHighestScore.dir/objects.a
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\KthHighestScore.dir/objects.a @CMakeFiles\KthHighestScore.dir\objects1.rsp
+C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\KthHighestScore.dir/objects.a -Wl,--no-whole-archive -o KthHighestScore.exe -Wl,--out-implib,libKthHighestScore.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\KthHighestScore.dir\linkLibs.rsp
