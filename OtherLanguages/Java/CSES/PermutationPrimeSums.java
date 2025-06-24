@@ -1,8 +1,10 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiFunction;
 
-public class Template {
+public class PermutationPrimeSums {
 //    record Pair<T, U>(T ff, U ss) { }
     public static final class pii {
         public int ff, ss;
@@ -129,12 +131,45 @@ public class Template {
         out.println();
     }
 
-    /* ---------------------------- HERE ----------------------------- */
-    public static void main(String[] args) throws IOException {
-        int t = in.nextInt();
-        for(int i = 0; i < t; i++) {
-            solve();
+    /* ---------------------------- here ----------------------------- */
+    public static void main(String[] args) throws IOException{
+        int n = ni();
+        // sievelist
+        boolean[] pr = new boolean[2*n+1];
+        List<Integer> primes = new ArrayList<>();
+        Arrays.fill(pr, true);
+        pr[0] = false;
+        pr[1] = false;
+        for(int i = 2; i <= 2*n; i++) {
+            if(!pr[i]) continue;
+            primes.add(i);
+            for(int j = 2*i; j <= 2*n; j += i) {
+                pr[j] = false;
+            }
         }
+        int m = primes.size();
+
+        int it = m-1; // This is the primes.size();
+        int[] a = new int[n];
+        int[] b = new int[n];
+        int pos = 0;
+
+        int curr = n;
+        while(pos < n) {
+            // Find the lowest prime > curr
+            while(it > 0 && primes.get(it-1) > curr) {
+                it--;
+            }
+            int p = primes.get(it);
+            for(int i = p - curr; i <= curr; i++) {
+                a[pos] = i;
+                b[pos] = p - i;
+                pos++;
+            }
+            curr = p-curr-1;
+        }
+        print(a);
+        print(b);
         out.flush();
     }
     static void solve() throws IOException {

@@ -105,6 +105,8 @@ void solve() {
 }
 
 // Eulerian cycle - Hierholzer's algorithm
+// Remember that an A-B relation is typically not a node (Do NOT say there is edge between A-B, B-C),
+// but instead an edge between nodes A, B
 int32_t main() {
     setIO();
     cin>>n>>m;
@@ -122,6 +124,7 @@ int32_t main() {
         }
     }
     vi path;
+    // This is quite unintuitive, but imagine a
     function<void(int)> dfs = [&](int u) {
         while(!adj[u].empty()) {
             auto [v, i] = adj[u].back(); // Back for convenience
