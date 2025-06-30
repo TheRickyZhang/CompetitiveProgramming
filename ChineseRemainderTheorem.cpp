@@ -167,6 +167,7 @@ void solve() {
     }
     cout<<curr % tot<<en;
 
+    utres
     // This also handles non-relatively prime and is same big O
 
 }
@@ -175,3 +176,34 @@ int32_t main() {
     setIO();
     int t; cin>>t; f(i, t) solve();
 }
+
+
+
+
+
+
+
+
+  [a]>[home]
+  [d]>{s9}{-lctr}{right}{+lctr}
+  [f]>[end]
+  [h]>[left]
+  [j]>[down]
+  [k]>[up]
+  [l]>[rght]
+  [s]>{s9}{-lctr}{left}{+lctr}
+  {comm}>{s9}{-lshf}{down}{+lshf}{bspc}
+  {c}>{s9}{-lshf}{-lctr}{right}{+lctr}{+lshf}{bspc}
+  {e}>{s9}{-lctr}{right}{+lshf}{+lctr}
+  {fsls}>{s9}{-lshf}{rght}{+lshf}{bspc}
+  {i}>{s9}{-lshf}{up}{+lshf}
+  {m}>{s9}{-lshf}{left}{+lshf}{bspc}
+  {o}>{s9}{-lshf}{rght}{+lshf}
+  {perd}>{s9}{-lshf}{up}{+lshf}{bspc}
+  {q}>{s9}{-lshf}{home}{+lshf}
+  {r}>{s9}{-lshf}{end}{+lshf}
+  {u}>{s9}{-lshf}{down}{+lshf}
+  {v}>{s9}{-lshf}{end}{+lshf}{bspc}
+  {w}>{s9}{-lctr}{left}{+lshf}{+lctr}
+  {x}>{s9}{-lshf}{-lctr}{left}{+lctr}{+lshf}{bspc}
+  {z}>{s9}{-lshf}{home}{+lshf}{bspc}
