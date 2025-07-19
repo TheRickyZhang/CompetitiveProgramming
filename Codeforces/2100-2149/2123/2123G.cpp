@@ -129,73 +129,60 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int t, k, n, m;
+int M = 500000;
+vvi divisors(M+1);
+
 void solve() {
-
-}
-
-v<tuple<int, int, char>> ops;
-inline int writeAdd(int x, int y) {
-    ops.pb({x, y, '+'});
-    return x+y;
-}
-inline int writeXor(int x, int y) {
-    ops.pb({x, y, '^'});
-    return x ^ y;
-}
-int writeMultiply(int x, int p) {
-    int res = 0;
-    int cur = x;
-    while(p>0){
-      if(p&1) res = writeAdd(res, cur);
-      cur       = writeAdd(cur, cur);
-      p >>= 1;
+    int q;
+    cin>>n>>m>>q;
+    // Pad 0s in the front/back for convenience
+    vi a(n+1, 0);
+    f(i, n) {
+        cin>>a[i+1];
     }
-    return res;
+    auto diff = [&](int x, int y, int g) {
+        return y - x + (y < x ? g : 0);
+    };
+    auto calculate = [&](int g) {
+        int res = 0;
+        f(i, n) res += diff(a[i] % g, a[i+1] % g, g);
+        return res;
+    };
+    ump<int, int> mp;
+    vi nums = divisors[m];
+    f(i, nums.size()) {
+        mp[nums[i]] = i;
+        nums[i] = calculate(nums[i]);
+    }
+
+    f(_, q) {
+        int t; cin>>t;
+        if(t == 1) {
+            int i, x; cin>>i>>x; // Don't decrement this i since already 1-indexed
+            for(auto [g, pos] : mp) {
+                int prev = diff(a[i-1] % g, a[i] % g, g) + (i != n ? diff(a[i] % g, a[i+1] % g, g) : 0);
+                int curr = diff(a[i-1] % g, x % g, g) + (i != n ? diff(x % g, a[i+1] % g, g) : 0);
+                nums[pos] += curr - prev;
+            }
+            a[i] = x;
+        } else {
+            int k; cin>>k;
+            int g = gcd(m, k);
+            if(nums[mp[g]] < m) {
+                cout<<"YES"<<en;
+            } else {
+                cout<<"NO"<<en;
+            }
+        }
+    }
 }
 
-// Bezout's (extended euclidean algorithm)
-tuple<int, int, int> bezout(int x, int y) {
-    // assert(gcd(x, y) != 0);
-    if(y == 0) return {1, 0, x}; // 1*x + 0*y = x;
-    auto [a, b, c] = bezout(y, x % y);
-    return {b, a - (x/y) * b, c};
-}
-
-int main {
-}
 int32_t main() {
     setIO();
-    int x; cin>>x;
-    writeXor(x, x);
-    int y = writeXor(x, writeMultiply(x, (1LL<<msb(x))));
-    auto [a, b, c] = bezout(x, y);
-    assert(c == 1);
-    b = -b; // We want ax - by = 1;
-    // Ensure b is positive and even
-    if(b < 0) {
-        // int k = ceildiv(-b, x);
-        a += k * y;
-        b += k * x;
+    fe(i, M) {
+        for(int j = i; j <= M; j += i) {
+            divisors[j].pb(i);
+        }
     }
-    if(b & 1) {
-        a += y, b += x;
-    }
-    int ax = writeMultiply(x, a);
-    int by = writeMultiply(y, b);
-    writeXor(ax, by); // Same as ax - by since it should give 1!
-
-    cout<<ops.size()<<en;
-    for(auto [x, y, c] : ops) {
-        cout<<x<<sp<<c<<sp<<y<<en;
-    }
-}1111111111111111111111
-
-{
-    [][][][][i][i]ny][j][j][k][l][}]
-
+    int t; cin>>t; f(i, t) solve();
 }
-hi how are you doing?
-enstrirnsotsrioentsr itsie rsnei stnersistrni srior so n srnio ioerns  eoi ioetrsnei  neiorsne trsnrsnierst iersten
-tnesrio nonris t senir rsent
-
-int i = 0

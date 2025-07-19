@@ -5,10 +5,10 @@ using namespace std;
 #define tn_ typename
 #define cx_ constexpr
 #define fn function
-#define f(i, to) for (int i = 0; i < to; ++i)
-#define fe(i, to) for (int i = 1; i <= to; ++i)
-#define rep(i, a, b) for (int i = a; i <= b; ++i)
-#define repr(i, a, b) for (int i = a; i >= b; --i)
+#define f(i, to) for (int (i) = 0; (i) < (to); ++(i))
+#define fe(i, to) for (int (i) = 1; (i) <= (to); ++(i))
+#define rep(i, a, b) for (int (i) = (a); (i) <= (b); ++(i))
+#define repr(i, a, b) for (int (i) = (a); (i) >= (b); --(i))
 #define ff first
 #define ss second
 #define pb push_back
@@ -24,8 +24,8 @@ tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered
 tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;
 tpl_<class It, class T>     auto leq_bound  (It first, It last, T val) { auto it = upper_bound(first, last, val); return it != first ? prev(it) : last;}
 tpl_<class It, class T>     auto less_bound (It first, It last, T val) {auto it = lower_bound(first, last, val);return it != first ? prev(it) : last; }
-cx_ auto en = "\n"; cx_ auto sp = " "; using str = string; typedef fn<void(int, int, int)> fviii;  typedef fn<void(int, int)> fvii; typedef fn<void(int)> fvi;
-cx_ int N = 100000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ int B = 31;
+using str = string; typedef fn<void(int, int, int)> fviii;  typedef fn<void(int, int)> fvii; typedef fn<void(int)> fvi;
+cx_ int N = 100000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ auto en = "\n"; cx_ auto sp = " ";
 
 void setIO(const str &name = "") {ios_base::sync_with_stdio(false); cin.tie(nullptr); if (!name.empty()) { freopen((name + ".in").c_str(), "r", stdin); freopen((name + ".out").c_str(), "w", stdout); }}
 tpl_<tn_ A, tn_ B> ostream& operator<<(ostream& os, const pair<A, B>& p){ return os<<"("<<p.ff<<", "<<p.ss<<")";}
@@ -96,8 +96,8 @@ tpl_<tn_ T, tn_ C> void printBIT(const BIT<T, C>& b,int maxC=16){
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-tuple<vi,vi,vi,vi,vi> _dfs(const vvi &adj,int a=0){int n=adj.size(), t = 0; vi sz(n,1), par(n,-1), dep(n,0), tin(n, 0), tout(n, 0);
-    fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; tin[u] = t++; for(int v:adj[u]) if(v!=p){dfs(v,u,d+1); sz[u]+=sz[v];} tout[u] = t++;}; dfs(a,-1,0); return {sz, dep, par, tin, tout};}
+tuple<vi,vi,vi> _dfs(const vvi &adj,int a=0){int n=adj.size(); vi sz(n,1), par(n,-1), dep(n,0);
+    fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(int v:adj[u]) if(v!=p){dfs(v,u,d+1); sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par};}
 tuple<vi,vi,vi,vi> _dfs(vvpii &adj,int a=0){int n=adj.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:adj[u]) if(v!=p){dist[v]=w; dfs(v,u,d+1); sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
 vvi binaryJump(const vi& par, int out = -1) { int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0));
@@ -117,9 +117,8 @@ struct vectorHash{tpl_<class T>size_t operator()(const v<T>&v)const{size_t val=0
 auto ad = [](int a, int b) {return a+b;}; auto sub = [](int a, int b) {return a-b;}; auto sortinv = [](const pii& a,const pii& b) {if(a.ff == b.ff) return a.ss > b.ss; return a.ff < b.ff;};
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}}; auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-constexpr ll msb(ll x) {return 63 - __builtin_clzll(x);} constexpr ll lsb(ll x) {return __builtin_ctz(x);}
 inline int fpow(int a, int b) { int res = 1; a %= MOD; while (b > 0) { if (b & 1) res = res * a % MOD; a = a * a % MOD; b >>= 1; } return res; } inline int inv(int x) { return fpow(x, MOD-2); }
-cx_ int add(int a, int b) { return (a+b < MOD ? a+b : a+b-MOD); } cx_ int mult(int a, int b) { return (a*b < MOD ? a*b : a*b % MOD); } cx_ int ceildiv(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; }
+cx_ int add(int a, int b) { return (a+b < MOD ? a+b : a+b-MOD); } cx_ int mult(int a, int b) { return (a*b < MOD ? a*b : a*b % MOD); } cx_ int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes; rep(i, 2, n) if(p[i]) primes.pb(i); return primes;}
 vi sieveSPF(int n) {vi spf(n+1); fe(i, n) spf[i] = i; for(int i = 2; i*i<=n; ++i) { if(spf[i] != i) continue;for(int j = i*i; j <= n; j += i) {if(spf[j]==j) spf[j]=i;}}return spf;}
 pair<vi, vi> initFact(int n) { vi fa(n+1), ifa(n+1); fa[0] = 1; fe(i, n) fa[i] = mult(fa[i-1], i); ifa[n] = inv(fa[n]); repr(i, n-1, 0) ifa[i] = mult(ifa[i+1], i+1); return {fa, ifa}; }
@@ -133,69 +132,7 @@ void solve() {
 
 }
 
-v<tuple<int, int, char>> ops;
-inline int writeAdd(int x, int y) {
-    ops.pb({x, y, '+'});
-    return x+y;
-}
-inline int writeXor(int x, int y) {
-    ops.pb({x, y, '^'});
-    return x ^ y;
-}
-int writeMultiply(int x, int p) {
-    int res = 0;
-    int cur = x;
-    while(p>0){
-      if(p&1) res = writeAdd(res, cur);
-      cur       = writeAdd(cur, cur);
-      p >>= 1;
-    }
-    return res;
-}
-
-// Bezout's (extended euclidean algorithm)
-tuple<int, int, int> bezout(int x, int y) {
-    // assert(gcd(x, y) != 0);
-    if(y == 0) return {1, 0, x}; // 1*x + 0*y = x;
-    auto [a, b, c] = bezout(y, x % y);
-    return {b, a - (x/y) * b, c};
-}
-
-int main {
-}
 int32_t main() {
     setIO();
-    int x; cin>>x;
-    writeXor(x, x);
-    int y = writeXor(x, writeMultiply(x, (1LL<<msb(x))));
-    auto [a, b, c] = bezout(x, y);
-    assert(c == 1);
-    b = -b; // We want ax - by = 1;
-    // Ensure b is positive and even
-    if(b < 0) {
-        // int k = ceildiv(-b, x);
-        a += k * y;
-        b += k * x;
-    }
-    if(b & 1) {
-        a += y, b += x;
-    }
-    int ax = writeMultiply(x, a);
-    int by = writeMultiply(y, b);
-    writeXor(ax, by); // Same as ax - by since it should give 1!
-
-    cout<<ops.size()<<en;
-    for(auto [x, y, c] : ops) {
-        cout<<x<<sp<<c<<sp<<y<<en;
-    }
-}1111111111111111111111
-
-{
-    [][][][][i][i]ny][j][j][k][l][}]
-
+    // int t; cin>>t; f(i, t) solve();
 }
-hi how are you doing?
-enstrirnsotsrioentsr itsie rsnei stnersistrni srior so n srnio ioerns  eoi ioetrsnei  neiorsne trsnrsnierst iersten
-tnesrio nonris t senir rsent
-
-int i = 0
