@@ -131,10 +131,37 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int t, k, n, m;
 void solve() {
-
+    cin>>n>>k;
+    vi a(n); read(a);
+    vi b = a;
+    sort(all(b));
+    map<int, int> mp;
+    f(i, n) {
+        if(i == n-1 || b[i] != b[i+1]) {
+            mp[b[i]] = i+1; // 1-indexed
+        }
+    }
+    // cout<<mp<<en;
+    int l = 0, r = n-1;
+    while(l <= r) {
+        if(a[l] == a[r]) {
+            l++, r--;
+        } else if(a[l] < a[r]) {
+            if(mp[a[r]]-- < k) {
+                quit("NO");
+            }
+            r--;
+        } else {
+            if(mp[a[l]]-- < k) {
+                quit("NO");
+            }
+            l++;
+        }
+    }
+    cout<<"YES"<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

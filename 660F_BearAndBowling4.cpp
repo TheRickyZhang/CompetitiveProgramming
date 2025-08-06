@@ -159,11 +159,64 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
 
+struct fun {
+    int a, b;
+    int at(int x) const {
+        return a * x + b;
+    }
+};
+pii intersection(fun x, fun y) {
+    return {x.b - y.b, y.a - x.a};
 }
-
+bool needMiddle(fun x, fun y, fun z) {
+    assert(0 < x.a && x.a < y.a && y.a < z.a);
+    // int p1 = (x.b - y.b) / (y.a - x.a);
+    // int p2 = (x.b - z.b) / (z.a - x.a);
+    return (x.b - z.b) * (y.a - x.a) > (z.a - x.a) * (x.b - y.b);
+}
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n;
+    vi a(n); read(a);
+    int res = 0;
+    // Note we have:
+    function<void(int, int)> solve = [&](int l, int r) {
+        if(l == r) {
+            cmx(res, a[r]);
+            return;
+        }
+        int m = (l+r)/2;
+        solve(l, m);
+        solve(m+1, r);
+        v<fun> s;
+        int sum = 0, score = 0;
+        repr(i, m, l) {
+            sum += a[i];
+            score += sum; // Note this is important as a[i] * (i-l+1) is incorrect, as we are moving the l each time
+            fun f{m-i+1, score};
+            while(true) {
+                int sz = s.size();
+                if(sz >= 2 && !needMiddle(s[sz-2], s[sz-1], f)) { s.pop_back(); }
+                else break;
+            }
+            s.pb(f);
+        }
+        sum = 0, score = 0;
+        // Since both x intersections and x values are in order, can use 2 pointers
+        int j = 0;
+        rep(i, m+1, r) {
+            sum += a[i];
+            score += a[i] * (i-m);
+            while(j+1 < s.size()) {
+                auto [num, dem] = intersection(s[j], s[j+1]);
+                if(sum * dem < num) break;
+                j++;
+            }
+            int x = s[j].at(sum) + score;
+            cmx(res, x);
+        }
+    };
+    solve(0, n-1);
+    cout<<res<<en;
 }

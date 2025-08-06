@@ -3,13 +3,13 @@ using namespace std;
 
 #define tpl_ template
 #define tn_ typename
-#define op_ operator
 #define cx_ constexpr
+#define op_ operator
 #define fn function
-#define f(i, to) for (int i = 0; i < to; ++i)
-#define fe(i, to) for (int i = 1; i <= to; ++i)
-#define rep(i, a, b) for (int i = a; i <= b; ++i)
-#define repr(i, a, b) for (int i = a; i >= b; --i)
+#define f(i, to) for (int i=0; i < to; ++i)
+#define fe(i, to) for (int i=1; i <= to; ++i)
+#define rep(i, a, b) for (int i=a; i <= b; ++i)
+#define repr(i, a, b) for (int i=a; i >= b; --i)
 #define ff first
 #define ss second
 #define pb push_back
@@ -152,18 +152,34 @@ vi sieveSPF(int n) {vi spf(n+1); fe(i, n) spf[i]=i; for(int i=2; i*i<=n; ++i) { 
 pair<vi, vi> initFact(int n) { vi fa(n+1), ifa(n+1); fa[0]=1; fe(i, n) fa[i]=mult(fa[i-1], i); ifa[n]=inv(fa[n]);
     repr(i, n-1, 0) ifa[i]=mult(ifa[i+1], i+1); return {fa, ifa}; }
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
-    Matrix op_*(const Matrix &m) const {int n=v.size(); Matrix r(n);
-        f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
-    Matrix op_^(ll p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1;
-        while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
+    Matrix op_*(const Matrix &m) const {int n=v.size(); Matrix r(n); f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
+    Matrix op_^(ll p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+int t, k, n, m;
 
-int k, n, m;
-void solve() {
-
+void solve(){
+    cin>>n>>m;
+    vv<pair<int, mint>> a(m+1);
+    // precisely covered to here
+    v<mint> d(m+1);
+    d[0] = 1;
+    f(i, n) {
+        int l, r, x, y; cin>>l>>r>>x>>y;
+        mint p(x), q(y);
+        a[r].pb({l-1, p/q});
+        d[0] *= mint(1)-p/q;
+    }
+    fe(i, m) {
+        for(auto [l, p] : a[i]) {
+            // revert exclusion
+            d[i] += d[l] * p/(mint(1)-p);
+        }
+    }
+    // cout<<d<<en;
+    cout<<d[m]<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    solve();
 }

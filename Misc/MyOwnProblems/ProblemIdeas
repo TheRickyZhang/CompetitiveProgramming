@@ -9,3 +9,50 @@ Easy: You may perform operations of removing from left and right diagonals (DP)
 Hard: You may perform operations of removing from row, column, left, right diagonals
 What is fewest number of operations required?
 
+Suppose there are n gates with xi -> a, b, c. You can enter if current value is in [a, b] then set current value to c.
+You can only use each gate once. What is the highest value you can achieve?
+
+Solution: (Not tested)
+Read the casinos into a[i] = {li,ri,reali} and sort by li ascending.
+
+Maintain two max‑heaps:
+
+states of type priority_queue<ll> for your current coin‐counts, always popping the largest next.
+
+avail of type priority_queue<pair<ll,int>> for all casinos you’ve unlocked (i.e. whose li ≤ x) but not yet played, keyed by their ri.
+
+Keep a pointer pos=0 into the sorted array. Also a unordered_set<ll> seen for which coin‐counts you’ve already pushed into states.
+
+Initialize:
+
+cpp
+Copy
+Edit
+states.push(k);
+seen.insert(k);
+ll ans = k;
+While states isn’t empty:
+
+cpp
+Copy
+Edit
+ll x = states.top(); states.pop();
+ans = max(ans, x);
+// 1) unlock any casino whose li ≤ x
+while (pos < n && a[pos][0] <= x)
+  avail.push({a[pos][1], pos}), pos++;
+// 2) play every casino whose ri ≥ x
+while (!avail.empty() && avail.top().first >= x) {
+  auto [r,i] = avail.top(); avail.pop();
+  ll y = a[i][2];          // real_i
+  if (seen.insert(y).second)  // new coin‐count?
+    states.push(y);
+}
+By always pulling the maximum x next, li≤x only grows, so pos moves forward once.
+
+By only popping from avail when ri ≥ x, you leave the rest for smaller future x.
+
+You enqueue all new reali—even if y < x—so you correctly explore “sacrifice now to gain later” paths.
+
+When the loop ends, ans is the maximum coin‐count you ever reached.
+

@@ -26,7 +26,10 @@ tpl_<tn_ K,tn_ T>using ump=unordered_map<K,T>; tpl_<tn_ T>using ust=unordered_se
 tpl_<tn_ T> using pq=priority_queue<T>; tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;
 tpl_<tn_ It, tn_ T> auto leq_bound(It l,It r,T x){auto it=upper_bound(l,r,x); return it!=l ? prev(it):r;}
 tpl_<tn_ It, tn_ T> auto less_bound(It l,It r,T x){auto it=lower_bound(l,r,x);return it!=l ? prev(it):r;}
-cx_ auto en="\n"; cx_ auto sp=" "; using str=string; typedef fn<void(int, int)> fvii; typedef fn<void(int, int, int)> fviii;
+tpl_<tn_ T, tn_ U> T fstTrue(T l, T r, U ff) { for(++r; l<r;) { T m=l+(r-l)/2; if(ff(m)) r=m; else l=m+1; } return l;}
+tpl_<tn_ T, tn_ U> T lstTrue(T l, T r, U ff) { for(++r; l<r;) { T m=l+(r-l)/2; if(ff(m)) l=m+1; else r=m; } return l-1;}
+tpl_<tn_ T> bool cmn(T& a, T b) {return b<a ? a=b,1 : 0;} tpl_<tn_ T> bool cmx(T& a, T b) {return a<b ? a=b,1 : 0;}
+cx_ auto en="\n"; cx_ auto sp=" "; using str=string; typedef fn<void(int,int)>fvii; typedef fn<void(int,int,int)>fviii;
 
 void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr); if(!name.empty())
     {freopen((name+".in").c_str(),"r",stdin);freopen((name+".out").c_str(),"w",stdout);}}
@@ -104,6 +107,16 @@ tpl_<tn_ T, tn_ C> void printBIT(const BIT<T, C>& b,int l=16){
     cout<<"BIT:\n"; int lv=0;while(1<<lv<=min(b.n,l))lv++; int c=min(b.n,l); v<vs> g(lv,vs(c,str(4,' ')));
     fe(i,c){int r=__builtin_ctz(i);if(r<lv) g[r][i-1]=format("{:4}", b.t[i]);} f(r,lv){f(c2,c)cout<<g[r][c2];cout<<en;}}
 
+tpl_<tn_ T> struct fun { T a, b; fun(T a, T b): a(a), b(b) {} T at(T x) { return a*x + b; } };
+tpl_<tn_ T,bool min=true> // Always insert lines in inc slope order. Can always transform since at least 1 monotonicity.
+struct CHT { v<fun<T>> h; int i = 0;
+    bool badMiddle(fun<T> x, fun<T> y, fun<T> z){
+        return static_cast<__int128>(x.b - y.b) * (z.a - x.a) >= static_cast<__int128>(x.b - z.b) * (y.a - x.a); }
+    void add(fun<T> f) { while(h.size()>=2 && badMiddle(h[h.size()-2],h.back(),f)) h.pop_back(); h.pb(f); }
+    T query(T x) { cmn(i,static_cast<int>(h.size())-1);
+        while(i+1<h.size()) { T c = h[i].at(x), n = h[i+1].at(x); if(min ? (c>=n) : (c<=n)) i++; else break; }
+        return h[i].at(x); }
+};
 void dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
@@ -122,9 +135,6 @@ tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(vi &par, int out, vi& wt, F mrg){
 int getLCA(const vvi& up,const vi& d, int u, int v) {
     int ln=log2(up.size())+1; if(d[u] < d[v]) swap(u, v); rep(j, 0, ln-1) { if(d[u]-d[v] & (1<<j)) u=up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u=up[u][j], v=up[v][j]; }} return up[u][0];}
-tpl_<tn_ T, tn_ U> T fstTrue(T l, T r, U ff) { for(++r; l<r;) { T m=l+(r-l)/2; if(ff(m)) r=m; else l=m+1; } return l;}
-tpl_<tn_ T, tn_ U> T lstTrue(T l, T r, U ff) { for(++r; l<r;) { T m=l+(r-l)/2; if(ff(m)) l=m+1; else r=m; } return l-1;}
-tpl_<tn_ T> bool cmn(T& a, T& b) {return b<a ? a=b,1 : 0;} tpl_<tn_ T> bool cmx(T& a, T& b) {return a<b ? a=b,1 : 0;}
 
 struct pairHash{tpl_<tn_ A,tn_ B>size_t op_()(const pair<A,B>&p)const{return hash<A>{}(p.ff)^(hash<B>{}(p.ss)<<1);}};
 struct vHash{tpl_<tn_ T>size_t op_()(const v<T>&x)const{size_t h=0;for(auto&i:x)h^=hash<T>{}(i)+0x9e3779b9+(h<<6)+(h>>2);return h;}};
@@ -159,11 +169,75 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
+    // The divide and conquer approach doesn't work because we need to consider up to n layers
+    // when all we really need is an optimum over any number of layers
+// void solve() {
+//     cin>>n;
+//     int a, b, c; cin>>a>>b>>c;
+//     vi nums(n); read(nums);
+//     vi pre(n+1, 0);
+//     f(i, n) pre[i+1] = pre[i] + nums[i];
+//     auto calc = [&](int l, int r) {
+//         int x = pre[r+1] - pre[l];
+//         return a*x*x + b*x + c;
+//     };
+//     // let d[i][j] be most for sectioning j teams, end at i
+//     vi d(n, -INFL), nd(n, -INFL);
+//     f(i, n) d[i] = calc(0, i);
+//     // f(i, n) d[i] = calc(0, i);
+//     // int res = d[n-1];
+//     function<void(int,int,int,int)> solve = [&](int l, int r, int x, int y) {
+//         if(r < l) return;
+//         int m = (l+r)/2;
+//         int best = -INFL, pos = -1;
+//         rep(j, x, min(m, y)) {
+//             int curr = d[j] + calc(j+1, m);
+//             // cout<<l<<sp<<r<<sp<<pre[j+1]-pre[x]<<sp<<curr<<en;
+//             if(curr > best) {
+//                 best = curr, pos = j;
+//             }
+//         }
+//         nd[m] = best;
+//         solve(l, m-1, x, pos);
+//         solve(m+1, r, pos, y);
+//     };
+//     solve(0, n-1, 0, n-1);
+//     swap(d, nd);
+//     cout<<d[n-1]<<en;
+// }
 
-}
-
+// This is how you do a CHT Convex Hull Trick!
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    // solve();
+    cin>>n;
+    int a, b, c; cin>>a>>b>>c;
+    vi nums(n); read(nums);
+    vi pre(n+1, 0);
+     f(i, n) pre[i+1] = pre[i] + nums[i];
+    // Our relation is d[r] = min(d[l] + c(l+1, r)
+    // = min(d[l] + a * (p[r+1] - p[l]) ^ 2 + b * (p[r+1]-p[l]) + c
+    // = a * p[r+1]^2 + b * p[r+1] + c  |  -2a * p[l] * p[r+1]  |  d[l] + a*p[l]^2 - b*p[l]
+    CHT<int, false> h;
+    vi d(n);
+    auto slopeTerm = [&](int l) {
+        return -2LL * a * pre[l+1];
+    };
+    auto depTerm = [&](int l) {
+        return d[l]
+             + a * pre[l+1] * pre[l+1]
+             - b * pre[l+1];
+    };
+    auto constTerm = [&](int r) {
+        return a * pre[r+1] * pre[r+1]
+             + b * pre[r+1]
+             + c;
+    };
+    h.add(fun(0LL, 0LL));
+    f(i, n) {
+        d[i] = h.query(pre[i+1]) + constTerm(i);
+        h.add(fun(slopeTerm(i), depTerm(i)));
+    }
+    // cout<<d<<en;
+    cout<<d[n-1]<<en;
 }

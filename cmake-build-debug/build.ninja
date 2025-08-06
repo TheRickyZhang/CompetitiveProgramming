@@ -41,202 +41,202 @@ include CMakeFiles/rules.ninja
 
 cmake_ninja_workdir = C$:/Users/ricky/CompetitiveProgramming/cmake-build-debug/
 # =============================================================================
-# Object build statements for EXECUTABLE target 2119A
+# Object build statements for EXECUTABLE target 2125A
 
 
 #############################################
-# Order-only phony target for 2119A
+# Order-only phony target for 2125A
 
-build cmake_object_order_depends_target_2119A: phony || .
+build cmake_object_order_depends_target_2125A: phony || .
 
-build CMakeFiles/2119A.dir/2119A.cpp.obj: CXX_COMPILER__2119A_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2119A.cpp || cmake_object_order_depends_target_2119A
-  DEP_FILE = CMakeFiles\2119A.dir\2119A.cpp.obj.d
+build CMakeFiles/2125A.dir/2125A.cpp.obj: CXX_COMPILER__2125A_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2125A.cpp || cmake_object_order_depends_target_2125A
+  DEP_FILE = CMakeFiles\2125A.dir\2125A.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\2119A.dir
-  OBJECT_FILE_DIR = CMakeFiles\2119A.dir
+  OBJECT_DIR = CMakeFiles\2125A.dir
+  OBJECT_FILE_DIR = CMakeFiles\2125A.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target 2119A
+# Link build statements for EXECUTABLE target 2125A
 
 
 #############################################
-# Link the executable 2119A.exe
+# Link the executable 2125A.exe
 
-build 2119A.exe: CXX_EXECUTABLE_LINKER__2119A_Debug CMakeFiles/2119A.dir/2119A.cpp.obj
+build 2125A.exe: CXX_EXECUTABLE_LINKER__2125A_Debug CMakeFiles/2125A.dir/2125A.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\2119A.dir
+  OBJECT_DIR = CMakeFiles\2125A.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = 2119A.exe
-  TARGET_IMPLIB = lib2119A.dll.a
-  TARGET_PDB = 2119A.exe.dbg
+  TARGET_FILE = 2125A.exe
+  TARGET_IMPLIB = lib2125A.dll.a
+  TARGET_PDB = 2125A.exe.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target 2119B
+# Object build statements for EXECUTABLE target 2125B
 
 
 #############################################
-# Order-only phony target for 2119B
+# Order-only phony target for 2125B
 
-build cmake_object_order_depends_target_2119B: phony || .
+build cmake_object_order_depends_target_2125B: phony || .
 
-build CMakeFiles/2119B.dir/2119B.cpp.obj: CXX_COMPILER__2119B_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2119B.cpp || cmake_object_order_depends_target_2119B
-  DEP_FILE = CMakeFiles\2119B.dir\2119B.cpp.obj.d
+build CMakeFiles/2125B.dir/2125B.cpp.obj: CXX_COMPILER__2125B_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2125B.cpp || cmake_object_order_depends_target_2125B
+  DEP_FILE = CMakeFiles\2125B.dir\2125B.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\2119B.dir
-  OBJECT_FILE_DIR = CMakeFiles\2119B.dir
+  OBJECT_DIR = CMakeFiles\2125B.dir
+  OBJECT_FILE_DIR = CMakeFiles\2125B.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target 2119B
+# Link build statements for EXECUTABLE target 2125B
 
 
 #############################################
-# Link the executable 2119B.exe
+# Link the executable 2125B.exe
 
-build 2119B.exe: CXX_EXECUTABLE_LINKER__2119B_Debug CMakeFiles/2119B.dir/2119B.cpp.obj
+build 2125B.exe: CXX_EXECUTABLE_LINKER__2125B_Debug CMakeFiles/2125B.dir/2125B.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\2119B.dir
+  OBJECT_DIR = CMakeFiles\2125B.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = 2119B.exe
-  TARGET_IMPLIB = lib2119B.dll.a
-  TARGET_PDB = 2119B.exe.dbg
+  TARGET_FILE = 2125B.exe
+  TARGET_IMPLIB = lib2125B.dll.a
+  TARGET_PDB = 2125B.exe.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target 2119C
+# Object build statements for EXECUTABLE target 2125C
 
 
 #############################################
-# Order-only phony target for 2119C
+# Order-only phony target for 2125C
 
-build cmake_object_order_depends_target_2119C: phony || .
+build cmake_object_order_depends_target_2125C: phony || .
 
-build CMakeFiles/2119C.dir/2119C.cpp.obj: CXX_COMPILER__2119C_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2119C.cpp || cmake_object_order_depends_target_2119C
-  DEP_FILE = CMakeFiles\2119C.dir\2119C.cpp.obj.d
+build CMakeFiles/2125C.dir/2125C.cpp.obj: CXX_COMPILER__2125C_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2125C.cpp || cmake_object_order_depends_target_2125C
+  DEP_FILE = CMakeFiles\2125C.dir\2125C.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\2119C.dir
-  OBJECT_FILE_DIR = CMakeFiles\2119C.dir
+  OBJECT_DIR = CMakeFiles\2125C.dir
+  OBJECT_FILE_DIR = CMakeFiles\2125C.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target 2119C
+# Link build statements for EXECUTABLE target 2125C
 
 
 #############################################
-# Link the executable 2119C.exe
+# Link the executable 2125C.exe
 
-build 2119C.exe: CXX_EXECUTABLE_LINKER__2119C_Debug CMakeFiles/2119C.dir/2119C.cpp.obj
+build 2125C.exe: CXX_EXECUTABLE_LINKER__2125C_Debug CMakeFiles/2125C.dir/2125C.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\2119C.dir
+  OBJECT_DIR = CMakeFiles\2125C.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = 2119C.exe
-  TARGET_IMPLIB = lib2119C.dll.a
-  TARGET_PDB = 2119C.exe.dbg
+  TARGET_FILE = 2125C.exe
+  TARGET_IMPLIB = lib2125C.dll.a
+  TARGET_PDB = 2125C.exe.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target 2119D
+# Object build statements for EXECUTABLE target 2125D
 
 
 #############################################
-# Order-only phony target for 2119D
+# Order-only phony target for 2125D
 
-build cmake_object_order_depends_target_2119D: phony || .
+build cmake_object_order_depends_target_2125D: phony || .
 
-build CMakeFiles/2119D.dir/2119D.cpp.obj: CXX_COMPILER__2119D_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2119D.cpp || cmake_object_order_depends_target_2119D
-  DEP_FILE = CMakeFiles\2119D.dir\2119D.cpp.obj.d
+build CMakeFiles/2125D.dir/2125D.cpp.obj: CXX_COMPILER__2125D_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2125D.cpp || cmake_object_order_depends_target_2125D
+  DEP_FILE = CMakeFiles\2125D.dir\2125D.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\2119D.dir
-  OBJECT_FILE_DIR = CMakeFiles\2119D.dir
+  OBJECT_DIR = CMakeFiles\2125D.dir
+  OBJECT_FILE_DIR = CMakeFiles\2125D.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target 2119D
+# Link build statements for EXECUTABLE target 2125D
 
 
 #############################################
-# Link the executable 2119D.exe
+# Link the executable 2125D.exe
 
-build 2119D.exe: CXX_EXECUTABLE_LINKER__2119D_Debug CMakeFiles/2119D.dir/2119D.cpp.obj
+build 2125D.exe: CXX_EXECUTABLE_LINKER__2125D_Debug CMakeFiles/2125D.dir/2125D.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\2119D.dir
+  OBJECT_DIR = CMakeFiles\2125D.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = 2119D.exe
-  TARGET_IMPLIB = lib2119D.dll.a
-  TARGET_PDB = 2119D.exe.dbg
+  TARGET_FILE = 2125D.exe
+  TARGET_IMPLIB = lib2125D.dll.a
+  TARGET_PDB = 2125D.exe.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target 2119E
+# Object build statements for EXECUTABLE target 2125E
 
 
 #############################################
-# Order-only phony target for 2119E
+# Order-only phony target for 2125E
 
-build cmake_object_order_depends_target_2119E: phony || .
+build cmake_object_order_depends_target_2125E: phony || .
 
-build CMakeFiles/2119E.dir/2119E.cpp.obj: CXX_COMPILER__2119E_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2119E.cpp || cmake_object_order_depends_target_2119E
-  DEP_FILE = CMakeFiles\2119E.dir\2119E.cpp.obj.d
+build CMakeFiles/2125E.dir/2125E.cpp.obj: CXX_COMPILER__2125E_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2125E.cpp || cmake_object_order_depends_target_2125E
+  DEP_FILE = CMakeFiles\2125E.dir\2125E.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\2119E.dir
-  OBJECT_FILE_DIR = CMakeFiles\2119E.dir
+  OBJECT_DIR = CMakeFiles\2125E.dir
+  OBJECT_FILE_DIR = CMakeFiles\2125E.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target 2119E
+# Link build statements for EXECUTABLE target 2125E
 
 
 #############################################
-# Link the executable 2119E.exe
+# Link the executable 2125E.exe
 
-build 2119E.exe: CXX_EXECUTABLE_LINKER__2119E_Debug CMakeFiles/2119E.dir/2119E.cpp.obj
+build 2125E.exe: CXX_EXECUTABLE_LINKER__2125E_Debug CMakeFiles/2125E.dir/2125E.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\2119E.dir
+  OBJECT_DIR = CMakeFiles\2125E.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = 2119E.exe
-  TARGET_IMPLIB = lib2119E.dll.a
-  TARGET_PDB = 2119E.exe.dbg
+  TARGET_FILE = 2125E.exe
+  TARGET_IMPLIB = lib2125E.dll.a
+  TARGET_PDB = 2125E.exe.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target 2119F
+# Object build statements for EXECUTABLE target 2125F
 
 
 #############################################
-# Order-only phony target for 2119F
+# Order-only phony target for 2125F
 
-build cmake_object_order_depends_target_2119F: phony || .
+build cmake_object_order_depends_target_2125F: phony || .
 
-build CMakeFiles/2119F.dir/2119F.cpp.obj: CXX_COMPILER__2119F_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2119F.cpp || cmake_object_order_depends_target_2119F
-  DEP_FILE = CMakeFiles\2119F.dir\2119F.cpp.obj.d
+build CMakeFiles/2125F.dir/2125F.cpp.obj: CXX_COMPILER__2125F_unscanned_Debug C$:/Users/ricky/CompetitiveProgramming/2125F.cpp || cmake_object_order_depends_target_2125F
+  DEP_FILE = CMakeFiles\2125F.dir\2125F.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\2119F.dir
-  OBJECT_FILE_DIR = CMakeFiles\2119F.dir
+  OBJECT_DIR = CMakeFiles\2125F.dir
+  OBJECT_FILE_DIR = CMakeFiles\2125F.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target 2119F
+# Link build statements for EXECUTABLE target 2125F
 
 
 #############################################
-# Link the executable 2119F.exe
+# Link the executable 2125F.exe
 
-build 2119F.exe: CXX_EXECUTABLE_LINKER__2119F_Debug CMakeFiles/2119F.dir/2119F.cpp.obj
+build 2125F.exe: CXX_EXECUTABLE_LINKER__2125F_Debug CMakeFiles/2125F.dir/2125F.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\2119F.dir
+  OBJECT_DIR = CMakeFiles\2125F.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = 2119F.exe
-  TARGET_IMPLIB = lib2119F.dll.a
-  TARGET_PDB = 2119F.exe.dbg
+  TARGET_FILE = 2125F.exe
+  TARGET_IMPLIB = lib2125F.dll.a
+  TARGET_PDB = 2125F.exe.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target Template
@@ -363,17 +363,17 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 # Target aliases.
 
-build 2119A: phony 2119A.exe
+build 2125A: phony 2125A.exe
 
-build 2119B: phony 2119B.exe
+build 2125B: phony 2125B.exe
 
-build 2119C: phony 2119C.exe
+build 2125C: phony 2125C.exe
 
-build 2119D: phony 2119D.exe
+build 2125D: phony 2125D.exe
 
-build 2119E: phony 2119E.exe
+build 2125E: phony 2125E.exe
 
-build 2119F: phony 2119F.exe
+build 2125F: phony 2125F.exe
 
 build Checker: phony Checker.exe
 
@@ -389,7 +389,7 @@ build Template: phony Template.exe
 #############################################
 # Folder: C:/Users/ricky/CompetitiveProgramming/cmake-build-debug
 
-build all: phony 2119A.exe 2119B.exe 2119C.exe 2119D.exe 2119E.exe 2119F.exe Template.exe Checker.exe MaximumSumMatchingNodes.exe
+build all: phony 2125A.exe 2125B.exe 2125C.exe 2125D.exe 2125E.exe 2125F.exe Template.exe Checker.exe MaximumSumMatchingNodes.exe
 
 # =============================================================================
 # Built-in targets
