@@ -5,10 +5,10 @@ using namespace std;
 #define tn_ typename
 #define cx_ constexpr
 #define fn function
-#define f(i, to) for (int (i) = 0; (i) < (to); ++(i))
-#define fe(i, to) for (int (i) = 1; (i) <= (to); ++(i))
-#define rep(i, a, b) for (int (i) = (a); (i) <= (b); ++(i))
-#define repr(i, a, b) for (int (i) = (a); (i) >= (b); --(i))
+#define f(i, to) for (int i = 0; i < to; ++i)
+#define fe(i, to) for (int i = 1; i <= to; ++i)
+#define rep(i, a, b) for (int i = a; i <= b; ++i)
+#define repr(i, a, b) for (int i = a; i >= b; --i)
 #define ff first
 #define ss second
 #define pb push_back
@@ -24,8 +24,8 @@ tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered
 tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;
 tpl_<class It, class T>     auto leq_bound  (It first, It last, T val) { auto it = upper_bound(first, last, val); return it != first ? prev(it) : last;}
 tpl_<class It, class T>     auto less_bound (It first, It last, T val) {auto it = lower_bound(first, last, val);return it != first ? prev(it) : last; }
-using str = string; typedef fn<void(int, int, int)> fviii;  typedef fn<void(int, int)> fvii; typedef fn<void(int)> fvi;
-cx_ int N = 100000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ auto en = "\n"; cx_ auto sp = " ";
+cx_ auto en = "\n"; cx_ auto sp = " "; using str = string; typedef fn<void(int, int, int)> fviii;  typedef fn<void(int, int)> fvii; typedef fn<void(int)> fvi;
+cx_ int N = 100000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ int B = 31;
 
 void setIO(const str &name = "") {ios_base::sync_with_stdio(false); cin.tie(nullptr); if (!name.empty()) { freopen((name + ".in").c_str(), "r", stdin); freopen((name + ".out").c_str(), "w", stdout); }}
 tpl_<tn_ A, tn_ B> ostream& operator<<(ostream& os, const pair<A, B>& p){ return os<<"("<<p.ff<<", "<<p.ss<<")";}
@@ -53,7 +53,7 @@ tpl_<tn_ T, tn_ C> struct Segtree      { int n; v<T> t, nums; C c;
     T query(int l, int r) { return query(1, 0, n-1, l, r); }
 private:
     void build (int i, int a, int b) { if (a == b) { t[i] = nums[a]; return; } int m = (a + b) / 2; build(2 * i, a, m); build(2 * i + 1, m + 1, b); t[i] = c(t[2 * i], t[2 * i + 1]); }
-    void modify(int i, int a, int b, int p, T x, bool upd) { if (a == b) { (upd ? t[i] = x : t[i] = c(t[i], x)); return; } int m = (a + b) / 2; (p <= m ? modify(2 * i, a, m, p, x) : modify(2 * i + 1, m + 1, b, p, x)); t[i] = c(t[2 * i], t[2 * i + 1]); }
+    void modify(int i, int a, int b, int p, T x, bool upd) { if (a == b) { (upd ? t[i] = x : t[i] = c(t[i], x)); return; } int m = (a + b) / 2; (p <= m ? modify(2 * i, a, m, p, x, upd) : modify(2 * i + 1, m + 1, b, p, x, upd)); t[i] = c(t[2 * i], t[2 * i + 1]); }
     T query  (int i, int a, int b, int l, int r) { if (r < a || b < l) return T(); if (l <= a && b <= r) return t[i]; int m = (a + b) / 2; return c(query(2 * i, a, m, l, r), query(2 * i + 1, m + 1, b, l, r)); }
 };
 tpl_<tn_ T, tn_ U, tn_ C, tn_ Ap, tn_ Cmp>
@@ -96,8 +96,8 @@ tpl_<tn_ T, tn_ C> void printBIT(const BIT<T, C>& b,int maxC=16){
 void dijkstra(vi& d, vvpii& adj, int a = 0) { mpq<pii> q; d[a] = 0, q.push({0, a});
     while(!q.empty()) { auto [w, u] = q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w + dw < d[v]) { d[v] = w+dw; q.push({d[v], v});} } } }
-tuple<vi,vi,vi> _dfs(const vvi &adj,int a=0){int n=adj.size(); vi sz(n,1), par(n,-1), dep(n,0);
-    fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(int v:adj[u]) if(v!=p){dfs(v,u,d+1); sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par};}
+tuple<vi,vi,vi,vi,vi> _dfs(const vvi &adj,int a=0){int n=adj.size(), t = 0; vi sz(n,1), par(n,-1), dep(n,0), tin(n, 0), tout(n, 0);
+    fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; tin[u] = t++; for(int v:adj[u]) if(v!=p){dfs(v,u,d+1); sz[u]+=sz[v];} tout[u] = t++;}; dfs(a,-1,0); return {sz, dep, par, tin, tout};}
 tuple<vi,vi,vi,vi> _dfs(vvpii &adj,int a=0){int n=adj.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:adj[u]) if(v!=p){dist[v]=w; dfs(v,u,d+1); sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
 vvi binaryJump(const vi& par, int out = -1) { int n = par.size(); int ln = log2(n)+1; vvi up(n, vi(ln, 0));
@@ -110,7 +110,7 @@ int getLCA(const vvi& up,const vi& dep, int u, int v) {
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u = up[u][j], v = up[v][j]; }} return up[u][0];}
 tpl_<class T, class U> T fstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) r = m; else l = m+1; } return l; }
 tpl_<class T, class U> T lstTrue(T l, T r, U ff) { for(++r; l < r;) { T m = l+(r-l) / 2; if(ff(m)) l = m+1; else r = m; } return l-1; }
-tpl_<class T> bool       ckmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool ckmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
+tpl_<class T> bool       cmn(T& a, const T& b) {return b < a ? a = b, 1 : 0;}  tpl_<class T> bool cmx(T& a, const T& b) {return a < b ? a = b, 1 : 0;}
 
 struct pairHash{tpl_<class T1,class T2>size_t operator()(const pair<T1,T2>&p)const{return hash<T1>{}(p.ff)^ (hash<T2>{}(p.ss)<<1);}};
 struct vectorHash{tpl_<class T>size_t operator()(const v<T>&v)const{size_t val=0;for(const T&i:v)val^=hash<T>{}(i)+0x9e3779b9+(val<<6)+(val>>2);return val;}};
@@ -128,13 +128,73 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix operator^(int64_t p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1; while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
 
-
 int t, k, n, m;
 void solve() {
+    cin>>n;
+    vpii a, b;
 
+    vpii points;
+    f(i, n) {
+        int x, y; cin>>x>>y;
+        points.pb({x, y});
+        a.pb({x, i});
+        b.pb({y, i});
+    }
+    sort(all(a));
+    sort(all(b));
+    vb vis(n, false);
+    map<int, int> amp, bmp;
+    f(i, n) amp[a[i].ss] = i;
+    f(i, n) bmp[b[i].ss] = i;
+    vi aa, bb, ab, ba;
+    f(i, n/2) {
+        int pos = a[i].ss;
+        if(bmp[pos] < n/2) aa.pb(pos);
+        else ab.pb(pos);
+    }
+    repr(i, n-1, n/2) {
+        int pos = a[i].ss;
+        if(bmp[pos] >= n/2) bb.pb(pos);
+        else ba.pb(pos);
+    }
+    assert(aa.size() == bb.size());
+    assert(ab.size() == ba.size());
+    int tot = 0;
+    auto dist = [&](int i, int j) {
+        return abs(points[i].ff - points[j].ff) + abs(points[i].ss - points[j].ss);
+    };
+    f(i, aa.size()) {
+        tot += dist(aa[i], bb[i]);
+        cout<<aa[i]+1<<sp<<bb[i]+1<<en;
+    }
+    f(i, ab.size()) {
+        tot += dist(ab[i], ba[i]);
+        cout<<ab[i]+1<<sp<<ba[i]+1<<en;
+    }
+    // cout<<"TOT"<<tot<<en;
+
+    // int i = 0, j = n-1;
+    // int k = 0, l = n-1;
+    // f(_, n/2) {
+    //     while(vis[a[i].ss]) i++;
+    //     while(vis[a[j].ss]) j--;
+    //     while(vis[b[k].ss]) k++;
+    //     while(vis[b[l].ss]) l--;
+    //     auto [al, ali] = a[i];
+    //     auto [ar, ari] = a[j];
+    //     auto [bl, bli] = b[k];
+    //     auto [br, bri] = b[l];
+    //     if(ar-al > br-bl) {
+    //         cout<<ari+1<<sp<<ali+1<<en;
+    //         vis[ari] = vis[ali] = true;
+    //     } else {
+    //         cout<<bli+1<<sp<<bri+1<<en;
+    //         vis[bli] = vis[bri] = true;
+    //     }
+    // }
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

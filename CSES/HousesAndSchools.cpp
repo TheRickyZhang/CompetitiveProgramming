@@ -159,11 +159,92 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
+struct fun {
+    int a, b;
+    fun(int a, int b) : a(a), b(b) {}
+    int at(int x) {
+        return a*x + b;
+    }
+};
 
+// CHT Function comparison
+bool goodMiddle(fun x, fun y, fun z, bool concaveUp = true) {
+     bool good = (y.b-x.b) * (y.a-z.a) < (z.b-y.b) * (x.a-y.a);
+     return concaveUp ? good : !good;
+}
+
+void solve(){
+    cin>>n>>k;
+    vi a(n+1); fe(i,n) cin>>a[i];
+    vector<int> sum(n+1), pre(n+1), suf(n+1);
+    fe(i,n){
+        sum[i] = sum[i-1] + a[i];
+        pre[i] = pre[i-1] + a[i]*i;
+        suf[i] = suf[i-1] + a[i]*(n - i + 1);
+    }
+
+    vi f = vi(n+1, INFL), g(n+1, INFL), nf, ng;
+    f[0] = g[0] = 0;
+
+    fe(_, k){
+        nf.assign(n+1, INFL);
+        ng.assign(n+1, INFL);
+
+        // --- build dp0 (nf) from previous dp1 (g) ---
+        deque<fun> h1;
+        h1.emplace_back( sum[0], -g[0] + suf[0] );
+        fe(i, n){
+            int x = (i-1) - n;
+            // pop_front until hull1[0] is best for x
+            while(h1.size() >= 2 && h1[0].at(x) >= h1[1].at(x))
+                h1.pop_front();
+            nf[i] = -h1.front().at(x)
+                    + suf[i-1]
+                    - (n-(i-1)) * sum[i-1];
+
+            // insert line for j = i if g[i] was finite
+            if(g[i] < INFL){
+                fun L(sum[i], -g[i] + suf[i]);
+                while(h1.size() >= 2 &&
+                      !goodMiddle(h1[h1.size()-2],
+                                  h1[h1.size()-1],
+                                  L,
+                                  true))
+                    h1.pop_back();
+                h1.push_back(L);
+            }
+        }
+
+        // --- build dp1 (ng) from current dp0 (nf) ---
+        deque<fun> h2;
+        h2.emplace_back( 0, -nf[0] + pre[0] );
+        fe(i, n){
+            int x = sum[i];
+            while(h2.size() >= 2 && h2[0].at(x) >= h2[1].at(x))
+                h2.pop_front();
+            ng[i] = -h2.front().at(x)
+                    + pre[i];
+
+            if(nf[i] < INFL){
+                fun L(i, -nf[i] + pre[i] - i*sum[i]);
+                while(h2.size() >= 2 &&
+                      !goodMiddle(h2[h2.size()-2],
+                                  h2[h2.size()-1],
+                                  L,
+                                  true))
+                    h2.pop_back();
+                h2.push_back(L);
+            }
+        }
+
+        f.swap(nf);
+        g.swap(ng);
+    }
+
+    cout<<g[n]<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    solve();
 }
