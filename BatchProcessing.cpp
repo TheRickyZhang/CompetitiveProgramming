@@ -48,7 +48,6 @@ void read(vvi &g,int m,bool o=true,bool d=false){f(i, m){int u,v;cin>>u>>v;if(o)
 void read(vvpii &g,int m,bool dec=true,bool dir=false){f(i, m) {
     int u,v,w;cin>>u>>v>>w;if(dec){u--;v--;}g[u].pb({v,w});if(!dir)g[v].pb({u,w}); }}
 
-
 struct DSU{ vi p,sz; explicit
     DSU(const int n){p.resize(n),sz.resize(n,1),iota(all(p),0);}
     int  par(int x){return x==p[x]?x:p[x]=par(p[x]);}
@@ -127,8 +126,8 @@ struct CHT : multiset<Line, less<>> {
 };
 tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
     static bool badUpper(const Line& x,const Line& y,const Line& z){
-        __int128 lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
-    void add(Line ln){
+        __int128 lhs=(y.b-x.b)*(x.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
+    void add(const Line& ln){
         if(!upperHull){ ln.a=-ln.a; ln.b=-ln.b; }
         while(h.size()>=2 && badUpper(h[h.size()-2], h.back(), ln)) h.pop_back(); h.pb(ln); }
     int query(int x){
@@ -197,5 +196,26 @@ void solve() {
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    // This is the forward dp
+    // dp[i] = min dp[j] + (c[i] - c[j]) * (t_i + x)
+    // = -c[j] * (t_i+x)  +  dp[j]  + c[i]*(t_i+x)
+    // - the trick is we can do a backwards dp to account for the cumulative +x cost
+    // dp[i] = min dp[j+1] + (x + t[j]-t[i-1]) + (c[n] - c[i-1)
+    // = t[j] * (c[n]-c[i-1]) + dp[j+1] + (x-t[i-1]) * (c[n]-c[i-1])
+    cin>>n;
+    int x; cin>>x;
+    vi t(n+1, 0), c(n+1, 0);
+    fe(i, n) cin>>t[i];
+    fe(i, n) cin>>c[i];
+    fe(i, n) t[i] += t[i-1];
+    fe(i, n) c[i] += c[i-1];
+    MonotonicCHT<false> cht;
+    vi res(n+2, 0);
+    repr(i, n, 1) {
+        int cc = c[n]-c[i-1];
+        cht.add(Line(t[i], res[i+1]));
+        res[i] = cht.query(cc) + (x-t[i-1]) * cc;
+    }
+    cout<<res<<en;
+    cout<<res[1]<<en;
 }

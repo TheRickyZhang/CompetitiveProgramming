@@ -48,7 +48,6 @@ void read(vvi &g,int m,bool o=true,bool d=false){f(i, m){int u,v;cin>>u>>v;if(o)
 void read(vvpii &g,int m,bool dec=true,bool dir=false){f(i, m) {
     int u,v,w;cin>>u>>v>>w;if(dec){u--;v--;}g[u].pb({v,w});if(!dir)g[v].pb({u,w}); }}
 
-
 struct DSU{ vi p,sz; explicit
     DSU(const int n){p.resize(n),sz.resize(n,1),iota(all(p),0);}
     int  par(int x){return x==p[x]?x:p[x]=par(p[x]);}
@@ -125,17 +124,16 @@ struct CHT : multiset<Line, less<>> {
         if (x!=begin() && isect(--x,y)) isect(x,y=erase(y)); while((y=x)!=begin()&&(--x)->p >= y->p) isect(x,erase(y));}
     int query(int x) { assert(!empty()); auto l=*lower_bound(x); return l.a*x+l.b;} // min -> negate inserted a, b, x
 };
-tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
-    static bool badUpper(const Line& x,const Line& y,const Line& z){
-        __int128 lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
-    void add(Line ln){
-        if(!upperHull){ ln.a=-ln.a; ln.b=-ln.b; }
-        while(h.size()>=2 && badUpper(h[h.size()-2], h.back(), ln)) h.pop_back(); h.pb(ln); }
-    int query(int x){
-        if(h.empty()) return upperHull ? -INFL : INFL;
-        while(h.size()>=2){
-            int v0=h[0].at(x), v1=h[1].at(x);
-            if(v1 >= v0) h.pop_front(); else break; }
+tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h; // Only use when O(n) monotonic optimization needed
+    static bool badMiddle(const Line& x, const Line& y, const Line& z) {
+        auto lhs=static_cast<__int128>(y.b-x.b) * (x.a-z.a); auto rhs=static_cast<__int128>(z.b-y.b) * (x.a-y.a);
+        return upperHull ? (lhs >= rhs) : (lhs <= rhs); }
+    void add(const Line& ln) {
+        if (!upperHull) { ln.a=-ln.a; ln.b=-ln.b; }
+        while (h.size() >= 2 && badMiddle(h[h.size()-2], h.back(), ln)) h.pop_back(); h.pb(ln); }
+    int query(int x) {
+        if (h.empty()) return upperHull ? -INFL : INFL;
+        while (h.size() >= 2) { int v0=h[0].at(x),v1=h[1].at(x); if (upperHull ? (v1 >= v0) : (v1 <= v0)) h.pop_front(); else break; }
         int res=h.front().at(x); return upperHull ? res : -res; }
 };
 
@@ -191,11 +189,50 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
-
-}
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n;
+    vvpii adj(n);
+    read(adj, n-1);
+    vi a(n), b(n);
+    fe(i, n-1) cin>>b[i]>>a[i];
+    // We have dp[u] = min(d[p] + (dep[u]-dep[p]) * a[u] + b[u]
+    // So d[u] = dep[p] * a[u]  +  d[p]  +  dep[u]*a[u] + b[u]
+    v<Line> hull(n, Line(0, 0, 0));
+    int it = 0;
+    auto minVal = [&](int x) {
+        int pos = fstTrue(0LL, it-1, [&](int m) {
+            return m == it-1 || intersect(hull[m], hull[m+1]) >= x;
+        });
+        return hull[pos].at(x);
+    };
+    auto removePos = [&](Line nl){
+        if(it<2 || intersect(nl,hull[it-1])>=intersect(hull[it-1],hull[it-2]))
+            return it;
+        return fstTrue(1LL, it-1, [&](int m){
+            return intersect(nl,hull[m]) < intersect(hull[m],hull[m-1]);
+        });
+    };
+    vi d(n, INFL);
+    d[0] = 0;
+    hull[it++] = {0, 0};
+    fviii dfs = [&](int u, int p, int dep) {
+        d[u] = minVal(a[u]) + dep * a[u] + b[u];
+        int prevIt=it;
+        Line l(-dep, d[u]);
+        it = removePos(l);
+        int prevPos=it;
+        Line prevLine=hull[it];
+        hull[it++] = l;
+        for(auto [v, w] : adj[u]) {
+            if(v != p) dfs(v, u, dep+w);
+        }
+        it = prevIt;
+        hull[prevPos] = prevLine;
+    };
+    for(auto [v, w] : adj[0]) {
+        dfs(v, 0, w);
+    }
+    fe(i, n-1) cout<<d[i]<<sp;
 }
