@@ -3,7 +3,11 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .idea
-cmake-build-debug
+cmake-build-debug/
+
+.cache/
+.cmake/
+.idea/
 
 ### Eclipse ###
 .apt_generated
