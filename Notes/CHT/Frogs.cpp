@@ -34,11 +34,11 @@ cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ int B=31;
 
 void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr); if(!name.empty())
     {freopen((name+".in").c_str(),"r",stdin);freopen((name+".out").c_str(),"w",stdout);}}
-tpl_<tn_ A, tn_ B> ostream& op_<<(ostream& os, const pair<A, B>& p){ return os<<"("<<p.ff<<", "<<p.ss<<")";}
-tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>&m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
-tpl_<tn_ K,tn_ T>ostream& op_<<(ostream&o,const map<K,T>& m){o<<"{";for(auto&p:m)o<<","<<p.ff<<":"<<p.ss;return o<<"}";}
-tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,C& v)
-    {for(T x:v)os<<' '<<x; return os;}
+tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
+tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
+tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<","<<p.ff<<":"<<p.ss;return o<<"}";}
+tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
+    {for(const T& x:v)os<<' '<<x;return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
@@ -47,6 +47,7 @@ void read(vvi &a){for(auto&r:a)for(auto&x:r)cin>>x;}
 void read(vvi &g,int m,bool o=true,bool d=false){f(i, m){int u,v;cin>>u>>v;if(o){u--;v--;}g[u].pb(v);if(!d)g[v].pb(u);}}
 void read(vvpii &g,int m,bool dec=true,bool dir=false){f(i, m) {
     int u,v,w;cin>>u>>v>>w;if(dec){u--;v--;}g[u].pb({v,w});if(!dir)g[v].pb({u,w}); }}
+
 
 struct DSU{ vi p,sz; explicit
     DSU(const int n){p.resize(n),sz.resize(n,1),iota(all(p),0);}
@@ -126,8 +127,8 @@ struct CHT : multiset<Line, less<>> {
 };
 tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
     static bool badUpper(const Line& x,const Line& y,const Line& z){
-        __int128 lhs=(y.b-x.b)*(x.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
-    void add(const Line& ln){
+        ll lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
+    void add(Line ln){
         if(!upperHull){ ln.a=-ln.a; ln.b=-ln.b; }
         while(h.size()>=2 && badUpper(h[h.size()-2], h.back(), ln)) h.pop_back(); h.pb(ln); }
     int query(int x){
@@ -194,28 +195,62 @@ void solve() {
 
 }
 
+// Great example of applying CHT to a 2D grid
 int32_t main() {
     setIO();
-    // This is the forward dp
-    // dp[i] = min dp[j] + (c[i] - c[j]) * (t_i + x)
-    // = -c[j] * (t_i+x)  +  dp[j]  + c[i]*(t_i+x)
-    // - the trick is we can do a backwards dp to account for the cumulative +x cost
-    // dp[i] = min dp[j+1] + (x + t[j]-t[i-1]) + (c[n] - c[i-1)
-    // = t[j] * (c[n]-c[i-1]) + dp[j+1] + (x-t[i-1]) * (c[n]-c[i-1])
-    cin>>n;
-    int x; cin>>x;
-    vi t(n+1, 0), c(n+1, 0);
-    fe(i, n) cin>>t[i];
-    fe(i, n) cin>>c[i];
-    fe(i, n) t[i] += t[i-1];
-    fe(i, n) c[i] += c[i-1];
-    MonotonicCHT<false> cht;
-    vi res(n+2, 0);
-    repr(i, n, 1) {
-        int cc = c[n]-c[i-1];
-        cht.add(Line(t[i], res[i+1]));
-        res[i] = cht.query(cc) + (x-t[i-1]) * cc;
+    // Suppose we iterate, and current point is (i, j)
+    // Distance to closest post (y, x) is min (y-i)^2 + (x-j)^2
+    // Say we are at row i. Then, (y-i)^2 is fixed per line, which is -2x*j + x^2 + j^2 (a = -2x, b = x^2)
+    // For decreasing slope insertions, go increasing x.
+    // For increasing queries, go increasing j
+    cin>>n>>m;
+    int a, b, c, d; cind>>a>>b>>c>>d;
+    vvi points(m);
+    vvi up(n, vi(m, INFL)), down(n, vi(m, INFL));
+    cin>>k;
+    f(i, k) {
+        int y, x; cind>>y>>x;
+        points[x].pb(y);
+        up[y][x] = down[y][x] = y;
     }
-    cout<<res<<en;
-    cout<<res[1]<<en;
+    f(j, m) {
+        f(i, n-1) if(up[i+1][j] == INFL) up[i+1][j] = up[i][j];
+        repr(i, n-2, 0) if(down[i][j] == INFL) down[i][j] = down[i+1][j];
+    }
+    f(i, m) sort(all(points[i]));
+    vvi dist(n, vi(m));
+    f(i, n) {
+        MonotonicCHT<false> cht;
+        f(x, m) {
+            // Naive version that inserts every point
+            // for(int y : points[x]) {
+            //     cht.add(Line(-2*x, x*x + (y-i)*(y-i)));
+            // }
+            int yterm = INFL;
+            if(up[i][x] != INFL) cmn(yterm, abs(up[i][x]-i));
+            if(down[i][x] != INFL) cmn(yterm, abs(down[i][x]-i));
+            if(yterm != INFL) cht.add(Line(-2*x, x*x + yterm * yterm));
+        }
+        f(j, m) {
+            dist[i][j] = cht.query(j) + j*j;
+        }
+    }
+    // cout<<dist<<en;
+    auto id=[&](int i,int j){return i*m+j;};
+    int ss=id(a,b), tt=id(c,d);
+    int maxD=(n-1)*(n-1)+(m-1)*(m-1);
+    v<vi> buck(maxD+1);
+    f(i,n) f(j,m) buck[dist[i][j]].pb(id(i,j));
+
+    DSU dsu(n*m); vvb vis(n, vb(m,false));
+    repr(D,maxD,0){
+        for(int v: buck[D]){
+            int i=v/m, j=v%m; vis[i][j]=true;
+            for(auto [di,dj]:dirs){
+                int ni=i+di, nj=j+dj;
+                if(0<=ni&&ni<n&&0<=nj&&nj<m && vis[ni][nj]) dsu.merge(v, id(ni,nj));
+            }
+        }
+        if(vis[a][b]&&vis[c][d]&&dsu.same(ss,tt)){ cout<<D<<en; return 0; }
+    }
 }
