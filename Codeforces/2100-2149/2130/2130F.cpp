@@ -194,35 +194,43 @@ int k, n, m;
 
 const int LN = log2(N);
 int d[N][N][LN+1][LN+1];
+
 void solve() {
     cin>>n;
     int ln = log2(n);
     vi a(n); read(a);
-    f(i, n) f(j, n) f(k, ln+1) f(l, ln+1) {
-        d[i][j][k][l] = -1;
-    }
-    auto [fa, ifa] = initFact(3 * ln);
-    auto choose = [&](int n, int k) {
-        return mult(fa[n], mult(ifa[k], ifa[n-k]));
+    f(i, n) f(j, n) f(k, ln+1) f(l, ln+1) d[i][j][k][l] = -1;
+
+    auto [fa, ifa] = initFact(n+5);
+    auto choose = [&](int A, int B) {
+        if(B<0 || B>A) return 0LL;
+        return mult(fa[A], mult(ifa[B], ifa[A-B]));
     };
+
     function<int(int, int, int, int)> calc = [&](int l, int r, int x, int y) {
-        if(r < l) { return x==0 && y==0 ? 1LL : 0LL; }
-        if(x > ln || y > ln) return 0LL;
+        if(r < l) return (x==0 && y==0) ? 1LL : 0LL;
+        if(x < 0 || x > ln || y < 0 || y > ln || !check(l, r, n, n)) return 0LL;
         if(d[l][r][x][y] != -1) return d[l][r][x][y];
+
         mint res = 0;
         rep(i, l, r) {
-            int useL = i-l <= r-i; int useR = 1 - useL;
+            int useL, useR;
+            if(l==0 && r==n-1) useL=0, useR=0;
+            else if(l==0)      useL=0, useR=1;
+            else if(r==n-1)    useL=1, useR=0;
+            else { useL = (i-l <= r-i); useR = 1-useL; }
+
             if(a[i] == -1) {
                 f(j, ln+1) f(k, ln+1) {
-                    int ll = calc(l, i-1, x-useL, j);
-                    int rr = calc(i+1, r, k, y-useR);
-                    res += choose(ll+rr, ll);
+                    mint ll = calc(l, i-1, x-useL, j);
+                    mint rr = calc(i+1, r, k, y-useR);
+                    res += ll * rr * choose(r-l, i-l);
                 }
             } else {
                 rep(j, 0, a[i]) {
-                    int ll = calc(l, i-l, x-useL, j);
-                    int rr = calc(i+1, r, a[i]-j, y-useR);
-                    res += choose(ll+rr, ll);
+                    mint ll = calc(l, i-1, x-useL, j);
+                    mint rr = calc(i+1, r, a[i]-j, y-useR);
+                    res += ll * rr * choose(r-l, i-l);
                 }
             }
         }
@@ -230,7 +238,6 @@ void solve() {
     };
     cout<<calc(0, n-1, 0, 0)<<en;
 }
-
 int32_t main() {
     setIO();
     int t; cin>>t; f(i, t) solve();
