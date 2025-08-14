@@ -34,11 +34,11 @@ cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ int B=31;
 
 void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr); if(!name.empty())
     {freopen((name+".in").c_str(),"r",stdin);freopen((name+".out").c_str(),"w",stdout);}}
-tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
-tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
-tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<","<<p.ff<<":"<<p.ss;return o<<"}";}
-tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
-    {for(const T& x:v)os<<' '<<x;return os;}
+tpl_<tn_ A, tn_ B> ostream& op_<<(ostream& os, const pair<A, B>& p){ return os<<"("<<p.ff<<", "<<p.ss<<")";}
+tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>&m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
+tpl_<tn_ K,tn_ T>ostream& op_<<(ostream&o,const map<K,T>& m){o<<"{";for(auto&p:m)o<<","<<p.ff<<":"<<p.ss;return o<<"}";}
+tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,C& v)
+    {for(T x:v)os<<' '<<x; return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
@@ -127,7 +127,7 @@ struct CHT : multiset<Line, less<>> {
 };
 tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
     static bool badUpper(const Line& x,const Line& y,const Line& z){
-        ll lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
+        __int128 lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
     void add(Line ln){
         if(!upperHull){ ln.a=-ln.a; ln.b=-ln.b; }
         while(h.size()>=2 && badUpper(h[h.size()-2], h.back(), ln)) h.pop_back(); h.pb(ln); }
@@ -165,7 +165,7 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=998244353;
+cx_ int N=100; cx_ int MOD=998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
 inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
@@ -192,97 +192,46 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 
-// Good review of divide and conquer dp where we split at maximum points and propagate using 2D dp.
-int32_t main(){
-    setIO();
-    cin>>n>>m;
-    vi dist(n-1); read(dist);
-    vvi a(n,vi(m)); read(a);
-
-    int ln=log2(n)+1;
-
-    vvi d(n+2,vi(n+2,0));
-    auto add=[&](int x1,int y1,int x2,int y2,int v){
-        if(x1>x2||y1>y2) return;
-        d[x1][y1]+=v; d[x1][y2+1]-=v; d[x2+1][y1]-=v; d[x2+1][y2+1]+=v;
+const int LN = log2(N);
+int d[N][N][LN+1][LN+1];
+void solve() {
+    cin>>n;
+    int ln = log2(n);
+    vi a(n); read(a);
+    f(i, n) f(j, n) f(k, ln+1) f(l, ln+1) {
+        d[i][j][k][l] = -1;
+    }
+    auto [fa, ifa] = initFact(3 * ln);
+    auto choose = [&](int n, int k) {
+        return mult(fa[n], mult(ifa[k], ifa[n-k]));
     };
-
-    f(j,m){
-        v<v<int32_t>> st(n,v<int32_t>(ln,0));
-        f(i,n) st[i][0]=i;
-        fe(k,ln-1){
-            for(int i=0;i+(1<<k)<=n;i++){
-                int32_t u=st[i][k-1], v=st[i+(1<<(k-1))][k-1];
-                st[i][k]=(a[u][j]>a[v][j]||(a[u][j]==a[v][j]&&u<v))?u:v;
+    function<int(int, int, int, int)> calc = [&](int l, int r, int x, int y) {
+        if(r < l) { return x==0 && y==0 ? 1LL : 0LL; }
+        if(x > ln || y > ln) return 0LL;
+        if(d[l][r][x][y] != -1) return d[l][r][x][y];
+        mint res = 0;
+        rep(i, l, r) {
+            int useL = i-l <= r-i; int useR = 1 - useL;
+            if(a[i] == -1) {
+                f(j, ln+1) f(k, ln+1) {
+                    int ll = calc(l, i-1, x-useL, j);
+                    int rr = calc(i+1, r, k, y-useR);
+                    res += choose(ll+rr, ll);
+                }
+            } else {
+                rep(j, 0, a[i]) {
+                    int ll = calc(l, i-l, x-useL, j);
+                    int rr = calc(i+1, r, a[i]-j, y-useR);
+                    res += choose(ll+rr, ll);
+                }
             }
         }
-        auto argmax=[&](int l,int r){
-            int k=log2(r-l+1);
-            int32_t u=st[l][k], v=st[r-(1<<k)+1][k];
-            return (a[u][j]>a[v][j]||(a[u][j]==a[v][j]&&u<v))?(int)u:(int)v;
-        };
-        function<void(int,int)> solve=[&](int L,int R){
-            if(L>R) return;
-            int p=argmax(L,R), v=a[p][j];
-            add(L,p,p,R,v);
-            solve(L,p-1); solve(p+1,R);
-        };
-        solve(0,n-1);
-    }
-
-    // standard 2D prefix (NW)
-    f(i,n) f(jj,n){
-        if(i) d[i][jj]+=d[i-1][jj];
-        if(jj) d[i][jj]+=d[i][jj-1];
-        if(i&&jj) d[i][jj]-=d[i-1][jj-1];
-    }
-
-    vi pref(n,0); f(t,n-1) pref[t+1]=pref[t]+dist[t];
-
-    int res=-INFL;
-    f(i,n) f(jj,n) if(jj>=i) cmx(res, d[i][jj]-(pref[jj]-pref[i]));
-    cout<<res<<en;
+        return d[l][r][x][y] = res.v;
+    };
+    cout<<calc(0, n-1, 0, 0)<<en;
 }
 
-
-
-// int32_t main() {
-//     setIO();
-//     cin>>n>>m;
-//     vi dist(n-1); read(dist);
-//     vvi a(n, vi(m));
-//     read(a);
-//     int res = 0;
-//     int curr = 0;
-//     v<mset<int>> vals(m);
-//     int l = 0;
-//     auto rval = [&](int j) {
-//         return vals[j].empty() ? 0 : *vals[j].rbegin();
-//     };
-//     f(i, n) {
-//         f(j, m) {
-//             curr -= rval(j);
-//             vals[j].insert(a[i][j]);
-//             curr += rval(j);
-//         }
-//         if(i > 0) curr -= dist[i-1];
-//         // cout<<"i "<<i<<sp<<curr<<en;
-//         while(l < i) {
-//             int diff = dist[l];
-//             f(j, m) {
-//                 diff -= rval(j);
-//                 vals[j].erase(vals[j].find(a[l][j]));
-//                 diff += rval(j);
-//             }
-//             if(diff >= 0) {
-//                 l++, curr += diff;
-//             } else {
-//                 f(j, m) vals[j].insert(a[l][j]);
-//                 break;
-//             }
-//         }
-//         cout<<l<<sp<<curr<<en;
-//         cmx(res, curr);
-//     }
-//     cout<<res<<en;
-// }
+int32_t main() {
+    setIO();
+    int t; cin>>t; f(i, t) solve();
+}
