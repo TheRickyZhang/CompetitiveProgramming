@@ -139,7 +139,7 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
         int res=h.front().at(x); return upperHull ? res : -res; }
 };
 
-void _dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
+void dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
 tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n, 0),out(n, 0);
@@ -148,23 +148,17 @@ tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1)
 tuple<vi,vi,vi,vi> _dfs(vvpii &g,int a=0){int n=g.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:g[u]) if(v!=p)
         {dist[v]=w; dfs(v,u,d+1);sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
-vvi _jump(const vi& par, int out=-1) { int n=par.size(); int ln=log2(n)+1; vvi up(n, vi(ln, 0)); f(i,n) up[i][0]=par[i];
+vvi binaryJump(const vi& par, int out=-1) { int n=par.size(); int ln=log2(n)+1; vvi up(n, vi(ln, 0)); f(i,n) up[i][0]=par[i];
     rep(j,1,ln-1) { f(i,n) { int p=up[i][j-1]; if(p==out) up[i][j]=out; else up[i][j]=up[p][j-1];}} return up;}
-tpl_<tn_ F> pair<vvi,vvi> _jumpW(vi &par, int out, vi& wt, F mrg){
+tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(vi &par, int out, vi& wt, F mrg){
     int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), c(n,vi(ln,0));
     f(i,n){up[i][0]=par[i]; c[i][0]=(par[i]==out ? 0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==out)
         {up[i][j]=out; c[i][j]=c[i][j-1];} else{up[i][j]=up[p][j-1]; c[i][j]=mrg(c[i][j-1],c[p][j-1]);}}} return {up,c};}
-int _lca(int u, int v, const vvi& up,const vi& d) {
+int getLCA(const vvi& up,const vi& d, int u, int v) {
     int ln=log2(up.size())+1; if(d[u] < d[v]) swap(u, v); rep(j, 0, ln-1) { if(d[u]-d[v] & (1<<j)) u=up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u=up[u][j], v=up[v][j]; }} return up[u][0];}
-pair<map<int,int>, vi> _compress(vi& a){ vi v=a; sort(all(v)); v.erase(unique(all(v)),v.end());map<int,int> mp;
+pair<map<int,int>, vi> compress(vi& a){ vi v=a; sort(all(v)); v.erase(unique(all(v)),v.end());map<int,int> mp;
     auto it=mp.end(); f(i,v.size()) it=mp.emplace_hint(it,v[i],i); for(int& x : a) x=mp[x]; return {mp,v};}
-vi _virtualTree(vvi& vadj, const vi& nodes, const vi& tin, const vvi& up, const vi& d, bool dir=true) { vi lu = nodes;
-    auto cmp = [&](int u, int v) {return tin[u]<tin[v];}; int n = lu.size(); lu.reserve(2*n);
-    sort(all(lu), cmp); f(i, n-1) lu.pb(_lca(lu[i], lu[i+1], up, d)); sort(all(lu), cmp);
-    lu.erase(unique(all(lu)), lu.end()); for(int u : lu) vadj[u].clear();
-    f(i, lu.size()-1) { int u = _lca(lu[i],lu[i+1],up,d); int v = lu[i+1]; vadj[u].pb(v); if(!dir) vadj[v].pb(u);}
-    return lu; }
 
 struct pairHash{tpl_<tn_ A,tn_ B>size_t op_()(const pair<A,B>&p)const{return hash<A>{}(p.ff)^(hash<B>{}(p.ss)<<1);}};
 struct vHash{tpl_<tn_ T>size_t op_()(const v<T>&x)const{size_t h=0;for(auto&i:x)h^=hash<T>{}(i)+0x9e3779b9+(h<<6)+(h>>2);return h;}};
@@ -199,11 +193,97 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
 
+// There is a much easier way of constructing virt tree, don't use this stack method.
+void solve() {
+    cin>>n;
+    vvi pos(n);
+    vi col(n);
+    f(i, n) {
+        cind>>col[i];
+        pos[col[i]].pb(i);
+    }
+    vvi adj(n); read(adj, n-1);
+    auto [_, par, dep, in, out] = _dfs(adj);
+    vvi up = binaryJump(par);
+    int res = 0;
+    vvi d(n, vi(2, 0));
+    vi tot(n, 0);
+    vvi nadj(n);
+    auto addEdge = [&](int u, int v) { nadj[u].pb(v); nadj[v].pb(u); };
+    auto lca = [&](int u, int v) { return getLCA(up, dep, u, v); };
+    f(c, n) {
+        // Build the virtual tree
+        if(pos.empty()) return;
+        sort(all(pos[c]), [&](int i, int j) {
+            return in[i] < in[j];
+        });
+        vi s = {0};
+        nadj[0].clear();
+        for(int u : pos[c]) {
+            if(u == 0) continue;
+            nadj[u].clear(); // Do it lazily here for efficiency!
+
+            // For nadj (virtual tree) construction, all this is doing is creating set of lca() ops maintaining correct adjacency
+            int p = lca(u, s.back());
+            nadj[u].clear();
+            // Needed to prevent duplicates (but look for cleaner implementation)
+            if(p != s.back()) {
+                // Cut the current stack, finalize adj nodes until p cutoff
+                for(int sz = s.size(); in[p] < in[s[sz-2]]; sz = s.size()) {
+                    addEdge(s[sz-1], s[sz-2]);
+                    s.pop_back();
+                }
+                int sz = s.size();
+                // At this point we must have in[p] >= in[s[sz-2]], we need to branch if ==
+                // This checks if p is NOT in the tree (may make more sense to flip if/else), so add it
+                if(sz >= 2 && in[p] > in[s[sz-2]]) {
+                    nadj[p].clear();
+                    addEdge(p, s[sz-1]);
+                    s.pop_back();
+                    s.push_back(p);
+                } else {
+                    addEdge(p, s[sz-1]);
+                    s.pop_back();
+                }
+            }
+            // Don't forget to always push!
+            s.push_back(u);
+        }
+        for(int sz = s.size(); sz > 1; sz = s.size())  {
+            addEdge(s[sz-1], s[sz-2]);
+            s.pop_back();
+        }
+
+        // d[u][0] = uses 1 child, d[u][1] = uses 2+ children
+        auto dfs = [&](int u, int p) {
+            d[u][0] = d[u][1] = 0; // Important to reset here!
+            for(int v : nadj[u]) {
+                if(v == p) continue;
+                dfs(v, u);
+                // This logic is trickier than it looks
+                // d[u][0] is just sum of tot[v], v : ch
+                // But d[u][1] uses running sum trick, ie take any non-empty selection so far, and add v
+                int x = d[u][0] + tot[v];
+                int y = (d[u][0] + d[u][1]) * tot[v] + d[u][1];
+                d[u][0] = x; d[u][1] = y;
+            }
+            tot[u] = d[u][0]+d[u][1];
+            if(col[u] == c) {
+                // Note how the extra +c is added at just the tot lvl, since otherwise not counted in dp;
+                // This will be correctly propagated up
+                tot[u]++;
+                res += tot[u];
+            } else {
+                res += d[u][1];
+            }
+        };
+        dfs(0, -1);
+    }
+    cout<<res<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

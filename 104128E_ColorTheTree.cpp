@@ -139,7 +139,7 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
         int res=h.front().at(x); return upperHull ? res : -res; }
 };
 
-void _dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
+void dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
 tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n, 0),out(n, 0);
@@ -148,23 +148,17 @@ tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1)
 tuple<vi,vi,vi,vi> _dfs(vvpii &g,int a=0){int n=g.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:g[u]) if(v!=p)
         {dist[v]=w; dfs(v,u,d+1);sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
-vvi _jump(const vi& par, int out=-1) { int n=par.size(); int ln=log2(n)+1; vvi up(n, vi(ln, 0)); f(i,n) up[i][0]=par[i];
+vvi binaryJump(const vi& par, int out=-1) { int n=par.size(); int ln=log2(n)+1; vvi up(n, vi(ln, 0)); f(i,n) up[i][0]=par[i];
     rep(j,1,ln-1) { f(i,n) { int p=up[i][j-1]; if(p==out) up[i][j]=out; else up[i][j]=up[p][j-1];}} return up;}
-tpl_<tn_ F> pair<vvi,vvi> _jumpW(vi &par, int out, vi& wt, F mrg){
+tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(vi &par, int out, vi& wt, F mrg){
     int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), c(n,vi(ln,0));
     f(i,n){up[i][0]=par[i]; c[i][0]=(par[i]==out ? 0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==out)
         {up[i][j]=out; c[i][j]=c[i][j-1];} else{up[i][j]=up[p][j-1]; c[i][j]=mrg(c[i][j-1],c[p][j-1]);}}} return {up,c};}
-int _lca(int u, int v, const vvi& up,const vi& d) {
+int getLCA(const vvi& up,const vi& d, int u, int v) {
     int ln=log2(up.size())+1; if(d[u] < d[v]) swap(u, v); rep(j, 0, ln-1) { if(d[u]-d[v] & (1<<j)) u=up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u=up[u][j], v=up[v][j]; }} return up[u][0];}
-pair<map<int,int>, vi> _compress(vi& a){ vi v=a; sort(all(v)); v.erase(unique(all(v)),v.end());map<int,int> mp;
+pair<map<int,int>, vi> compress(vi& a){ vi v=a; sort(all(v)); v.erase(unique(all(v)),v.end());map<int,int> mp;
     auto it=mp.end(); f(i,v.size()) it=mp.emplace_hint(it,v[i],i); for(int& x : a) x=mp[x]; return {mp,v};}
-vi _virtualTree(vvi& vadj, const vi& nodes, const vi& tin, const vvi& up, const vi& d, bool dir=true) { vi lu = nodes;
-    auto cmp = [&](int u, int v) {return tin[u]<tin[v];}; int n = lu.size(); lu.reserve(2*n);
-    sort(all(lu), cmp); f(i, n-1) lu.pb(_lca(lu[i], lu[i+1], up, d)); sort(all(lu), cmp);
-    lu.erase(unique(all(lu)), lu.end()); for(int u : lu) vadj[u].clear();
-    f(i, lu.size()-1) { int u = _lca(lu[i],lu[i+1],up,d); int v = lu[i+1]; vadj[u].pb(v); if(!dir) vadj[v].pb(u);}
-    return lu; }
 
 struct pairHash{tpl_<tn_ A,tn_ B>size_t op_()(const pair<A,B>&p)const{return hash<A>{}(p.ff)^(hash<B>{}(p.ss)<<1);}};
 struct vHash{tpl_<tn_ T>size_t op_()(const v<T>&x)const{size_t h=0;for(auto&i:x)h^=hash<T>{}(i)+0x9e3779b9+(h<<6)+(h>>2);return h;}};
@@ -199,11 +193,78 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
+// Great example for virtual tree
 void solve() {
+    cin>>n;
+    vi a(n); read(a);
+    vvi adj(n); read(adj, n-1);
+    int ln = log2(n) + 1;
+    vvi sp(n, vi(ln, 0));
+    f(i, n) sp[i][0] = a[i];
+    fe(j, ln-1) {
+        for(int i = 0; i + (1<<j) <= n; i++) {
+            sp[i][j] = min(sp[i][j-1], sp[i+(1<<(j-1))][j-1]);
+        }
+    }
+    auto queryMin = [&](int l, int r) {
+        int j = log2(r-l+1);
+        return min(sp[l][j], sp[r-(1<<j)+1][j]);
+    };
 
+    auto [_, dep, par, tin, tout] = _dfs(adj);
+    vvi up = binaryJump(par);
+    auto lca = [&](int u, int v) { return getLCA(up, dep, u, v); };
+    int mxd = *max_element(all(dep)) + 1;
+    vvi lvl(mxd);
+    f(i, n) { lvl[dep[i]].pb(i); }
+    f(i, mxd) sort(all(lvl[i]), [&](int u, int v) { return tin[u] < tin[v]; });
+
+    vi d(n, 0);
+    vvi vadj(n);
+    int res = 0;
+    f(currd, mxd) {
+        // Create the virtual tree
+        vi lu = lvl[currd];
+        int sz = lu.size();
+        f(i, sz-1) lu.pb(lca(lu[i], lu[i+1]));
+        sort(all(lu), [&](int u, int v) {return tin[u] < tin[v];});
+        lu.erase(unique(all(lu)), lu.end());
+        for(int u : lu) vadj[u].clear();
+
+        int root = -1, rootd = INF;
+        for(int u : lu) {
+            if(dep[u] < rootd) {
+                root = u, rootd = dep[u];
+            }
+        }
+        f(i, lu.size()-1) {
+            int u = lca(lu[i], lu[i+1]), v = lu[i+1];
+            assert(u != v);
+            vadj[u].pb(v);
+        }
+        // cout<<vadj<<en;
+        fvii dfs = [&](int u, int p) {
+            if(vadj[u].empty()) {
+                d[u] = queryMin(currd-dep[u], currd); return;
+            }
+            int tot = 0;
+            for(int v : vadj[u]) {
+                if(v == p) continue;
+                dfs(v, u);
+                tot += d[v];
+            }
+            // cout<<currd-dep[u]<<" "<<currd<<" "<<u<<" "<<tot<<en;
+            d[u] = min(queryMin(currd-dep[u], currd), tot);
+        };
+        dfs(root, -1);
+        res += d[root];
+        // cout<<d[root]<<en;
+    }
+    // cout<<en;
+    cout<<res<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

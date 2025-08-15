@@ -197,13 +197,55 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix op_^(ll p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1;
         while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
-
 int k, n, m;
-void solve() {
+void solve(){
+    cin>>n;
+    vvi adj(n); read(adj, n-1);
+    auto [sz,dep,par,tin,tout]=_dfs(adj);
+    vvi up=_jump(par);
+    auto lca = [&](int u,int v){ return _lca(u,v,up,dep); };
 
+    cin>>k;
+    vvi vadj(n);
+    vb imp(n,false);
+    vi a(n,0), b(n,0);
+
+    f(_,k){
+        int x; cin>>x;
+        vi key(x);
+        f(i,x){ cind>>key[i]; imp[key[i]]=true; } // mark only keys
+
+        // adjacency precheck on original tree
+        bool bad=false;
+        for(int u: key) if(par[u]!=-1 && imp[par[u]]){ bad=true; break; }
+        if(bad){
+            cout<<-1<<en;
+            for(int u:key) imp[u]=false;
+            continue;
+        }
+
+        // build VT via consecutive LCAs
+        vi lu = _virtualTree(vadj, key, tin, up, dep);
+
+        // DP iteratively in reverse lu (postorder for this wiring)
+        for(int u: lu){ a[u]=b[u]=0; }  // touch-only init
+        for(int i=(int)lu.size()-1;i>=0;--i){
+            int u=lu[i], s0=0, s1=0, best=0;
+            for(int v: vadj[u]){
+                s0 += a[v];
+                s1 += b[v];
+                best = min(best, b[v]-a[v]);
+            }
+            if(imp[u]){ b[u]=s0; a[u]=b[u]+1; }
+            else{ a[u]=min(s0, 1+s1); b[u]=min(a[u], s0+best); }
+        }
+
+        cout<<b[lu[0]]<<en;            // root is lu[0] in this scheme
+
+        // cleanup: only what we touched
+        for(int u:key) imp[u]=false;
+        for(int u:lu){ a[u]=b[u]=0; vadj[u].clear(); }
+    }
 }
 
-int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
-}
+int32_t main(){ setIO(); solve(); }
