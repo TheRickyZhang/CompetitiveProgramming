@@ -36,7 +36,7 @@ void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr);
     {freopen((name+".in").c_str(),"r",stdin);freopen((name+".out").c_str(),"w",stdout);}}
 tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
-tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<","<<p.ff<<":"<<p.ss;return o<<"}";}
+tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<",";return o<<"}";}
 tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
     {for(const T& x:v)os<<' '<<x;return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
@@ -139,7 +139,7 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
         int res=h.front().at(x); return upperHull ? res : -res; }
 };
 
-void dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
+void _dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
 tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n, 0),out(n, 0);
@@ -148,15 +148,23 @@ tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1)
 tuple<vi,vi,vi,vi> _dfs(vvpii &g,int a=0){int n=g.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:g[u]) if(v!=p)
         {dist[v]=w; dfs(v,u,d+1);sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
-vvi binaryJump(const vi& par, int out=-1) { int n=par.size(); int ln=log2(n)+1; vvi up(n, vi(ln, 0)); f(i,n) up[i][0]=par[i];
+vvi _jump(const vi& par, int out=-1) { int n=par.size(); int ln=log2(n)+1; vvi up(n, vi(ln, 0)); f(i,n) up[i][0]=par[i];
     rep(j,1,ln-1) { f(i,n) { int p=up[i][j-1]; if(p==out) up[i][j]=out; else up[i][j]=up[p][j-1];}} return up;}
-tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(vi &par, int out, vi& wt, F mrg){
+tpl_<tn_ F> pair<vvi,vvi> _jumpW(vi &par, int out, vi& wt, F mrg){
     int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), c(n,vi(ln,0));
     f(i,n){up[i][0]=par[i]; c[i][0]=(par[i]==out ? 0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==out)
         {up[i][j]=out; c[i][j]=c[i][j-1];} else{up[i][j]=up[p][j-1]; c[i][j]=mrg(c[i][j-1],c[p][j-1]);}}} return {up,c};}
-int getLCA(const vvi& up,const vi& d, int u, int v) {
+int _lca(int u, int v, const vvi& up,const vi& d) {
     int ln=log2(up.size())+1; if(d[u] < d[v]) swap(u, v); rep(j, 0, ln-1) { if(d[u]-d[v] & (1<<j)) u=up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u=up[u][j], v=up[v][j]; }} return up[u][0];}
+pair<map<int,int>, vi> _compress(vi& a){ vi v=a; sort(all(v)); v.erase(unique(all(v)),v.end());map<int,int> mp;
+    auto it=mp.end(); f(i,v.size()) it=mp.emplace_hint(it,v[i],i); for(int& x : a) x=mp[x]; return {mp,v};}
+vi _virtualTree(vvi& vadj, const vi& nodes, const vi& tin, const vvi& up, const vi& d, bool dir=true) { vi lu = nodes;
+    auto cmp = [&](int u, int v) {return tin[u]<tin[v];}; int n = lu.size(); lu.reserve(2*n);
+    sort(all(lu), cmp); f(i, n-1) lu.pb(_lca(lu[i], lu[i+1], up, d)); sort(all(lu), cmp);
+    lu.erase(unique(all(lu)), lu.end()); for(int u : lu) vadj[u].clear();
+    f(i, lu.size()-1) { int u = _lca(lu[i],lu[i+1],up,d); int v = lu[i+1]; vadj[u].pb(v); if(!dir) vadj[v].pb(u);}
+    return lu; }
 
 struct pairHash{tpl_<tn_ A,tn_ B>size_t op_()(const pair<A,B>&p)const{return hash<A>{}(p.ff)^(hash<B>{}(p.ss)<<1);}};
 struct vHash{tpl_<tn_ T>size_t op_()(const v<T>&x)const{size_t h=0;for(auto&i:x)h^=hash<T>{}(i)+0x9e3779b9+(h<<6)+(h>>2);return h;}};
@@ -165,9 +173,9 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=998244353;
+cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
-inline int mult(int a,int b){return a*b%MOD;}
+inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
 inline int inv(int x) { return fpow(x, MOD-2); }
 struct mint { ll v; mint(ll x=0): v((x % MOD+MOD) % MOD) {}
@@ -189,100 +197,94 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix op_^(ll p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1;
         while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
-
 int k, n, m;
+// I did this problem correctly before, only thing missing is the state of direction of nodes!
+// You CAN'T arbitrarily go from any node to any other node. You can only travel along alternating direction paths
+void solve() {
+    cin>>n>>k;
+    vi a(n); read(a);
+    vi b(n); read(b);
 
-// Good review of divide and conquer dp where we split at maximum points and propagate using 2D dp.
-int32_t main(){
-    setIO();
-    cin>>n>>m;
-    vi dist(n-1); read(dist);
-    vvi a(n,vi(m)); read(a);
+    map<int,set<pii>> xmp, ymp; // x: (p+d)%k, y: (p-d)%k
+    f(i,n){
+        int x=(a[i]+b[i])%k, y=(a[i]-b[i]+k)%k;
+        xmp[x].insert({a[i], i});
+        ymp[y].insert({a[i], i});
+    }
 
-    int ln=log2(n)+1;
+    vi L(n,-1), R(n,-1);
+    f(i,n){
+        int x=(a[i]+b[i])%k, y=(a[i]-b[i]+k)%k;
+        auto &X=xmp[x], &Y=ymp[y];
+        auto it=X.lower_bound({a[i], -INFL});
+        if(it!=X.begin()) L[i]=prev(it)->ss;
+        auto jt=Y.upper_bound({a[i], INFL});
+        if(jt!=Y.end()) R[i]=jt->ss;
+    }
 
-    vvi d(n+2,vi(n+2,0));
-    auto add=[&](int x1,int y1,int x2,int y2,int v){
-        if(x1>x2||y1>y2) return;
-        d[x1][y1]+=v; d[x1][y2+1]-=v; d[x2+1][y1]-=v; d[x2+1][y2+1]+=v;
-    };
+    int N=2*n;
+    vi in(N,0), out(N,0), to(N,-1);
+    vvi pred(N);
 
-    f(j,m){
-        v<v<int32_t>> st(n,v<int32_t>(ln,0));
-        f(i,n) st[i][0]=i;
-        fe(k,ln-1){
-            for(int i=0;i+(1<<k)<=n;i++){
-                int32_t u=st[i][k-1], v=st[i+(1<<(k-1))][k-1];
-                st[i][k]=(a[u][j]>a[v][j]||(a[u][j]==a[v][j]&&u<v))?u:v;
-            }
+    auto sid=[&](int i,int dir){ return (i<<1)|dir; };
+
+    f(i,n){
+        if(L[i]!=-1){
+            int s=sid(i,0), t=sid(L[i],1);
+            to[s]=t; ++out[s]; ++in[t]; pred[t].pb(s);
         }
-        auto argmax=[&](int l,int r){
-            int k=log2(r-l+1);
-            int32_t u=st[l][k], v=st[r-(1<<k)+1][k];
-            return (a[u][j]>a[v][j]||(a[u][j]==a[v][j]&&u<v))?(int)u:(int)v;
-        };
-        function<void(int,int)> solve=[&](int L,int R){
-            if(L>R) return;
-            int p=argmax(L,R), v=a[p][j];
-            add(L,p,p,R,v);
-            solve(L,p-1); solve(p+1,R);
-        };
-        solve(0,n-1);
+        if(R[i]!=-1){
+            int s=sid(i,1), t=sid(R[i],0);
+            to[s]=t; ++out[s]; ++in[t]; pred[t].pb(s);
+        }
     }
 
-    // standard 2D prefix (NW)
-    f(i,n) f(jj,n){
-        if(i) d[i][jj]+=d[i-1][jj];
-        if(jj) d[i][jj]+=d[i][jj-1];
-        if(i&&jj) d[i][jj]-=d[i-1][jj-1];
+    vb cyc(N,true);
+    queue<int> q;
+    f(s,N) if(in[s]==0 || out[s]==0) q.push(s);
+    while(!q.empty()){
+        int s=q.front(); q.pop();
+        if(!cyc[s]) continue; cyc[s]=false;
+        int t=to[s];
+        if(t!=-1 && --in[t]==0) q.push(t);
+        for(int r:pred[s]) if(--out[r]==0) q.push(r);
     }
 
-    vi pref(n,0); f(t,n-1) pref[t+1]=pref[t]+dist[t];
+    unordered_set<int> onStart; onStart.reserve(n*2);
+    f(i,n) if(b[i]==0) onStart.insert(a[i]);
 
-    int res=-INFL;
-    f(i,n) f(jj,n) if(jj>=i) cmx(res, d[i][jj]-(pref[jj]-pref[i]));
-    cout<<res<<en;
+    int Q; cin>>Q;
+    f(_,Q){
+        int pos; cin>>pos;
+        if(onStart.count(pos)){
+            int r=pos%k;
+            if(xmp.count(r)){
+                auto &S=xmp[r];
+                auto it=S.lower_bound({pos,-INFL});
+                if(it!=S.begin()){
+                    int j=prev(it)->ss;
+                    cout<<(cyc[sid(j,1)]?"NO":"YES")<<en; // next dir right
+                    continue;
+                }
+            }
+            cout<<"YES"<<en; // no left red → escape
+        }else{
+            int r=pos%k;
+            if(ymp.count(r)){
+                auto &S=ymp[r];
+                auto it=S.upper_bound({pos, INFL});
+                if(it!=S.end()){
+                    int j=it->ss;
+                    cout<<(cyc[sid(j,0)]?"NO":"YES")<<en; // next dir left
+                    continue;
+                }
+            }
+            cout<<"YES"<<en; // no right red → escape
+        }
+    }
 }
 
-
-
-// int32_t main() {
-//     setIO();
-//     cin>>n>>m;
-//     vi dist(n-1); read(dist);
-//     vvi a(n, vi(m));
-//     read(a);
-//     int res = 0;
-//     int curr = 0;
-//     v<mset<int>> vals(m);
-//     int l = 0;
-//     auto rval = [&](int j) {
-//         return vals[j].empty() ? 0 : *vals[j].rbegin();
-//     };
-//     f(i, n) {
-//         f(j, m) {
-//             curr -= rval(j);
-//             vals[j].insert(a[i][j]);
-//             curr += rval(j);
-//         }
-//         if(i > 0) curr -= dist[i-1];
-//         // cout<<"i "<<i<<sp<<curr<<en;
-//         while(l < i) {
-//             int diff = dist[l];
-//             f(j, m) {
-//                 diff -= rval(j);
-//                 vals[j].erase(vals[j].find(a[l][j]));
-//                 diff += rval(j);
-//             }
-//             if(diff >= 0) {
-//                 l++, curr += diff;
-//             } else {
-//                 f(j, m) vals[j].insert(a[l][j]);
-//                 break;
-//             }
-//         }
-//         cout<<l<<sp<<curr<<en;
-//         cmx(res, curr);
-//     }
-//     cout<<res<<en;
-// }
+int32_t main(){
+    setIO();
+    int t; cin>>t; f(_,t) solve();
+}

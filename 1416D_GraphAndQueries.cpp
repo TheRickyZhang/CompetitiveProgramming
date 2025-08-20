@@ -34,11 +34,11 @@ cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ int B=31;
 
 void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr); if(!name.empty())
     {freopen((name+".in").c_str(),"r",stdin);freopen((name+".out").c_str(),"w",stdout);}}
-tpl_<tn_ A, tn_ B> ostream& op_<<(ostream& os, const pair<A, B>& p){ return os<<"("<<p.ff<<", "<<p.ss<<")";}
-tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>&m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
-tpl_<tn_ K,tn_ T>ostream& op_<<(ostream&o,const map<K,T>& m){o<<"{";for(auto&p:m)o<<","<<p.ff<<":"<<p.ss;return o<<"}";}
-tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,C& v)
-    {for(T x:v)os<<' '<<x; return os;}
+tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
+tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
+tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<",";return o<<"}";}
+tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
+    {for(const T& x:v)os<<' '<<x;return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
@@ -116,9 +116,9 @@ struct Line { mutable int a, b, p; // =ax+b, last optimal x
     friend long double intersect(Line x, Line y) { return static_cast<long double>(y.b-x.b) / static_cast<long double>(x.a-y.a); }
 };
 struct CHT : multiset<Line, less<>> {
-    static constexpr int inf=LLONG_MAX; static int floor(int a, int b) { return a/b - ((a^b)<0 && a%b); }
-    bool isect(iterator it1, iterator it2) { if (it2 == end()) { it1->p=inf;return false;}
-        if (it1->a == it2->a) it1->p=it1->b > it2->b ? inf : -inf; else it1->p=floor(it2->b - it1->b, it1->a - it2->a);
+    static int floor(int a, int b) { return a/b - ((a^b)<0 && a%b); }
+    bool isect(iterator it1, iterator it2) { if (it2 == end()) { it1->p=INFL;return false;}
+        if (it1->a == it2->a) it1->p=it1->b > it2->b ? INFL : -INFL; else it1->p=floor(it2->b - it1->b, it1->a - it2->a);
         return it1->p >= it2->p; }
     void add(int a, int b) {
         auto z=insert({a, b, 0}); auto y=z++, x=y; while (isect(y, z)) z=erase(z);
@@ -127,19 +127,25 @@ struct CHT : multiset<Line, less<>> {
 };
 tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
     static bool badUpper(const Line& x,const Line& y,const Line& z){
-        __int128 lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
-    void add(Line ln){
+        ll lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
+    void add(const Line& ln){
         if(!upperHull){ ln.a=-ln.a; ln.b=-ln.b; }
         while(h.size()>=2 && badUpper(h[h.size()-2], h.back(), ln)) h.pop_back(); h.pb(ln); }
     int query(int x){
         if(h.empty()) return upperHull ? -INFL : INFL;
         while(h.size()>=2){
-            int v0=h[0].at(x), v1=h[1].at(x);
-            if(v1 >= v0) h.pop_front(); else break; }
+            if(h[1].at(x) >= h[0].at(x)) h.pop_front(); else break; }
         int res=h.front().at(x); return upperHull ? res : -res; }
 };
 
-void dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
+tpl_<class G, class S> pair<vi,vi> _bfs(G& adj, const S& src = 0, const bool zo=false){
+    int n=adj.size(); deque<int> q; vi d(n,INFL), p(n,-1); auto add=[&](const int u){ d[u]=0; q.pb(u);};
+    if constexpr (is_integral_v<decay_t<S>>) add(src); else for(int u:src) add(u);
+    while(!q.empty()){ int u=q.front(); q.pop_front();
+        for(auto e:adj[u]){ int v,w; if constexpr (is_same_v<decay_t<decltype(e)>,int>) v=e,w=1; else v=e.ff,w=e.ss;
+            int nd=d[u]+w; if(nd>=d[v]) continue; d[v]=nd; p[v]=u; if(zo&&w==0) q.push_front(v); else q.push_back(v); }}
+    return {d,p}; }
+void _dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
 tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n, 0),out(n, 0);
@@ -148,15 +154,23 @@ tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1)
 tuple<vi,vi,vi,vi> _dfs(vvpii &g,int a=0){int n=g.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:g[u]) if(v!=p)
         {dist[v]=w; dfs(v,u,d+1);sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
-vvi binaryJump(const vi& par, int out=-1) { int n=par.size(); int ln=log2(n)+1; vvi up(n, vi(ln, 0)); f(i,n) up[i][0]=par[i];
+vvi _jump(const vi& par, int out=-1) { int n=par.size(); int ln=log2(n)+1; vvi up(n, vi(ln, 0)); f(i,n) up[i][0]=par[i];
     rep(j,1,ln-1) { f(i,n) { int p=up[i][j-1]; if(p==out) up[i][j]=out; else up[i][j]=up[p][j-1];}} return up;}
-tpl_<tn_ F> pair<vvi,vvi> binaryJumpW(vi &par, int out, vi& wt, F mrg){
+tpl_<tn_ F> pair<vvi,vvi> _jumpW(vi &par, int out, vi& wt, F mrg){
     int n=par.size(),ln=log2(n)+1; vvi up(n,vi(ln,0)), c(n,vi(ln,0));
     f(i,n){up[i][0]=par[i]; c[i][0]=(par[i]==out ? 0:wt[i]);} rep(j,1,ln-1){f(i,n){int p=up[i][j-1]; if(p==out)
         {up[i][j]=out; c[i][j]=c[i][j-1];} else{up[i][j]=up[p][j-1]; c[i][j]=mrg(c[i][j-1],c[p][j-1]);}}} return {up,c};}
-int getLCA(const vvi& up,const vi& d, int u, int v) {
+int _lca(int u, int v, const vvi& up,const vi& d) {
     int ln=log2(up.size())+1; if(d[u] < d[v]) swap(u, v); rep(j, 0, ln-1) { if(d[u]-d[v] & (1<<j)) u=up[u][j]; }
     if(u==v) return u; repr(j, ln-1, 0) { if(up[u][j] != up[v][j]) { u=up[u][j], v=up[v][j]; }} return up[u][0];}
+pair<map<int,int>, vi> _compress(vi& a){ vi v=a; sort(all(v)); v.erase(unique(all(v)),v.end());map<int,int> mp;
+    auto it=mp.end(); f(i,v.size()) it=mp.emplace_hint(it,v[i],i); for(int& x : a) x=mp[x]; return {mp,v};}
+vi _virtualTree(vvi& vadj, const vi& nodes, const vi& tin, const vvi& up, const vi& d, bool dir=true) { vi lu = nodes;
+    auto cmp = [&](int u, int v) {return tin[u]<tin[v];}; int n = lu.size(); lu.reserve(2*n);
+    sort(all(lu), cmp); f(i, n-1) lu.pb(_lca(lu[i], lu[i+1], up, d)); sort(all(lu), cmp);
+    lu.erase(unique(all(lu)), lu.end()); for(int u : lu) vadj[u].clear();
+    f(i, lu.size()-1) { int u = _lca(lu[i],lu[i+1],up,d); int v = lu[i+1]; vadj[u].pb(v); if(!dir) vadj[v].pb(u);}
+    return lu; }
 
 struct pairHash{tpl_<tn_ A,tn_ B>size_t op_()(const pair<A,B>&p)const{return hash<A>{}(p.ff)^(hash<B>{}(p.ss)<<1);}};
 struct vHash{tpl_<tn_ T>size_t op_()(const v<T>&x)const{size_t h=0;for(auto&i:x)h^=hash<T>{}(i)+0x9e3779b9+(h<<6)+(h>>2);return h;}};
@@ -165,9 +179,9 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=998244353;
+cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
-inline int mult(int a,int b){return a*b%MOD;}
+inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
 inline int inv(int x) { return fpow(x, MOD-2); }
 struct mint { ll v; mint(ll x=0): v((x % MOD+MOD) % MOD) {}
@@ -192,10 +206,7 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-    cin>>n>>k;
-    set<int> s;
-    f(i, k) s.insert(i);
-    
+
 }
 
 int32_t main() {
