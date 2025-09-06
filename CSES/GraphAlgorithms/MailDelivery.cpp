@@ -131,6 +131,8 @@ int32_t main() {
             adj[u].pop_back();
             if(vis[i]) continue; vis[i] = true; // ENSURE you mark the EDGES as seen, not vertices
             dfs(v);
+            // edgeOrder.pb(i)
+            // This is where you would push edges if you wanted that order
         }
         path.pb(u);
     };
@@ -141,4 +143,7 @@ int32_t main() {
         cout<<"IMPOSSIBLE"<<en;
         // cout<<path<<en;
     }
+
+    // IF YOU WANT TO TRACK ORDER OF EDGES:
+    a
 }

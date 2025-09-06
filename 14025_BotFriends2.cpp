@@ -204,71 +204,180 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
         while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
 
+// 3
+// 4 4
+// 2 3 7 1
+// 1 2 3
+// 1 3 1
+// 2 3 2
+// 3 4 2
+// 5 4
+// 100000 100000 100000 100000 1
+// 1 2 10
+// 2 3 100
+// 3 4 1000
+// 4 5 10000
+// 1 0
+// 1000000000
+//
 int k, n, m;
+using i4 = array<int, 4>;
+
+// void solve() {
+//     cin>>n>>m;
+//     vi a(n); read(a);
+//      int mn = INFL, pos = -1;
+//      f(i, n) {
+//          if(a[i] < mn) {
+//              mn = a[i], pos = i;
+//          }
+//      }
+//     vvpii adj(n);
+//     v<iii> edges;
+//     f(i, m) {
+//         int u, v, w; cind>>u>>v; cin>>w;
+//         adj[u].pb({v, w});
+//         adj[v].pb({u, w});
+//         edges.pb({w, u, v});
+//     }
+//
+//     // Find the minimum spanning tree
+//     vvpii tadj(n);
+//     sort(all(edges));
+//     DSU d(n);
+//     int temp = 0;
+//     for(auto [w, u, v] : edges) {
+//         if(d.same(u, v)) continue;
+//         d.merge(u, v);
+//         tadj[u].pb({v, w}), tadj[v].pb({u, w});
+//         temp++;
+//     }
+//     assert(temp == n-1);
+//     vi dist(n, 0), cost(n, 0);
+//     vvi lus(n);
+//     fvii dfs = [&](int u, int p) {
+//         for(auto [v, w] : tadj[u]) {
+//             if(v == p) continue;
+//             cost[v] = cost[u] + w;
+//             dist[v] = dist[u] + 1;
+//             lus[dist[v]].pb(v);
+//             dfs(v, u);
+//         }
+//     };
+//     dfs(pos, -1);
+//     // cout<<tadj<<en;
+//     // cout<<lus<<en;
+//     // cout<<dist<<en;
+//     // cout<<cost<<en;
+//
+//     vi cnt(n, 1);
+//     vi res(n, 0);
+//     repr(i, n-1, 1) {
+//         for(int u : lus[i]) {
+//             if(a[u] < cost[u]) {
+//                 res[u] += (cnt[u]-1) * a[u];
+//                 cnt[u] = 1;
+//             }
+//             for(auto [v, w] : tadj[u]) {
+//                 if(dist[v] >= dist[u]) continue;
+//                 cnt[v] += cnt[u];
+//                 res[v] += res[u] + cnt[u] * w;
+//                 // cout<<v<<sp<<"increased by"<<sp<<cnt[u]*w<<en;
+//             }
+//         }
+//     }
+//     // cout<<cnt<<en;
+//     // cout<<res<<en;
+//
+//     int ans = res[pos] + (cnt[pos]-1) * a[pos];
+//     cout<<ans<<en;
+// }
+
+void solve() {
+    cin>>n>>m;
+    vi a(n); read(a);
+    int pos=0; f(i,n) if(a[i]<a[pos]) pos=i;
+
+    v<tuple<ll,int,int>> e;
+    f(i,m){
+        int u,v; ll w;
+        cind>>u>>v; cin>>w;      // if 1-based: --u,--v;
+        e.pb({w,u,v});
+    }
+    f(v,n) if(v!=pos) e.pb({(ll)a[pos]+a[v], pos, v});
+
+    sort(all(e));
+    DSU d(n);
+    ll ans=0; int used=0;
+    for(auto [w,u,v]:e){
+        if(d.same(u,v)) continue;
+        d.merge(u,v);
+        ans+=w;
+        if(++used==n-1) break;
+    }
+    cout<<ans<<en;
+}
+
+
+// This is actually interpreting thi problem wrong
+// void solve() {
+//     cin>>n>>m;
+//     vi a(n); read(a);
+//     int mnMerge = INFL, pos = -1;
+//     f(i, n) {
+//         if(a[i] < mnMerge) {
+//             mnMerge = a[i], pos = i;
+//         }
+//     }
+//
+//     vvpii adj(n);
+//     read(adj, m);
+//     vi cost(n, INFL); // merge dist
+//
+//     {
+//         mpq<iii> q;
+//         q.push({0, 0, a[0]});
+//         while(!q.empty()) {
+//             // Note we are storing cost AND unit distance here! (We don't need to keep track of curr cost since always mn * sz)
+//             auto [u, d, mn] = q.top(); q.pop();
+//             if(mn * d >= cost[u]) continue;
+//             cost[u] = mn * d;
+//             for(auto [v, _] : adj[u]) {
+//                 int nmn = min(mn, a[v]);
+//                 int nc = nmn * (d+1);
+//                 if(nc < cost[v]) {
+//                     // cost[v] = nc;
+//                     q.push({v, d+1, nmn});
+//                 }
+//             }
+//         }
+//         cout<<"initial cost "<<cost<<en;
+//     }
+//
+//     // We need a new one to not conflict
+//     vi dist(n, INFL);
+//     mpq<pii> q;
+//     q.push({0, 0});
+//     while(!q.empty()) {
+//         auto [c, u] = q.top(); q.pop();
+//         if(u == pos || c >= dist[u]) continue;
+//         dist[u] = c;
+//         for(auto [v, w] : adj[u]) {
+//             int nc = min(c + min(w, min(a[u], a[v]) - mnMerge), cost[v]);
+//             cout<<u<<sp<<nc<<en;
+//             if(nc < dist[v]) {
+//                 q.push({nc, v});
+//             }
+//         }
+//     }
+//     cout<<"new cost"<<cost<<en;
+//     int res = cost[pos];
+//
+//     // We always factor this cost, and subtract mnMerge when we make an additional merge before
+//     cout<<res + (n-1) * mnMerge<<en;
+// }
 
 int32_t main() {
     setIO();
-    cin>>n>>m>>k;
-    vi a(n); read(a);
-    vvi adj(n);
-    vpii edges;
-    f(i, m) {
-       int u, v; cind>>u>>v;
-        adj[u].pb(v); adj[v].pb(u);
-        edges.pb({u, v});
-    }
-    vpii qs(k); read(qs);
-    f(i, k) qs[i].ss--;
-    int N = 2*n-1;
-    vvi kadj(N);
-    DSU d(N);
-    vi roots(n);
-
-    int it = n;
-    repr(i, k-1, 0) {
-        auto& [t, j] = qs[i];
-        if(t == 1) {
-            int u = j;
-            roots[u] = d.par(u);
-        } else {
-            auto [u, v] = edges[j];
-            int x = d.par(u), y = d.par(v);
-            kadj[it].pb(x); kadj[it].pb(y);
-            d.p[u] = it; d.p[v] = it;
-            it++;
-        }
-    }
-    cout<<"it "<<it;
-    assert(it == N);
-    vi tin(N, 0), tout(N, 0);
-    function combine = [&](pii p, pii q) {
-        return (p.ff < q.ff) ? q : p;
-    };
-    Segtree tree(N, combine, {}, make_pair(-INFL, -1));
-    int t = 0;
-    auto dfs = [&](int u) {
-        if(kadj[u].empty()) {
-            assert(u < n);
-            tree.update(t, {a[u], u}); // Only the leaf nodes are original nodes of the krt
-        }
-        tin[u] = t++;
-        for(int v : kadj[u]) {
-            dfs(v);
-        }
-        tout[u] = t;
-    };
-    dfs(N-1);
-    for(auto [t, u] : qs) {
-        if(t != 1) continue;
-        int root = roots[u];
-        int in = tin[root], out = tout[root];
-        auto [res, node] = tree.query(in, out-1);
-        cout<<res<<en;
-        assert(node != -1);
-        tree.update(tin[node], {0, -1});
-    }
-
+    int t; cin>>t; f(i, t) solve();
 }
-
-6
-40 63 64 9 6 1

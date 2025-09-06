@@ -179,7 +179,7 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
+cx_ int MOD=1e9+7; // 998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
 inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
@@ -206,69 +206,140 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 
-int32_t main() {
-    setIO();
-    cin>>n>>m>>k;
+// vi bruteforce(vi a, int n) {
+//     auto convolute = [&](vi& x, vi& y) {
+//         vi res(n, INFL);
+//         f(i, n) {
+//             f(j, n) {
+//                 int k = (i+j) % n;
+//                 cmn(res[(i+k) % n], x[i] + y[k]);
+//             }
+//         }
+//         return res;
+//     };
+//     vi curr = a;
+//     int m = n-1;
+//     while(m > 0) {
+//         if(m & 1) {
+//             a = convolute(a, curr);
+//         }
+//         curr = convolute(curr, curr);
+//         m >>= 1;
+//     }
+//     return a;
+// }
+//
+// bool solve(int n) {
+//     std::random_device rd;
+//     std::mt19937 generator(rd());
+//     std::uniform_int_distribution<int> distribution(1, n);
+//
+//     vi a(n);
+//     f(i, n) a[i] = distribution(generator);
+//     // read(a);
+//
+//     if(n < 400) {
+//         cout<<bruteforce(a, n);
+//         return 0;
+//     }
+//     int mn = INFL, pos = -1;
+//     v<pii> mns;
+//     f(i, n) {
+//         int x = a[i];
+//         mns.pb({x, i});
+//         if(x < mn) { mn = x, pos = i; }
+//     }
+//     sort(all(mns));
+//     int N = 20;
+//     int M = 200;
+//     int O = 1;
+//     mns.resize(min(N, n));
+//
+//     vi dp = vi(n, INFL);
+//     int m = n - M;
+//     int POS = (pos * m) % n;
+//     dp[POS] = mn * m;
+//     vi dpp(n);
+//     f(_, O) {
+//         dpp.assign(n, INFL);
+//         f(i, n) {
+//             dpp[(POS + i) % n] = dp[POS] + a[i];
+//         }
+//         swap(dp, dpp);
+//     }
+//     f(_, M-O) {
+//         dpp.assign(n, INFL);
+//         for(auto [x, i] : mns) {
+//            f(j, n) {
+//                cmn(dpp[(i+j)%n], dp[j] + x);
+//            }
+//         }
+//         swap(dp, dpp);
+//     }
+//
+//     vi brute = bruteforce(a, n);
+//     if(dp != brute) {
+//         return false;
+//         // cout<<dp<<en<<brute<<en;
+//     }
+//     return true;
+//     // for(int x : dp) cout<<x<<sp;
+// }
+
+// 4
+// 2 3 1 4
+
+void solve() {
+    cin>>n;
     vi a(n); read(a);
-    vvi adj(n);
-    vpii edges;
-    f(i, m) {
-       int u, v; cind>>u>>v;
-        adj[u].pb(v); adj[v].pb(u);
-        edges.pb({u, v});
+    int mn = INFL, pos = -1;
+    f(i, n) {
+        if(a[i] < mn) {
+            mn = a[i], pos = i;
+        }
     }
-    vpii qs(k); read(qs);
-    f(i, k) qs[i].ss--;
-    int N = 2*n-1;
-    vvi kadj(N);
-    DSU d(N);
-    vi roots(n);
+    // cout<<"mn"<<mn<<sp<<"pos"<<pos<<en;
+    vi d(n, INFL);
+    d[0] = 0;
+    // i is how many forward, j is actual index,
+    // _ _ _ pos _ _ j (with i = 3)
+    vpii costs;
+    rep(i, 1, n-1) {
+        costs.pb({a[(pos+i) % n] - mn, i});
+    }
+    sort(all(costs));
 
-    int it = n;
-    repr(i, k-1, 0) {
-        auto& [t, j] = qs[i];
-        if(t == 1) {
-            int u = j;
-            roots[u] = d.par(u);
-        } else {
-            auto [u, v] = edges[j];
-            int x = d.par(u), y = d.par(v);
-            kadj[it].pb(x); kadj[it].pb(y);
-            d.p[u] = it; d.p[v] = it;
-            it++;
-        }
-    }
-    cout<<"it "<<it;
-    assert(it == N);
-    vi tin(N, 0), tout(N, 0);
-    function combine = [&](pii p, pii q) {
-        return (p.ff < q.ff) ? q : p;
-    };
-    Segtree tree(N, combine, {}, make_pair(-INFL, -1));
-    int t = 0;
-    auto dfs = [&](int u) {
-        if(kadj[u].empty()) {
-            assert(u < n);
-            tree.update(t, {a[u], u}); // Only the leaf nodes are original nodes of the krt
-        }
-        tin[u] = t++;
-        for(int v : kadj[u]) {
-            dfs(v);
-        }
-        tout[u] = t;
-    };
-    dfs(N-1);
-    for(auto [t, u] : qs) {
-        if(t != 1) continue;
-        int root = roots[u];
-        int in = tin[root], out = tout[root];
-        auto [res, node] = tree.query(in, out-1);
-        cout<<res<<en;
-        assert(node != -1);
-        tree.update(tin[node], {0, -1});
-    }
+    for(auto [c, i] : costs) {
+        // The reason this is efficient is that this check should trigger most of the time
+        if(d[i] <= c) continue;
 
+        // BE CAREFUL HERE! We need to do this twice
+        // Let's say that we 'unwrap' each of the gcd(n, i) cycles to a linear array. Then our 1-dp just considers best
+        // Moves from before. But what we want is a circular best, so a second pass resolves that.
+        // Note that we MUST organize into cycles, otherwise we could miss a better answer? (Make sure to formally verify this)
+        int g = gcd(n, i);
+        f(k, g) {
+            int it = k;
+            f(_, 2) f(cnt, n/g) {
+                cmn(d[(it + i) % n], d[it] + c);
+                it = (it + i) % n;
+            }
+        }
+    }
+    f(i, n) d[i] += n*mn;
+    cout<<d<<en;
 }
 
-6
-40 63 64 9 6 1
+
+int32_t main() {
+    setIO();
+    solve();
+    // cin>>n;
+    // for(int i = 10000; i <= 30000; i += 10000) {
+    //     int x = 0;
+    //     f(j, 3) {
+    //         if(solve(i)) x++;
+    //     }
+    //     cout<<i<<sp<<1.0*x / 5<<en;
+    // }
+}

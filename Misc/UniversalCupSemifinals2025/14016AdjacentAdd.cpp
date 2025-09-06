@@ -205,70 +205,45 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
+inline double floatingpow(double a, int b) {
+    if(b < 0) return 1.0 / floatingpow(a, -b);
+    double res=1; while(b>0){if(b&1) res=res*a; a=a*a; b>>=1;} return res;
+}
+void solve() {
+    cin>>n>>k;
+    vi a(n); read(a);
+
+    v<double> b(n); f(i, n) b[i] = a[i];
+    repr(i, n-2, 0) {
+        b[i] -= b[i+1]/k;
+    }
+    double x = b[0];
+    double kterm = 0;
+    f(i, n) {
+        kterm += floatingpow(static_cast<double>(-k), -i);
+        // cout<<kterm<<sp;
+    }
+    // cout<<en;
+    int d = x / kterm;
+    // cout<<x<<sp<<kterm<<sp<<d<<en;
+
+    rep(x, d-1, d+1) {
+        vi c = a;
+        f(i, n) c[i] -= x;
+        bool bad = false;
+        repr(i, n-2, 0) {
+            if(c[i+1] % k != 0) {
+                bad = true;
+                break;
+            }
+            c[i] -= c[i+1]/k;
+        }
+        if(!bad && c[0] == 0) { quit("Yes"); }
+    }
+    cout<<"No"<<en;
+}
 
 int32_t main() {
     setIO();
-    cin>>n>>m>>k;
-    vi a(n); read(a);
-    vvi adj(n);
-    vpii edges;
-    f(i, m) {
-       int u, v; cind>>u>>v;
-        adj[u].pb(v); adj[v].pb(u);
-        edges.pb({u, v});
-    }
-    vpii qs(k); read(qs);
-    f(i, k) qs[i].ss--;
-    int N = 2*n-1;
-    vvi kadj(N);
-    DSU d(N);
-    vi roots(n);
-
-    int it = n;
-    repr(i, k-1, 0) {
-        auto& [t, j] = qs[i];
-        if(t == 1) {
-            int u = j;
-            roots[u] = d.par(u);
-        } else {
-            auto [u, v] = edges[j];
-            int x = d.par(u), y = d.par(v);
-            kadj[it].pb(x); kadj[it].pb(y);
-            d.p[u] = it; d.p[v] = it;
-            it++;
-        }
-    }
-    cout<<"it "<<it;
-    assert(it == N);
-    vi tin(N, 0), tout(N, 0);
-    function combine = [&](pii p, pii q) {
-        return (p.ff < q.ff) ? q : p;
-    };
-    Segtree tree(N, combine, {}, make_pair(-INFL, -1));
-    int t = 0;
-    auto dfs = [&](int u) {
-        if(kadj[u].empty()) {
-            assert(u < n);
-            tree.update(t, {a[u], u}); // Only the leaf nodes are original nodes of the krt
-        }
-        tin[u] = t++;
-        for(int v : kadj[u]) {
-            dfs(v);
-        }
-        tout[u] = t;
-    };
-    dfs(N-1);
-    for(auto [t, u] : qs) {
-        if(t != 1) continue;
-        int root = roots[u];
-        int in = tin[root], out = tout[root];
-        auto [res, node] = tree.query(in, out-1);
-        cout<<res<<en;
-        assert(node != -1);
-        tree.update(tin[node], {0, -1});
-    }
-
+    int t; cin>>t; f(i, t) solve();
 }
-
-6
-40 63 64 9 6 1

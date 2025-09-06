@@ -36,7 +36,7 @@ void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr);
     {freopen((name+".in").c_str(),"r",stdin);freopen((name+".out").c_str(),"w",stdout);}}
 tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
-tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<",";return o<<"}";}
+tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<","<<p.ff<<":"<<p.ss;return o<<"}";}
 tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
     {for(const T& x:v)os<<' '<<x;return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
@@ -116,9 +116,9 @@ struct Line { mutable int a, b, p; // =ax+b, last optimal x
     friend long double intersect(Line x, Line y) { return static_cast<long double>(y.b-x.b) / static_cast<long double>(x.a-y.a); }
 };
 struct CHT : multiset<Line, less<>> {
-    static int floor(int a, int b) { return a/b - ((a^b)<0 && a%b); }
-    bool isect(iterator it1, iterator it2) { if (it2 == end()) { it1->p=INFL;return false;}
-        if (it1->a == it2->a) it1->p=it1->b > it2->b ? INFL : -INFL; else it1->p=floor(it2->b - it1->b, it1->a - it2->a);
+    static constexpr int inf=LLONG_MAX; static int floor(int a, int b) { return a/b - ((a^b)<0 && a%b); }
+    bool isect(iterator it1, iterator it2) { if (it2 == end()) { it1->p=inf;return false;}
+        if (it1->a == it2->a) it1->p=it1->b > it2->b ? inf : -inf; else it1->p=floor(it2->b - it1->b, it1->a - it2->a);
         return it1->p >= it2->p; }
     void add(int a, int b) {
         auto z=insert({a, b, 0}); auto y=z++, x=y; while (isect(y, z)) z=erase(z);
@@ -128,23 +128,17 @@ struct CHT : multiset<Line, less<>> {
 tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
     static bool badUpper(const Line& x,const Line& y,const Line& z){
         ll lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
-    void add(const Line& ln){ // upperHull -> insert increasing slope, else decreasing slope
+    void add(const Line& ln){
         if(!upperHull){ ln.a=-ln.a; ln.b=-ln.b; }
         while(h.size()>=2 && badUpper(h[h.size()-2], h.back(), ln)) h.pop_back(); h.pb(ln); }
-    int query(int x){ // Always increasing x
+    int query(int x){
         if(h.empty()) return upperHull ? -INFL : INFL;
         while(h.size()>=2){
-            if(h[1].at(x) >= h[0].at(x)) h.pop_front(); else break; }
+            int v0=h[0].at(x), v1=h[1].at(x);
+            if(v1 >= v0) h.pop_front(); else break; }
         int res=h.front().at(x); return upperHull ? res : -res; }
 };
 
-tpl_<class G, class S> pair<vi,vi> _bfs(G& adj, const S& src = 0, const bool zo=false){
-    int n=adj.size(); deque<int> q; vi d(n,INFL), p(n,-1); auto add=[&](const int u){ d[u]=0; q.pb(u);};
-    if constexpr (is_integral_v<decay_t<S>>) add(src); else for(int u:src) add(u);
-    while(!q.empty()){ int u=q.front(); q.pop_front();
-        for(auto e:adj[u]){ int v,w; if constexpr (is_same_v<decay_t<decltype(e)>,int>) v=e,w=1; else v=e.ff,w=e.ss;
-            int nd=d[u]+w; if(nd>=d[v]) continue; d[v]=nd; p[v]=u; if(zo&&w==0) q.push_front(v); else q.push_back(v); }}
-    return {d,p}; }
 void _dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
@@ -205,70 +199,26 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
+void solve() {
+    cin>>n;
+    str s; cin>>s;
+    cin>>m;
+    str t; cin>>t;
+    str order; cin>>order;
+    str a, b;
+    f(i, m) {
+        if(order[i] == 'D') {
+            b += t[i];
+        } else {
+            a += t[i];
+        }
+    }
+    reverse(all(a));
+    cout << a << s << b << en;
+}
 
 int32_t main() {
     setIO();
-    cin>>n>>m>>k;
-    vi a(n); read(a);
-    vvi adj(n);
-    vpii edges;
-    f(i, m) {
-       int u, v; cind>>u>>v;
-        adj[u].pb(v); adj[v].pb(u);
-        edges.pb({u, v});
-    }
-    vpii qs(k); read(qs);
-    f(i, k) qs[i].ss--;
-    int N = 2*n-1;
-    vvi kadj(N);
-    DSU d(N);
-    vi roots(n);
-
-    int it = n;
-    repr(i, k-1, 0) {
-        auto& [t, j] = qs[i];
-        if(t == 1) {
-            int u = j;
-            roots[u] = d.par(u);
-        } else {
-            auto [u, v] = edges[j];
-            int x = d.par(u), y = d.par(v);
-            kadj[it].pb(x); kadj[it].pb(y);
-            d.p[u] = it; d.p[v] = it;
-            it++;
-        }
-    }
-    cout<<"it "<<it;
-    assert(it == N);
-    vi tin(N, 0), tout(N, 0);
-    function combine = [&](pii p, pii q) {
-        return (p.ff < q.ff) ? q : p;
-    };
-    Segtree tree(N, combine, {}, make_pair(-INFL, -1));
-    int t = 0;
-    auto dfs = [&](int u) {
-        if(kadj[u].empty()) {
-            assert(u < n);
-            tree.update(t, {a[u], u}); // Only the leaf nodes are original nodes of the krt
-        }
-        tin[u] = t++;
-        for(int v : kadj[u]) {
-            dfs(v);
-        }
-        tout[u] = t;
-    };
-    dfs(N-1);
-    for(auto [t, u] : qs) {
-        if(t != 1) continue;
-        int root = roots[u];
-        int in = tin[root], out = tout[root];
-        auto [res, node] = tree.query(in, out-1);
-        cout<<res<<en;
-        assert(node != -1);
-        tree.update(tin[node], {0, -1});
-    }
-
+    int t; cin>>t; f(i, t) solve();
 }
 
-6
-40 63 64 9 6 1

@@ -1,46 +1,46 @@
-For coding questions respond with C++ as the default and Windows commands. I like intuitive explanations for problem solving. Ignore most common code conventions, as I like concise code with minimal comments, minimal brackets.
-Always assume any code that is discussed has these macros.
+For coding questions respond with C++ as the default and Windows commands UNLESS I am referring to linux/neovim already.
+I like intuitive explanations for problem solving. Ignore most common code conventions; I like concise code with minimal comments/brackets.
+Always assume any C++ code has these macros.
 
-These are typically common variable names I use for Competitive Programming. Note there is some flexibility depending on context, but adhere to these as closely as you can.
-If something does not fit any of these names, always use a short single-word variable.
+These are common variable names I use for Competitive Programming. It is flexible depending on context, but adhere closely.
 
 a, b: generic nums/lists
-c: generic character
-d: distance
-e: edge list, even
+c: character
+d: dp table/distance
+e: edge, even
 f: flag
 g: graph, gcd
 h: high
 i, j: indices
 k: query/change number
 l: left
-m: secondary number
-n: important number
+m: secondary size, mid
+n: primary size
 o: odd
 p: parent
 q: (priority) queue
 r: right
 s: string/set
-t: time/test cases
+t: time/tree
 u, v, w: from, to, weight
-x, y: coordinates/generic numbers
+x, y: coords/generic numbers
 z: z-array
 
 nums: 1D vector
 grid: 2D+ vector
 mp: map
-dp:
-dpp: dp table 2
-up: binary lifting table
+up: binary lift table
 d_, change in _ (dx)
 n_, new value of _ (nx)
 vis: visited array
 res: result
 adj: adjacency list
+vadj: virtual adj
+lu: list of nodes
 mx, mn: maximum, minimum
 best: best value
 curr: current value
-pos: important index, typically where best occurs
+pos: important index
 diff: difference
 sz: size
 pre, suf: prefix, suffix arrays.
@@ -50,4 +50,4 @@ bfs, dfs
 freq: frequency vector
 it, lit, rit: (left/right) iterators
 ch: children
-ln: log2 of max
+ln: log2 of n

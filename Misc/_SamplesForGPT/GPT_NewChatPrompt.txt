@@ -21,13 +21,13 @@ using vi=v<int>;   using vb=v<bool>;  using vvi=v<vi>;
 struct DSU{ vi p,sz; ... }
 tpl_<tn_ T> struct Segtree, BIT { int n; v<T> t, nums; T z; function<T(T, T)> c; ... }
 
-tpl_<class T, class U> T fstTrue(T l, T r, U ff)
-tpl_<class T, class U> T lstTrue(T l, T r, U ff)
-tpl_<class T> bool ckmn(T& a, const T& b), bool ckmx(T& a, const T& b)
+T fstTrue(T l, T r, U ff)
+T lstTrue(T l, T r, U ff)
+bool cmn(T& a, const T& b), bool cmx(T& a, const T& b)
 constexpr ll INFL=1e18; constexpr auto en = "\n"; constexpr auto sp = " ";
 struct cind{tpl_<typename Ttn_> cind& operator>>(T &x){cin>>x;--x;return *this;}} cind;
 void read(vi& a) // Reads into any structure
 
 You should always use these when possible, and assume I already have them written (no need to provide again).
-Also use short variable names and minimal spacing but ONLY for streams (cout<<en instead of cout << en) and grouping numerical operations (int x = a*b + c)
-Brackets and comma/semicolons still get normal spacing.
+Also use short variable names and minimal spacing but ONLY for streams (cout<<en instead of cout << en) and grouping some numerical operations (int x = a*b + c)
+Brackets/commas/semicolons still get normal spacing.
