@@ -124,7 +124,7 @@ int32_t main() {
         }
     }
     vi path;
-    // This is quite unintuitive, but imagine a
+    // All this does is follow edges until getting back to root, adding cycles
     function<void(int)> dfs = [&](int u) {
         while(!adj[u].empty()) {
             auto [v, i] = adj[u].back(); // Back for convenience

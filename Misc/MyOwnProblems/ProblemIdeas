@@ -9,3 +9,7 @@ Easy: You may perform operations of removing from left and right diagonals (DP)
 Hard: You may perform operations of removing from row, column, left, right diagonals
 What is fewest number of operations required?
 
+Suppose you are given a tree with back edges (rephrase with clever transformation of a graph).
+For each node u, count how many edges go from (under u) -> (above u), or how many back edges cross u.
+Solve with DFS tree idea, and clever alternative to using low[] array
+// Also provides clever dfs way -> for back edge xy, a[x] -= 1, a[y] += 1;  d[u] = a[u] + sum(d[v]).

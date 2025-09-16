@@ -98,6 +98,7 @@ int32_t main() {
     vi found(n, -1), low(n, -1), par(n, -1);
     stack<int> s; vb instack(n, false);
     int t=0, cnt=0;
+
     // Enhanced Tarjan's algorithm that also keeps track of components
     function<void(int)> dfs = [&](int u) {
         found[u] = low[u] = t++;
@@ -110,6 +111,8 @@ int32_t main() {
                 ckmn(low[u], found[v]);
             }
         }
+        // Note that this only makes sense because we can only "jump" via found back edge to a node that is currently in the stack
+        // -> will capture a SCC at the highest level
         if(low[u]==found[u]) {
             while(true) {
                 int x = s.top();
