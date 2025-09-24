@@ -1,4 +1,7 @@
 Revisit these concepts!
 
 Reflection Inclusion & Exclusion - https://www.cnblogs.com/Hanghang007/p/18159154
+Basically, to count ways to go from (0, 0) to (n, m) while being bounded exclusively by
+y=x+l, y=x+r is:
+
 
