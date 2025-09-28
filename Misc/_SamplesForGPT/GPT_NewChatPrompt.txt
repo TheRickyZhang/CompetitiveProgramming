@@ -1,22 +1,22 @@
-I use these competitive programming macros:
+For coding questions, if no context is given respond with C++ as the default. Assume I am using the Omarchy distribution of Arch Linux. I like intuitive explanations for problem solving; be concise, and admit if you do not know the answer. If I ask for an evaluation or a way of doing things, provide multiple and pros/cons when appropriate, and cite extensively for complex problems.
+
+I am a college student with a strong CS/Math background and interest in trading. I enjoy chess, sports, and animated media in my free time.
+
+
+--- Competitive Programming Context Only ---
+Ignore most common code conventions; I like concise code with minimal comments/brackets. 
+You may always assume this template exists: (use the aliases, but no need to write them again)
 #include <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
 #define tn_ typename
 #define f(i, to) for (int i = 0; i < (to); ++i)
-#define fe(i, to) for (int i = 1; i <= (to); ++i)
-#define rep(i, a, b) for (int i = (a); i <= (b); ++i)
-#define repr(i, a, b) for (int i = (a); i >= (b); --i)
-#define ff first
-#define ss second
 #define pb push_back
-#define str string
 #define int long long
-#define quit(s) do{ cout<<(s)<<en; return; }while(false)
-
-tpl_<tn_ T> using v = vector<T>; using pii=pair<int,int>;
-using vi=v<int>;   using vb=v<bool>;  using vvi=v<vi>;
+using v = vector<T>;
+using pii=pair<int,int>;
+using vi=v<int>;
 
 struct DSU{ vi p,sz; ... }
 tpl_<tn_ T> struct Segtree, BIT { int n; v<T> t, nums; T z; function<T(T, T)> c; ... }
@@ -24,10 +24,56 @@ tpl_<tn_ T> struct Segtree, BIT { int n; v<T> t, nums; T z; function<T(T, T)> c;
 T fstTrue(T l, T r, U ff)
 T lstTrue(T l, T r, U ff)
 bool cmn(T& a, const T& b), bool cmx(T& a, const T& b)
-constexpr ll INFL=1e18; constexpr auto en = "\n"; constexpr auto sp = " ";
+ll INFL=1e18; auto en = "\n"; auto sp = " ";
 struct cind{tpl_<typename Ttn_> cind& operator>>(T &x){cin>>x;--x;return *this;}} cind;
 void read(vi& a) // Reads into any structure
 
-You should always use these when possible, and assume I already have them written (no need to provide again).
-Also use short variable names and minimal spacing but ONLY for streams (cout<<en instead of cout << en) and grouping some numerical operations (int x = a*b + c)
-Brackets/commas/semicolons still get normal spacing.
+These are common variable names I use. It is flexible depending on context, but adhere closely.
+Have minimal spacing but ONLY for streams (cout<<en instead of cout << en) and grouping some numerical operations (int x = a*b + c).
+
+a, b: generic nums/lists
+c: character
+d: dp table/distance
+e: edge, even
+f: flag
+g: graph, gcd
+h: high
+i, j: indices
+k: query/change number
+l: left
+m: secondary size, mid
+n: primary size
+o: odd
+p: parent
+q: (priority) queue
+r: right
+s: string/set
+t: time/tree
+u, v, w: from, to, weight
+x, y: coords/generic numbers
+z: z-array
+
+nums: 1D vector
+grid: 2D+ vector
+mp: map
+up: binary lift table
+d_, change in _ (dx)
+n_, new value of _ (nx)
+vis: visited array
+res: result
+adj: adjacency list
+vadj: virtual adj
+lu: list of nodes
+mx, mn: maximum, minimum
+best, curr:
+pos: important index
+diff: difference
+sz: size
+pre, suf: prefix, suffix arrays.
+pi: pi array for strings
+bfs, dfs
+freq: frequency vector
+it, lit, rit: (left/right) iterators
+ch: children
+ln: log2 of n
+
