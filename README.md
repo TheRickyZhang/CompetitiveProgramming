@@ -9,3 +9,5 @@ Frequent clang-tidy exclusions:
 - misc-no-recursion
 - bugprone-reserved-identifier
 - misc-const-correctness
+
+Note: the run.sh script relies on having the GNU time package installed.

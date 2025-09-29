@@ -2,74 +2,52 @@
 set -euo pipefail
 
 dbg=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --debug) dbg=1; shift ;;
-    *) break ;;
-  esac
-done
-
-if [[ $# -ne 1 ]]; then
-  echo "usage: $0 [--debug] <source.{cpp,java,py,rs}>" >&2
-  exit 1
-fi
+while [[ $# -gt 0 ]]; do case "$1" in --debug) dbg=1; shift;; *) break;; esac; done
+[[ $# -eq 1 ]] || { echo "usage: $0 [--debug] <file.cpp>" >&2; exit 1; }
 src=$1
 [[ -f "$src" ]] || { echo "File not found: $src" >&2; exit 1; }
+full="$(readlink -f -- "$src")"; dir="$(dirname -- "$full")"; file="$(basename -- "$full")"
+name="${file%.*}"; exe="$dir/$name"
 
-full="$(readlink -f -- "$src")"
-dir="$(dirname -- "$full")"
-file="$(basename -- "$full")"
-name="${file%.*}"
-ext="$(printf '%s\n' "${file##*.}" | tr '[:upper:]' '[:lower:]')"
+: "${TIMEOUT:=15s}"      # wall time cap
+: "${MEMMAX:=2G}"        # memory cap
+: "${TASKSMAX:=infinity}"
+: "${NOFILE:=4096}"      # fd cap
+: "${NPROC:=16384}"      # per-user proc/threads cap inside run
 
-compile(){ :; }
-run(){ :; }
-cleanup(){ :; }
-killname=""
+if ((dbg)); then
+  g++ "$full" -std=c++23 -g -O0 -fno-omit-frame-pointer -rdynamic \
+     -fsanitize=address,undefined -D_GLIBCXX_ASSERTIONS -o "$exe"
+else
+  g++ "$full" -std=c++23 -g -O2 -pipe -fno-omit-frame-pointer -rdynamic \
+     -D_GLIBCXX_ASSERTIONS -o "$exe"
+fi
 
-case "$ext" in
-  cpp)
-    if ((dbg)); then
-      compile(){ g++ "$full" -g -O0 -fno-omit-frame-pointer -std=c++23 -o "$dir/$name"; }
+BT=""
+if command -v catchsegv >/dev/null 2>&1; then
+  BT="catchsegv"
+elif [[ -e /usr/lib/libSegFault.so ]]; then
+  BT="env SEGFAULT_SIGNALS=all LD_PRELOAD=/usr/lib/libSegFault.so"
+fi
+
+safe_exec() {
+  if command -v systemd-run >/dev/null 2>&1; then
+    # common props (no CPUQuota)
+    local props=(-p "MemoryMax=$MEMMAX" -p "TasksMax=$TASKSMAX" -p Nice=10 -p IOSchedulingClass=idle)
+    if [[ -t 1 ]]; then
+      systemd-run --user --wait --collect --same-dir -t "${props[@]}" \
+        bash -lc "ulimit -t $(( ${TIMEOUT%s} + 1 )) -n $NOFILE -u $NPROC; exec timeout --signal=KILL $TIMEOUT $BT \"$exe\""
     else
-      compile(){ g++ "$full" -O2 -std=c++23 -o "$dir/$name"; }
+      systemd-run --user --wait --collect --same-dir --pipe "${props[@]}" \
+        bash -lc "ulimit -t $(( ${TIMEOUT%s} + 1 )) -n $NOFILE -u $NPROC; exec timeout --signal=KILL $TIMEOUT $BT \"$exe\""
     fi
-    run(){ "$dir/$name"; }
-    killname="$name"
-    cleanup(){ rm -f -- "$dir/$name"; }
-    ;;
-  rs)
-    if ((dbg)); then
-      compile(){ rustc "$full" -g -C opt-level=0 -C debug-assertions=yes -o "$dir/$name"; }
-    else
-      compile(){ rustc "$full" -C opt-level=3 --edition=2021 -o "$dir/$name"; }
-    fi
-    run(){ "$dir/$name"; }
-    killname="$name"
-    cleanup(){ rm -f -- "$dir/$name"; }
-    ;;
-  java)
-    compile(){ (cd "$dir" && javac "$file"); }
-    run(){ (cd "$dir" && java "$name"); }
-    killname=""
-    cleanup(){ rm -f -- "$dir"/"${name}"*.class; }
-    ;;
-  py)
-    run(){ python3 "$full"; }
-    killname=""
-    cleanup(){ :; }
-    ;;
-  *) echo "Unsupported extension: .$ext" >&2; exit 1 ;;
-esac
+  else
+    ulimit -t $(( ${TIMEOUT%s} + 1 )) -n "$NOFILE" -u "$NPROC" || true
+    exec timeout --signal=KILL "$TIMEOUT" $BT "$exe"
+  fi
+}
 
-# keep binary if debugging so DAP can launch it
-keep_bin=$(( dbg ? 1 : 0 ))
-trap '((keep_bin)) || cleanup || true' EXIT
-
-declare -F compile >/dev/null && compile
-
-# in debug mode, only build; do not run
-if ((dbg)); then exit 0; fi
-
-if [[ -n "$killname" ]]; then pkill -x "$killname" 2>/dev/null || true; fi
-run
+# keep binary for DAP when --debug; otherwise run
+((dbg)) && exit 0
+pkill -x "$name" 2>/dev/null || true
+safe_exec

@@ -200,7 +200,9 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-
+  int x
+  neistrr
+  tsonrst
 }
 
 int32_t main() {

@@ -1,7 +1,9 @@
--- repo-local DAP for stdin
+-- repo-local DAP + safe run bindings
 local map = vim.keymap.set
 local fe = vim.fn.fnameescape
 local dap = require("dap")
+
+vim.g.autoformat = false
 
 -- adapter
 local mason = vim.fn.stdpath("data") .. "/mason/packages/codelldb/extension/adapter/codelldb"
@@ -14,13 +16,12 @@ dap.adapters.codelldb = {
 	},
 }
 
--- make nvim-dap open a real terminal split for runInTerminal
 dap.defaults.fallback.terminal_win_cmd = function()
 	vim.cmd("belowright 12split | enew")
 	return vim.api.nvim_get_current_buf()
 end
 
--- build with debug flags then run in terminal
+-- build with debug flags then run in terminal (DAP controls the program)
 map("n", "<leader>R", function()
 	if vim.bo.buftype ~= "" then
 		return vim.notify("Focus a source file.", vim.log.levels.ERROR)
@@ -30,14 +31,13 @@ map("n", "<leader>R", function()
 	if src == "" or vim.fn.filereadable(src) ~= 1 then
 		return vim.notify("Current buffer is not a file.", vim.log.levels.ERROR)
 	end
-
 	vim.system({ "bash", "-lc", "./run.sh --debug " .. fe(src) }, { text = true }, function(r)
 		vim.schedule(function()
 			if r.code ~= 0 then
 				local msg = (r.stderr and #r.stderr > 0 and r.stderr) or (r.stdout or "build failed")
 				return vim.notify(msg, vim.log.levels.ERROR, { title = "build failed" })
 			end
-			local exe = vim.fn.fnamemodify(src, ":r") -- basename without extension
+			local exe = vim.fn.fnamemodify(src, ":r")
 			if vim.fn.executable(exe) ~= 1 then
 				return vim.notify("Built binary not found: " .. exe, vim.log.levels.ERROR, { title = "dap" })
 			end
@@ -49,19 +49,25 @@ map("n", "<leader>R", function()
 				cwd = vim.fn.getcwd(),
 				args = {},
 				stopOnEntry = false,
-				runInTerminal = true, -- key: create real terminal, not the debug console
+				runInTerminal = true,
 			})
 		end)
 	end)
 end, { desc = "repo: debug current file in terminal with stdin" })
 
--- optional plain run
+-- plain run (SAFE): capture src BEFORE opening a terminal
 map("n", "<leader>r", function()
 	if vim.bo.buftype ~= "" then
 		return vim.notify("Focus a source file.", vim.log.levels.ERROR)
 	end
-	vim.cmd("update | botright split")
+	vim.cmd("update")
 	local src = vim.fn.expand("%:p")
-	vim.cmd("terminal bash -lc " .. vim.fn.shellescape("./run.sh " .. fe(src)))
+	if src == "" or vim.fn.filereadable(src) ~= 1 then
+		return vim.notify("Current buffer is not a file.", vim.log.levels.ERROR)
+	end
+	-- optional tweaks: export tighter limits for this run
+	local env = "TIMEOUT=15s MEMMAX=2G CPUQUOTA=200% TASKSMAX=800 OUTLINES=200000"
+	vim.cmd("botright split")
+	vim.cmd("terminal bash -lc " .. vim.fn.shellescape(env .. " ./run.sh " .. fe(src)))
 	vim.cmd("startinsert")
-end, { desc = "repo: run current file" })
+end, { desc = "repo: run current file (safe)" })

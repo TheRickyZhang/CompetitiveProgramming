@@ -200,10 +200,44 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-  int x = 2;
-  int y = x * 3;
-  int z = 100 + 2;
-  cout<<x<<sp<<y<<z<<en;
+  cin>>n>>k;
+  vvi adj(n);
+  vi par(n);
+  fe(i, n-1) {
+    int p; cind>>p;
+    par[i] = p;
+    if(i != -1) {
+      adj[i].pb(p);
+      adj[p].pb(i);
+    }
+  }
+  vi vals;
+  queue<int> q;
+  q.push(0);
+  while(!q.empty()) {
+    int sz = q.size();
+    vals.pb(sz);
+    bool f = false;
+    f(_, sz) {
+      int u = q.front(); q.pop();
+      if(adj[u].size() == 1) f = true;
+      for(int v : adj[u]) {
+        if(v != par[u]) { q.push(v); }
+      }
+    }
+    if(f) break;
+  }
+  cout<<vals<<en;
+  int sz = vals.size();
+  int res = fstTrue(1LL, sz, [&](int m) {
+    int x = 0, y = 0;
+    f(i, sz) {
+      if(i & 1) y += vals[i];
+      else x += vals[i];
+    }
+    return bool(max(x, y) <= max(k, n-k));
+  });
+  cout<<res<<en;
 }
 
 int32_t main() {
