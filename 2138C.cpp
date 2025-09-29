@@ -229,9 +229,9 @@ void solve() {
   }
   cout<<vals<<en;
   int sz = vals.size();
-  int res = fstTrue(1LL, sz, [&](int m) {
+  int res = lstTrue(1LL, sz, [&](int m) {
     int x = 0, y = 0;
-    f(i, sz) {
+    f(i, m) {
       if(i & 1) y += vals[i];
       else x += vals[i];
     }

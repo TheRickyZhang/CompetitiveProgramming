@@ -65,6 +65,7 @@ map("n", "<leader>r", function()
 	if src == "" or vim.fn.filereadable(src) ~= 1 then
 		return vim.notify("Current buffer is not a file.", vim.log.levels.ERROR)
 	end
+	vim.cmd("only") -- this is the same as <C-w>o
 	-- optional tweaks: export tighter limits for this run
 	local env = "TIMEOUT=15s MEMMAX=2G CPUQUOTA=200% TASKSMAX=800 OUTLINES=200000"
 	vim.cmd("botright split")

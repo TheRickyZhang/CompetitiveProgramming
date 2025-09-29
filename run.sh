@@ -9,11 +9,15 @@ src=$1
 full="$(readlink -f -- "$src")"; dir="$(dirname -- "$full")"; file="$(basename -- "$full")"
 name="${file%.*}"; exe="$dir/$name"
 
-: "${TIMEOUT:=15s}"      # wall time cap
-: "${MEMMAX:=2G}"        # memory cap
+: "${TIMEOUT:=15s}"
+: "${MEMMAX:=2G}"
 : "${TASKSMAX:=infinity}"
-: "${NOFILE:=4096}"      # fd cap
-: "${NPROC:=16384}"      # per-user proc/threads cap inside run
+: "${NOFILE:=4096}"
+: "${NPROC:=16384}"
+
+# stdout color (set COLOR="" to disable)
+: "${COLOR:=$'\e[36m'}"
+: "${RESET:=$'\e[0m'}"
 
 if ((dbg)); then
   g++ "$full" -std=c++23 -g -O0 -fno-omit-frame-pointer -rdynamic \
@@ -31,23 +35,23 @@ elif [[ -e /usr/lib/libSegFault.so ]]; then
 fi
 
 safe_exec() {
+  local cmd="
+ulimit -t $(( ${TIMEOUT%s} + 1 )) -n $NOFILE -u $NPROC
+$BT timeout --signal=KILL $TIMEOUT \"$exe\" \
+  > >(awk 'BEGIN{p=0} { if(!p){print \"\"; print \"OUTPUT:\"; p=1 } print; fflush() }') \
+  2> >(cat >&2)
+"
   if command -v systemd-run >/dev/null 2>&1; then
-    # common props (no CPUQuota)
     local props=(-p "MemoryMax=$MEMMAX" -p "TasksMax=$TASKSMAX" -p Nice=10 -p IOSchedulingClass=idle)
-    if [[ -t 1 ]]; then
-      systemd-run --user --wait --collect --same-dir -t "${props[@]}" \
-        bash -lc "ulimit -t $(( ${TIMEOUT%s} + 1 )) -n $NOFILE -u $NPROC; exec timeout --signal=KILL $TIMEOUT $BT \"$exe\""
-    else
-      systemd-run --user --wait --collect --same-dir --pipe "${props[@]}" \
-        bash -lc "ulimit -t $(( ${TIMEOUT%s} + 1 )) -n $NOFILE -u $NPROC; exec timeout --signal=KILL $TIMEOUT $BT \"$exe\""
-    fi
+    systemd-run --user --wait --collect --same-dir --pipe --quiet "${props[@]}" bash -lc "$cmd"
   else
-    ulimit -t $(( ${TIMEOUT%s} + 1 )) -n "$NOFILE" -u "$NPROC" || true
-    exec timeout --signal=KILL "$TIMEOUT" $BT "$exe"
+    bash -lc "$cmd"
   fi
 }
 
-# keep binary for DAP when --debug; otherwise run
+# delete executable on exit unless in debug mode
+((dbg)) || trap 'rm -f "$exe"' EXIT
+
 ((dbg)) && exit 0
 pkill -x "$name" 2>/dev/null || true
 safe_exec
