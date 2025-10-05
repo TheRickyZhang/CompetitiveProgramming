@@ -32,11 +32,6 @@ do
 	end
 end
 
--- dap.defaults.fallback.terminal_win_cmd = function()
--- 	vim.cmd("belowright 12split | enew")
--- 	return vim.api.nvim_get_current_buf()
--- end
-
 local function checkRunnable(src)
 	if vim.bo.buftype ~= "" then
 		vim.notify("Focus a source file.", vim.log.levels.ERROR)
@@ -70,7 +65,8 @@ local function runProgram(cmd)
 	kill_terms()
 	-- Open a new window below for running the program
 	vim.cmd("silent! only")
-	vim.cmd("botright 12split")
+	vim.cmd("botright vsplit")
+	-- vim.cmd("resize 24")
 	vim.cmd("terminal bash -lc " .. vim.fn.shellescape(cmd))
 	-- enter Terminal-mode so input is piped in correctly
 	vim.cmd("startinsert")
