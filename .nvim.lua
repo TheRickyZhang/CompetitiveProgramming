@@ -4,6 +4,8 @@ local fe = vim.fn.fnameescape
 local dap = require("dap")
 
 vim.g.autoformat = false
+vim.o.autowrite = false
+vim.o.autowriteall = false
 
 -- codelldb adapter via Mason (assume installed)
 do
@@ -23,6 +25,18 @@ end
 -- 	vim.cmd("belowright 12split | enew")
 -- 	return vim.api.nvim_get_current_buf()
 -- end
+
+local function kill_terms()
+	for _, b in ipairs(vim.api.nvim_list_bufs()) do
+		if vim.bo[b].buftype == "terminal" then
+			local jid = vim.b[b].terminal_job_id
+			if jid and jid > 0 then
+				pcall(vim.fn.jobstop, jid)
+			end
+			pcall(vim.api.nvim_buf_delete, b, { force = true })
+		end
+	end
+end
 
 -- DEBUG: build with -g then launch via DAP (with UI panes if you enabled dap-ui)
 map("n", "<leader>R", function()
@@ -77,7 +91,14 @@ map("n", "<leader>r", function()
 	end
 	local dir = vim.fn.fnamemodify(src, ":h")
 	local cmd = string.format("cd %s && TIMEOUT=30s ./run.sh %s", vim.fn.shellescape(dir), vim.fn.fnameescape(src))
-	vim.cmd("enew") -- replace current window with a terminal
+
+	-- Prepare by stopping other processes/windows
+	kill_terms()
+	vim.cmd("silent! only")
+
+	-- Open a new window below for running the program
+	vim.cmd("botright 12split")
 	vim.cmd("terminal bash -lc " .. vim.fn.shellescape(cmd))
-	vim.cmd("startinsert") -- enter Terminal-mode so input flows to the program
+	-- enter Terminal-mode so input flows to the program
+	vim.cmd("startinsert")
 end, { desc = "run current file (terminal, 30s cap)" })

@@ -200,10 +200,50 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-
+  int x; cin>>n>>x;
+  vi a(n); read(a);
+  cin>>k;
+  v<iii> ks;
+  f(i, k) {
+    int l, r; cind>>l>>r;
+    ks.pb({l, r, i});
+  }
+  int m = sqrt(n);
+  sort(all(ks), [&](iii x, iii y) {
+      auto [xl, xr, xi] = x;
+      auto [yl, yr, yi] = y;
+      return tuple(xl/m, xr) < tuple(yl/m, yr);
+  });
+  int l = -1, r = 0;
+  vi res(k);
+  deque<int> q;
+  for(auto [nl, nr, i] : ks) {
+    while(r < nr) {
+      if(q.size() < 2 || a[nr] - q[q.size()-2] > x) q.push_back(r);
+      r++;
+    }
+    while(l > nl) {
+      if(q.size() < 2 || q[1] - a[nl] > x) q.push_front(r);
+      l--;
+    }
+    while(l < nl) {
+      if(!q.empty() && q.front() == l) q.pop_front();
+      l++;
+    }
+    while(r > nr) {
+      if(!q.empty() && q.back() == r) q.pop_back();
+      r--;
+    }
+    cout<<"i"<<sp<<i<<en;
+    for(int x : q) cout<<x<<sp;
+    cout<<en;
+    res[i] = q.size();
+  }
+  f(i, k) cout<<res[i]<<sp;
+  cout<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }
