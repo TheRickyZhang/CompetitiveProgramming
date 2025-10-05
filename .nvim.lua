@@ -1,11 +1,22 @@
 -- repo-local DAP + safe run bindings
+local dap = require("dap")
 local map = vim.keymap.set
 local fe = vim.fn.fnameescape
-local dap = require("dap")
+local sh = vim.fn.shellescape
 
 vim.g.autoformat = false
 vim.o.autowrite = false
 vim.o.autowriteall = false
+
+local function shell_simple(p)
+	return p:match("^[%w%./_+,%-]+$") ~= nil
+end
+
+-- Related to where this file is located
+local ROOT = vim.fs.dirname((debug.getinfo(1, "S").source:gsub("^@", "")))
+local INPUT = ROOT .. "/input.txt"
+assert(shell_simple(ROOT), "ROOT not shell-simple; use shellescape")
+assert(shell_simple(INPUT), "INPUT not shell-simple; use shellescape")
 
 -- codelldb adapter via Mason (assume installed)
 do
@@ -26,6 +37,22 @@ end
 -- 	return vim.api.nvim_get_current_buf()
 -- end
 
+local function checkRunnable(src)
+	if vim.bo.buftype ~= "" then
+		vim.notify("Focus a source file.", vim.log.levels.ERROR)
+		return false
+	end
+	vim.cmd("update") -- Saves if the buffer is modified.
+
+	if src == "" or vim.fn.filereadable(src) ~= 1 then
+		vim.notify("Current buffer is not a file.", vim.log.levels.ERROR)
+		return false
+	end
+	return true
+end
+
+-- local function checkFile()
+
 local function kill_terms()
 	for _, b in ipairs(vim.api.nvim_list_bufs()) do
 		if vim.bo[b].buftype == "terminal" then
@@ -38,16 +65,27 @@ local function kill_terms()
 	end
 end
 
+local function runProgram(cmd)
+	-- Prepare by stopping other processes/windows
+	kill_terms()
+	-- Open a new window below for running the program
+	vim.cmd("silent! only")
+	vim.cmd("botright 12split")
+	vim.cmd("terminal bash -lc " .. vim.fn.shellescape(cmd))
+	-- enter Terminal-mode so input is piped in correctly
+	vim.cmd("startinsert")
+end
+
+---------- START COMMANDS ------------
+
 -- DEBUG: build with -g then launch via DAP (with UI panes if you enabled dap-ui)
-map("n", "<leader>R", function()
-	if vim.bo.buftype ~= "" then
-		return vim.notify("Focus a source file.", vim.log.levels.ERROR)
-	end
-	vim.cmd("update")
+-- TODO: Use shell escape instead of fnameescape
+map("n", "<leader>dd", function()
 	local src = vim.fn.expand("%:p")
-	if src == "" or vim.fn.filereadable(src) ~= 1 then
-		return vim.notify("Current buffer is not a file.", vim.log.levels.ERROR)
+	if not checkRunnable(src) then
+		return
 	end
+
 	local dir = vim.fn.fnamemodify(src, ":h")
 	local exe = vim.fn.fnamemodify(src, ":r")
 
@@ -81,24 +119,37 @@ map("n", "<leader>R", function()
 end, { desc = "debug current file (DAP)" })
 
 map("n", "<leader>r", function()
-	if vim.bo.buftype ~= "" then
-		return vim.notify("Focus a source file.", vim.log.levels.ERROR)
-	end
-	vim.cmd("update")
 	local src = vim.fn.expand("%:p")
-	if src == "" or vim.fn.filereadable(src) ~= 1 then
-		return vim.notify("Current buffer is not a file.", vim.log.levels.ERROR)
+	if not checkRunnable(src) then
+		return
 	end
-	local dir = vim.fn.fnamemodify(src, ":h")
-	local cmd = string.format("cd %s && TIMEOUT=30s ./run.sh %s", vim.fn.shellescape(dir), vim.fn.fnameescape(src))
 
-	-- Prepare by stopping other processes/windows
-	kill_terms()
-	vim.cmd("silent! only")
-
-	-- Open a new window below for running the program
-	vim.cmd("botright 12split")
-	vim.cmd("terminal bash -lc " .. vim.fn.shellescape(cmd))
-	-- enter Terminal-mode so input flows to the program
-	vim.cmd("startinsert")
+	local cmd = string.format(
+		-- Store input to the interactive terminal through tee
+		-- Shellescape protects against various things, fnameescape for vim commands
+		"cd %s && (tee %s | TIMEOUT=30s ./run.sh %s)",
+		ROOT,
+		INPUT,
+		sh(src)
+	)
+	runProgram(cmd)
 end, { desc = "run current file (terminal, 30s cap)" })
+
+map("n", "<leader>R", function()
+	local src = vim.fn.expand("%:p")
+	if not checkRunnable(src) then
+		return
+	end
+
+	local cmd = string.format(
+		'RS=%s IS=%s SS=%s; cd "$RS"; '
+			.. 'touch "$IS"; '
+			.. 'cat "$IS"; '
+			.. 'echo "-----------------------------"; '
+			.. 'TIMEOUT=30s ./run.sh "$SS" < "$IS"',
+		ROOT,
+		INPUT,
+		sh(src)
+	)
+	runProgram(cmd)
+end, { desc = "run current file with input.txt" })

@@ -1,3 +1,7 @@
+# Local
+input.txt
+output.txt
+
 ### IntelliJ IDEA ###
 out/
 !**/src/main/**/out/
