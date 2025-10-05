@@ -142,11 +142,7 @@ map("n", "<leader>R", function()
 	end
 
 	local cmd = string.format(
-		'RS=%s IS=%s SS=%s; cd "$RS"; '
-			.. 'touch "$IS"; '
-			.. 'cat "$IS"; '
-			.. 'echo "-----------------------------"; '
-			.. 'TIMEOUT=30s ./run.sh "$SS" < "$IS"',
+		'RS=%s IS=%s SS=%s; cd "$RS"; ' .. 'touch "$IS"; ' .. 'cat "$IS"; ' .. 'TIMEOUT=30s ./run.sh "$SS" < "$IS"',
 		ROOT,
 		INPUT,
 		sh(src)
