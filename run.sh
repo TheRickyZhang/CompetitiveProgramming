@@ -19,10 +19,14 @@ cxx=${CXX:-g++}  # change to clang++ if you want
 cleanup() { rm -f -- "$exe"; }
 trap cleanup EXIT INT TERM
 
+# Clutch for printing a separator!
+if [ ! -t 0 ]; then printf '%*s\n' 60 '' | tr ' ' '-' >&2; fi
+
 # run in THIS terminal; interactive I/O works
 if command -v timeout >/dev/null 2>&1; then
   timeout --signal=KILL "${TIMEOUT:-30s}" "$exe"
 else
   "$exe"
 fi
+
 exit 0
