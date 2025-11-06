@@ -17,6 +17,7 @@ using namespace std;
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
+#define print(x) (cout<<#x<<"="<<(x)<<endl)
 
 #define int long long
 tpl_<tn_ T>using v=vector<T>; using vi=v<int>; tpl_<tn_ T>using vv=v<v<T>>; using ll=long long; using pii=pair<int,int>;
@@ -199,9 +200,117 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
+
+// Very dumb and overly complicated solution
+// void solve() {
+//   cin>>n;
+//   vi a(n); read(a);
+//   // Only need to work on cnt of values of original array
+//   map<int, int> cnt;
+//   for(int x : a) cnt[x]++;
+//
+//   // Store sorted {len, cnt} of gaps to be moved down 
+//   vpii b;
+//   // map available odd cnts to corresponding gaps
+//   map<int, set<int>> mp;
+//   int p = 0;
+//   for(auto [x, f] : cnt) {
+//     if((x-p) & 1) mp[f].insert(b.size());
+//     b.pb({x - p, f});
+//     p = x;
+//   }
+//   n = b.size();
+//   vi prev(n);
+//   vi next(n);
+//   iota(all(prev), 0);
+//   iota(all(next), 0);
+//
+//   // print(b);
+//   // cout<<"mp ";
+//   // for(auto [f, indices] : mp) cout<<f<<" "<<indices<<", ";
+//   // cout<<endl<<endl;
+//   
+//   int res[2] = {0, 0};
+//   int turn = 0;
+//   auto eraseFromMap = [&](int f, int i) {
+//     auto& indices = mp[f];
+//     indices.erase(i);
+//     if(indices.empty()) mp.erase(f);
+//   };
+//   while(!mp.empty()) {
+//     auto& f = ::prev(mp.end())->ff;
+//     auto& indices = ::prev(mp.end())->ss;
+//     int i = *indices.rbegin();
+//     eraseFromMap(f, i);
+//
+//     int j = (i == 0 ? -1 : prev[i-1]);
+//     int k = (i == n-1 ? n : next[i+1]);
+//     auto [len, _] = b[i];
+//     assert(len & 1);
+//     res[turn] += (len+1)/2 * f;
+//     res[1-turn] += (len/2) * f;
+//     turn = 1-turn;
+//     // cout<<"res"<<sp<<res[0]<<sp<<res[1]<<endl;
+//     
+//     if(j >= 0){
+//       auto& [lenj, fj] = b[j];
+//       if(lenj & 1){
+//         eraseFromMap(fj, j);
+//         mp[fj + f].insert(j);
+//       }
+//       fj += f;
+//       // next[j] = k;
+//    }
+//     if(k < n) {
+//       auto& [lenk, fk] = b[k];
+//       if(lenk & 1) eraseFromMap(fk, k);
+//       lenk += len;
+//       if(lenk & 1) mp[fk].insert(k);
+//       // prev[k] = j;
+//     }
+//     prev[i] = j;
+//     next[i] = k;
+//     // cout<<"mp ";
+//     // for(auto [f, indices] : mp) cout<<f<<" "<<indices<<", ";
+//     // cout<<endl;
+//     // cout<<"b"<<sp<<b<<endl;
+//     // cout<<"prev"<<sp<<prev<<endl;
+//     // cout<<endl;
+//   }
+//   
+//   f(i, n) {
+//     // Should only be even counts remaining; evenly split
+//     if(prev[i] == i) {
+//       auto [len, f] = b[i];
+//       // assert(f % 2 == 0);
+//       res[0] += len * f/2;
+//       res[1] += len * f/2;
+//     }
+//   }
+//   cout<<res[0]<<sp<<res[1]<<endl;
+// }
+
 void solve() {
   cin>>n;
-  cout<<2 * (n-1)<<endl;
+  vi a(n); read(a);
+  map<int, int> cnt;
+  for(int x : a) {
+    cnt[x]++;
+  }
+  int p = 0;
+  int resa = 0, resb = 0;
+  vi b;
+  for(auto [x, f] : cnt) {
+    int y = x/2 * f;
+    resa += y;
+    resb += y;
+    if(x & 1) b.pb(f);
+  }
+  sort(rall(b));
+  f(i, b.size()) {
+    (i % 2 == 0) ? resa += b[i] : resb += b[i];
+  }
+  cout<<resa<<" "<<resb<<endl;
 }
 
 int32_t main() {

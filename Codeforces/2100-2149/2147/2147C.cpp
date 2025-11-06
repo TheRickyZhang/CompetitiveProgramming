@@ -15,6 +15,7 @@ using namespace std;
 #define pb push_back
 #define fora(a, x) for (auto &(a) : (x))
 #define all(x) begin(x), end(x)
+#define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define rall(x) rbegin(x), rend(x)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
@@ -200,8 +201,24 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-  cin>>n;
-  cout<<2 * (n-1)<<endl;
+	int n; cin >> n;
+	string s; cin >> s;
+	bool ok = true;
+	bool curr = (s[0] == '1');
+	int cnt = 0;
+	for (int i = 0; i < n; i++) {
+		if (s[i] == '0') cnt++;
+		if (i == 0) continue;
+		if (s[i] == s[i-1] && s[i] == '0') curr = false;
+		if (s[i] == s[i-1] && s[i] == '1') {
+			if (curr && cnt % 2 == 1) ok = false;
+			curr = true;
+			cnt = 0;
+		}
+	}
+	
+	if (curr && cnt % 2 == 1 && s[n-1] == '1') ok = false;
+	cout << (ok ? "YES" : "NO") << endl;
 }
 
 int32_t main() {

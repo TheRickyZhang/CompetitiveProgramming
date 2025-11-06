@@ -58,24 +58,53 @@ struct mint { ll val; // Avg 2x slowdown over raw % operations
 };
 
 int t, k, n, m;
-void solve() {
-    
+void solve(){
+  int n; if(!(cin>>n)) return;
+  vi a(n); f(i,n) cin>>a[i];
+
+  // run-length compress
+  vi b; b.reserve(n);
+  f(i,n) if(b.empty()||b.back()!=a[i]) b.pb(a[i]);
+  int L=b.size(); if(!L){ cout<<0<<en; return; }
+
+  // value -> positions to iterate only matching splits
+  unordered_map<int,vi> pos; pos.reserve(L*2);
+  f(i,L) pos[b[i]].pb(i);
+
+  vector<vi> d(L, vi(L, 0));
+  for(int i=L-1;i>=0;--i){
+    d[i][i]=1;
+    for(int j=i+1;j<L;++j){
+      int best=d[i][j-1]+1;
+      const vi& pv=pos[b[j]];
+      auto it=lower_bound(pv.begin(), pv.end(), i);
+      for(; it!=pv.end() && *it<j; ++it){
+        int k=*it;
+        int left=(k==i?0:d[i][k-1]);
+        int cand=left + d[k][j-1];
+        if(cand<best) best=cand;
+      }
+      d[i][j]=best;
+    }
+  }
+  cout<<d[0][L-1]<<en;
 }
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    cin>>n;
-    vi nums(n);
-    f(i, n) cin>>nums[i];
-    vvi dp(n, vi(n, INF));
-    f(i, n) dp[i][i] = 1;
-    f(len, n) { // 1 less than len
-        f(i, n-len) {
-            int k = i+len;
-            rep(j, i, k-1) {
-                ckmn(dp[i][k], dp[i][j] + dp[j+1][k] - (nums[i]==nums[k]));
-            }
-        }
-    }
-    cout<<dp[0][n-1]<<en;
+    solve();
+    // cin>>n;
+    // vi nums(n);
+    // f(i, n) cin>>nums[i];
+    // vvi dp(n, vi(n, INF));
+    // f(i, n) dp[i][i] = 1;
+    // rep(len, 1, n) {
+    //     rep(i, 0, n-len) {
+    //         int k = i+len-1;
+    //         rep(j, i, k-1) {
+    //             ckmn(dp[i][k], dp[i][j] + dp[j+1][k] - (nums[i]==nums[k]));
+    //         }
+    //     }
+    // }
+    // cout<<dp[0][n-1]<<en;
 }

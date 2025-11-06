@@ -16,6 +16,7 @@ using namespace std;
 #define fora(a, x) for (auto &(a) : (x))
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
+#define print(x) (cerr<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
 #define int long long
@@ -55,21 +56,21 @@ struct DSU{ vi p,sz; explicit
     void merge(int x,int y){x=par(x),y=par(y);if(x!=y){if(sz[x]<sz[y])swap(x,y);p[y]=x,sz[x]+=sz[y];}}
     bool same(int x, int y){ return par(x)==par(y); }
 };
-tpl_<tn_ T, tn_ C> struct Segtree      { int n; v<T> t, nums; C c;
+tpl_<tn_ T, tn_ C> struct Segtree{
+    int n,N; v<T> t, nums; C c; T z;
     static_assert(is_invocable_r_v<T,C,T,T>,"Combine must be T(T,T)");
-    Segtree(int sz, C c, const v<T>& init={}, const T& z=T()) : n(sz), t(4*sz, z), nums(sz, z), c(move(c))
-        {if (!init.empty()) { nums=init; build(1, 0, n-1); } }
-    void add(int p, T x) { modify(1, 0, n-1, p, x, false); }
-    void update(int p, T x) { modify(1, 0, n-1, p, x, true); }
-    T query(int l, int r) { return query(1, 0, n-1, l, r); }
-private:
-    void build (int i, int a, int b) { if (a==b) { t[i]=nums[a]; return; } int m=(a+b)/2;
-        build(2*i, a, m); build(2*i+1, m+1, b); t[i]=c(t[2*i], t[2*i+1]); }
-    void modify(int i, int a, int b, int p, T x, bool upd) {if (a==b) {upd ? t[i]=x : t[i]=c(t[i], x); return; }
-        int m=(a+b)/2; p<=m ? modify(2*i, a, m, p, x, upd) : modify(2*i+1, m+1, b, p, x, upd); t[i]=c(t[2*i], t[2*i+1]);}
-    T query (int i, int a, int b, int l, int r) { if (r < a || b < l) return T(); if (l <= a && b <= r) return t[i];
-        int m=(a+b)/2; return c(query(2*i, a, m, l, r), query(2*i+1, m+1, b, l, r)); }
-};
+    Segtree(int sz, C c, const v<T>& init={}, const T& z=T()) : n(sz), N(1), nums(sz, z), c(std::move(c)), z(z) {
+        while(N<n) N<<=1; t.assign(2*N, z);
+        if(!init.empty()){ nums=init; for(int i=0;i<n;i++) t[N+i]=nums[i]; }
+        for(int i=N-1;i;i--) t[i]=c(t[i<<1], t[i<<1|1]); }
+    void add(int p, T x){
+        int i=p+N; t[i]=c(t[i], x); for(i>>=1;i;i>>=1) t[i]=c(t[i<<1], t[i<<1|1]); }
+    void update(int p, T x){
+        int i=p+N; t[i]=x; for(i>>=1;i;i>>=1) t[i]=c(t[i<<1], t[i<<1|1]); }
+    T query(int l, int r){
+        if(r<l) return z; l+=N; r+=N; T L=z, R=z;
+        while(l<=r){ if(l&1) L=c(L, t[l++]); if(!(r&1)) R=c(t[r--], R); l>>=1; r>>=1; }
+        return c(L, R); }};
 tpl_<tn_ T, tn_ U, tn_ C, tn_ Ap, tn_ Cmp>
 struct LazySegtree {            // NOTE this "apply" passes in [l, r] by default! ap and cmp use {old, new op ... }
     static_assert(is_invocable_r_v<T,C,T,T>,"Combine T(T,T)");
@@ -199,11 +200,29 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
-
-}
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    cin>>n;
+    vi a(n); read(a);
+    vvi adj(n);
+    read(adj, n-1);
+    v<set<int>> cols(n);
+    vi res(n);
+    auto dfs = [&](auto&& self, int u, int p) -> void {
+      cols[u].insert(a[u]);
+      for(int v : adj[u]) {
+        if(v == p) continue;
+        self(self, v, u);
+        if(cols[v].size() > cols[u].size()) {
+          swap(cols[v], cols[u]);
+        }
+        for(int c : cols[v]) {
+          cols[u].insert(c);
+        }
+      }
+      res[u] = cols[u].size();  
+    };
+    dfs(dfs, 0, -1);
+    cout<<res<<en;
 }

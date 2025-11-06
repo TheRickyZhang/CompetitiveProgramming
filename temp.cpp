@@ -1,4 +1,5 @@
 #include  <bits/stdc++.h>
+#include  <algorithm>
 using namespace std;
 
 #define tpl_ template
@@ -16,10 +17,12 @@ using namespace std;
 #define fora(a, x) for (auto &(a) : (x))
 #define all(x) begin(x), end(x)
 #define rall(x) rbegin(x), rend(x)
+#define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
 #define int long long
-tpl_<tn_ T>using v=vector<T>; using vi=v<int>; tpl_<tn_ T>using vv=v<v<T>>; using ll=long long; using pii=pair<int,int>;
+tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
+using ll=long long; using pii=pair<int,int>;
 using vb=v<bool>; using vvb=v<vb>; using vs=v<string>; using iii=array<int, 3>; using i4=array<int, 4>;
 using vvi=v<vi>; using vll=v<ll>; using vpii=v<pii>; using vvpii=v<vpii>;
 tpl_<tn_ K,tn_ T>using ump=unordered_map<K,T>; tpl_<tn_ T>using ust=unordered_set<T>; tpl_<tn_ T>using mset=multiset<T>;
@@ -36,7 +39,7 @@ void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr);
     {freopen((name+".in").c_str(),"r",stdin);freopen((name+".out").c_str(),"w",stdout);}}
 tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
-tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<","<<p.ff<<":"<<p.ss;return o<<"}";}
+tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<", ";return o<<"}";}
 tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
     {for(const T& x:v)os<<' '<<x;return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
@@ -55,28 +58,28 @@ struct DSU{ vi p,sz; explicit
     void merge(int x,int y){x=par(x),y=par(y);if(x!=y){if(sz[x]<sz[y])swap(x,y);p[y]=x,sz[x]+=sz[y];}}
     bool same(int x, int y){ return par(x)==par(y); }
 };
-tpl_<tn_ T, tn_ C> struct Segtree      { int n; v<T> t, nums; C c;
+tpl_<tn_ T, tn_ C> struct Segtree{
+    int n,N; v<T> t, nums; C c; T z;
     static_assert(is_invocable_r_v<T,C,T,T>,"Combine must be T(T,T)");
-    Segtree(int sz, C c, const v<T>& init={}, const T& z=T()) : n(sz), t(4*sz, z), nums(sz, z), c(move(c))
-        {if (!init.empty()) { nums=init; build(1, 0, n-1); } }
-    void add(int p, T x) { modify(1, 0, n-1, p, x, false); }
-    void update(int p, T x) { modify(1, 0, n-1, p, x, true); }
-    T query(int l, int r) { return query(1, 0, n-1, l, r); }
-private:
-    void build (int i, int a, int b) { if (a==b) { t[i]=nums[a]; return; } int m=(a+b)/2;
-        build(2*i, a, m); build(2*i+1, m+1, b); t[i]=c(t[2*i], t[2*i+1]); }
-    void modify(int i, int a, int b, int p, T x, bool upd) {if (a==b) {upd ? t[i]=x : t[i]=c(t[i], x); return; }
-        int m=(a+b)/2; p<=m ? modify(2*i, a, m, p, x, upd) : modify(2*i+1, m+1, b, p, x, upd); t[i]=c(t[2*i], t[2*i+1]);}
-    T query (int i, int a, int b, int l, int r) { if (r < a || b < l) return T(); if (l <= a && b <= r) return t[i];
-        int m=(a+b)/2; return c(query(2*i, a, m, l, r), query(2*i+1, m+1, b, l, r)); }
-};
+    Segtree(int sz, C c, const v<T>& init={}, const T& z=T()) : n(sz), N(1), nums(sz, z), c(std::move(c)), z(z) {
+        while(N<n) N<<=1; t.assign(2*N, z);
+        if(!init.empty()){ nums=init; for(int i=0;i<n;i++) t[N+i]=nums[i]; }
+        for(int i=N-1;i;i--) t[i]=c(t[i<<1], t[i<<1|1]); }
+    void add(int p, T x){
+        int i=p+N; t[i]=c(t[i], x); for(i>>=1;i;i>>=1) t[i]=c(t[i<<1], t[i<<1|1]); }
+    void update(int p, T x){
+        int i=p+N; t[i]=x; for(i>>=1;i;i>>=1) t[i]=c(t[i<<1], t[i<<1|1]); }
+    T query(int l, int r){
+        if(r<l) return z; l+=N; r+=N; T L=z, R=z;
+        while(l<=r){ if(l&1) L=c(L, t[l++]); if(!(r&1)) R=c(t[r--], R); l>>=1; r>>=1; }
+        return c(L, R); }};
 tpl_<tn_ T, tn_ U, tn_ C, tn_ Ap, tn_ Cmp>
 struct LazySegtree {            // NOTE this "apply" passes in [l, r] by default! ap and cmp use {old, new op ... }
     static_assert(is_invocable_r_v<T,C,T,T>,"Combine T(T,T)");
     static_assert(is_invocable_r_v<T,Ap,T,U,int,int>,"Apply T(T,U,int,int)");
     static_assert(is_invocable_r_v<U,Cmp,U,U>,"Compose U(U,U)");
-    int n; v<T> t, nums; v<U> ops; C c; Ap ap; Cmp cmp;
-    LazySegtree(int sz, C cmb, Ap _ap, Cmp _cmp, const v<T>& i={}) :n(sz), t(4*sz), nums(sz), ops(4*sz), c(move(cmb)),
+    int n; T z; v<T> t, nums; v<U> ops; C c; Ap ap; Cmp cmp;
+    LazySegtree(int sz, C cmb, Ap _ap, Cmp _cmp, const v<T>& i={}, const T& z=T()) :n(sz), t(4*sz), nums(sz), ops(4*sz), c(move(cmb)),
         ap(move(_ap)), cmp(move(_cmp)) { if(!i.empty()){ nums=i; build(1,0,n-1); } }
     void add(int l,int r,U u){ add(1,0,n-1,l,r,u); }
     T query(int l, int r){ return query(1,0,n-1,l,r); }
@@ -89,7 +92,7 @@ private:
         if(r<a||b<l) return; if(l<=a && b<=r){ applyNode(i,u,a,b); return; } push(i,a,b); int m=(a+b)/2;
         add(2*i, a, m, l, r, u); add(2*i+1, m+1, b, l, r, u); t[i]=c(t[2*i],t[2*i+1]); }
     T query(int i,int a,int b,int l,int r){
-        if(r<a||b<l) return T(); if(l<=a && b<=r) return t[i]; push(i,a,b); int m=(a+b)/2;
+        if(r<a||b<l) return z; if(l<=a && b<=r) return t[i]; push(i,a,b); int m=(a+b)/2;
         T L=query(2*i, a,m, l, r), R=query(2*i+1, m+1, b, l, r); return c(L,R); }
 };
 tpl_<tn_ T, tn_ C> struct BIT     { int n; v<T> t, nums; C c;
@@ -115,15 +118,18 @@ struct Line { mutable int a, b, p; // =ax+b, last optimal x
     bool operator<(const Line& o) const { return a < o.a; } bool operator<(int x) const { return p < x;   }
     friend long double intersect(Line x, Line y) { return static_cast<long double>(y.b-x.b) / static_cast<long double>(x.a-y.a); }
 };
+// For all CHT, default is upper hull / query max. For query min, negate line a, b, and query result.
 struct CHT : multiset<Line, less<>> {
     static constexpr int inf=LLONG_MAX; static int floor(int a, int b) { return a/b - ((a^b)<0 && a%b); }
     bool isect(iterator it1, iterator it2) { if (it2 == end()) { it1->p=inf;return false;}
         if (it1->a == it2->a) it1->p=it1->b > it2->b ? inf : -inf; else it1->p=floor(it2->b - it1->b, it1->a - it2->a);
         return it1->p >= it2->p; }
     void add(int a, int b) {
-        auto z=insert({a, b, 0}); auto y=z++, x=y; while (isect(y, z)) z=erase(z);
-        if (x!=begin() && isect(--x,y)) isect(x,y=erase(y)); while((y=x)!=begin()&&(--x)->p >= y->p) isect(x,erase(y));}
-    int query(int x) { assert(!empty()); auto l=*lower_bound(x); return l.a*x+l.b;} // min -> negate inserted a, b, x
+        auto z=insert({a, b, 0}); auto y=z++,
+        x=y; while (isect(y, z)) z=erase(z);
+        if (x!=begin() && isect(--x,y)) isect(x,y=erase(y));
+        while((y=x)!=begin()&&(--x)->p >= y->p) isect(x,erase(y));}
+    int query(int x) { assert(!empty()); auto l=*lower_bound(x); return l.a*x+l.b;}
 };
 tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
     static bool badUpper(const Line& x,const Line& y,const Line& z){
@@ -200,11 +206,20 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-  cin>>n;
-  cout<<2 * (n-1)<<endl;
+
 }
 
 int32_t main() {
     setIO();
-    int t; cin>>t; f(i, t) solve();
+    string s;
+    cin>>s;
+    int a=0, b=0, c=0;
+    int res = 0;
+    for(char cc : s) {
+      if(cc == 'A') a++;
+      else if(cc == 'B') b++;
+      else c++;
+      res = max(res, max({a, b, c}) - min({a, b, c}));
+    }
+    cout<<res<<endl;
 }
