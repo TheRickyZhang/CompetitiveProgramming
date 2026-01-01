@@ -40,3 +40,18 @@ bin/
 
 # Various
 OtherLanguages/Rust/target/**
+
+/build/
+/cmake-build-*/
+/CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.ninja
+.ninja_*
+compile_commands.json
+*.o
+*.obj
+*.a
+*.so
+*.d
+*.dir/
