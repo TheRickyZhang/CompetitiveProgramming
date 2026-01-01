@@ -24,7 +24,7 @@ sep=$(printf '%*s' 60 '' | tr ' ' '-')
 # assemble the run command; child uses our stdin and tty
 cmd=("$exe")
 if command -v timeout >/dev/null 2>&1; then
-  cmd=(timeout --signal=KILL "${TIMEOUT:-30s}" "${cmd[@]}")
+  cmd=(timeout --signal=KILL "${TIMEOUT:-120s}" "${cmd[@]}")
 fi
 
 # prefer unbuffered child stdout so the first line flushes immediately

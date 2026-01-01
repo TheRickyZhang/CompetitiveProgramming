@@ -58,11 +58,12 @@ struct mint { ll val; // Avg 2x slowdown over raw % operations
 };
 
 int t, k, n, m;
+// Faster n^2 method??? Huh? 
 void solve(){
   int n; if(!(cin>>n)) return;
   vi a(n); f(i,n) cin>>a[i];
 
-  // run-length compress
+  // run-length compress: Important for compression
   vi b; b.reserve(n);
   f(i,n) if(b.empty()||b.back()!=a[i]) b.pb(a[i]);
   int L=b.size(); if(!L){ cout<<0<<en; return; }
