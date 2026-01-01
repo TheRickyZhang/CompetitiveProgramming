@@ -1,3 +1,0 @@
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\522D_ClosestEquals.dir/objects.a
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\522D_ClosestEquals.dir/objects.a @CMakeFiles\522D_ClosestEquals.dir\objects1.rsp
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\522D_ClosestEquals.dir/objects.a -Wl,--no-whole-archive -o 522D_ClosestEquals.exe -Wl,--out-implib,lib522D_ClosestEquals.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\522D_ClosestEquals.dir\linkLibs.rsp

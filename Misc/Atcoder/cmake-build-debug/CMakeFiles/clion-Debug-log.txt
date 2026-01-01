@@ -1,4 +1,0 @@
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles" -S C:\Users\ricky\CompetitiveProgramming -B C:\Users\ricky\CompetitiveProgramming\cmake-build-debug
--- Configuring done (0.1s)
--- Generating done (0.1s)
--- Build files have been written to: C:/Users/ricky/CompetitiveProgramming/cmake-build-debug

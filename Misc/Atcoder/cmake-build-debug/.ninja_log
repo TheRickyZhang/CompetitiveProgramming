@@ -1,7 +1,0 @@
-# ninja log v6
-1428	1578	7678487615830706	MaximumSumMatchingNodes.exe	e84443de56b893fa
-2	240	7689936946933398	build.ninja	981c6612db4be086
-4	1430	7678579561222247	CMakeFiles/Checker.dir/Tester/Checker.cpp.obj	b8eedcb98210bdad
-1430	1615	7678579575480971	Checker.exe	2e40d04d1faa6a3c
-2	1427	7678487601576864	CMakeFiles/MaximumSumMatchingNodes.dir/Tester/MaximumSumMatchingNodes.cpp.obj	394afbe3b264e41a
-22	1220	7683360570137240	CMakeFiles/447C.dir/Other/Leetcode/447C.cpp.obj	5f85f1efdcc69053

@@ -1,3 +1,0 @@
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\Template.dir/objects.a
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\Template.dir/objects.a @CMakeFiles\Template.dir\objects1.rsp
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\Template.dir/objects.a -Wl,--no-whole-archive -o Template.exe -Wl,--out-implib,libTemplate.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Template.dir\linkLibs.rsp

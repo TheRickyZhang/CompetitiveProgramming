@@ -1,3 +1,0 @@
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\SlidingWindowSum.dir/objects.a
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\SlidingWindowSum.dir/objects.a @CMakeFiles\SlidingWindowSum.dir\objects1.rsp
-C:\Users\ricky\AppData\Local\Programs\CLion\bin\mingw\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\SlidingWindowSum.dir/objects.a -Wl,--no-whole-archive -o SlidingWindowSum.exe -Wl,--out-implib,libSlidingWindowSum.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\SlidingWindowSum.dir\linkLibs.rsp
