@@ -147,13 +147,9 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
 void _dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
-tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g, int a=0, bool single=true) {
-    int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n,0),out(n,0);
-    auto dfs=[&](auto& dfs, int u, int p, int d)->void {
-        par[u]=p; dep[u]=d; in[u]=t++;
-        for(int v:g[u]) if(v!=p) {dfs(dfs,v,u,d+1); sz[u]+=sz[v];}
-        out[u] = single ? in[u]+sz[u] : t++;
-    }; dfs(dfs,a,-1,0); return {sz,dep,par,in,out};}
+tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n, 0),out(n, 0);
+    fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; in[u]=t++; for(int v:g[u]) if(v!=p)
+        {dfs(v,u,d+1); sz[u]+=sz[v];} out[u]=t++;}; dfs(a,-1,0); return {sz, dep, par, in, out};}
 tuple<vi,vi,vi,vi> _dfs(vvpii &g,int a=0){int n=g.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:g[u]) if(v!=p)
         {dist[v]=w; dfs(v,u,d+1);sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
@@ -209,10 +205,85 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
+  cin >> n;
+  vvi adj(n);
+  read(adj, n-1);
+  f(i, n) sort(all(adj[i]));
+  int res = 0;
+  vi par(n);
+  vi dep(n);
+  vi chSize(n);
+  fviii dfs = [&](int u, int p, int d) {
+    int ch = 0;
+    par[u] = p;
+    dep[u] = d;
+    for(int v : adj[u]) {
+      if(v == p) continue;
+      dfs(v, u, d+1);
+      ch++;
+    }
+    chSize[u] = ch;
+    cmx(res, ch+1);
+  };
+  dfs(0, -1, 0);
+  vi depFreq(n, 0);
+  f(i, n) depFreq[dep[i]]++;
+  cmx(res, *max_element(all(depFreq)));
 
+  vi col(n, -1);
+  vvi nodes(res); 
+
+  col[0] = 0;
+  nodes[0].pb(0);
+  vpii prevOffsets{{chSize[0], 0}}; // offset amount, prev color
+  vi curr;
+  for(int v : adj[0]) curr.pb(v);
+  while(!curr.empty()) {
+    // for(int x : curr) cout << x+1 << sp;
+    // cout << en;
+    int it = 0;
+    vi usedColors(res, false);
+    int validRemain = res;
+    for(auto [offset, pc] : prevOffsets) {
+      assert(!usedColors[pc]);
+      usedColors[pc] = true;
+      validRemain--;
+      it = (it + offset) % res;
+      if(it >= curr.size()) continue; // Shift too large for assignment
+      int u = curr[it];
+      col[u] = pc;
+    }
+    vi temp;
+    it = 0;
+    vpii tempOffsets;
+    for(int u : curr) {
+      if(col[u] == -1) {
+        assert(validRemain > 0);
+        while(usedColors[it]) it = (it+1) % res;
+        col[u] = it++;
+      }
+      nodes[col[u]].push_back(u);
+      for(int v : adj[u]) {
+        if(v != par[u]) temp.push_back(v);
+      }
+      if(chSize[u] > 0) tempOffsets.push_back({chSize[u], col[u]});
+    }
+    curr = temp;
+    prevOffsets = tempOffsets;
+  }
+
+  cout << res << en;
+  f(i, res) {
+    cout << nodes[i].size() << " ";
+    for(int u : nodes[i]) {
+      cout << u+1 << " ";
+    }
+    cout << en;
+  }
+  cout << en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

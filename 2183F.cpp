@@ -182,7 +182,7 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
+cx_ int N=100000; cx_ int MOD=998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
 inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
@@ -209,10 +209,57 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
+  cin >> n;
+  str s; cin >> s;
+  vvi adj(n); read(adj, n-1);
 
+  // suffix 2D dp table, since natural order is postorder
+  v<v<mint>> dp(n+1, v<mint>(n+1, 0));
+auto query = [&](int a, int b, int c, int d) {
+    if(a > c || b > d) return mint(0);
+    return dp[a][b] + dp[c+1][d+1] - dp[a][d+1] - dp[c+1][b];
+};
+  
+  vi nodes; // order as visited by tin
+  vi tin(n), tout(n);
+  int t = 0;
+  fvii dfs = [&](int u, int p) {
+    tin[u] = t++;
+    nodes.push_back(u);
+    for(int v : adj[u]) {
+      if(v == p) continue;
+      dfs(v, u);
+    }
+    tout[u] = t;
+  };
+  dfs(0, -1);
+
+  // print(tin);
+  // print(tout);
+  // i <= j
+  assert(nodes.size() == n);
+  repr(i, n-1, 0) {
+    repr(j, n-1, 0) {
+      int u = nodes[i], v = nodes[j];
+      int ui = tin[u], uo = tout[u] - 1;
+      int vi = tin[v], vo = tout[v] - 1;
+      if(s[u] == s[v]) {
+        // cout << u << sp << v << " adding " << ui << sp << vi << sp << uo << sp << vo << en;
+        dp[i][j] += query(ui, vi, uo, vo) + 1;
+      }
+      dp[i][j] += dp[i+1][j] + dp[i][j+1] - dp[i+1][j+1];
+    }
+  }
+  // print(dp);
+  f(u, n) {
+    cout << 
+query(tin[u], tin[u], tout[u]-1, tout[u]-1)
+ << " ";
+  }
+  cout << en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

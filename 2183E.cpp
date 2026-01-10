@@ -147,13 +147,9 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
 void _dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
-tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g, int a=0, bool single=true) {
-    int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n,0),out(n,0);
-    auto dfs=[&](auto& dfs, int u, int p, int d)->void {
-        par[u]=p; dep[u]=d; in[u]=t++;
-        for(int v:g[u]) if(v!=p) {dfs(dfs,v,u,d+1); sz[u]+=sz[v];}
-        out[u] = single ? in[u]+sz[u] : t++;
-    }; dfs(dfs,a,-1,0); return {sz,dep,par,in,out};}
+tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n, 0),out(n, 0);
+    fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; in[u]=t++; for(int v:g[u]) if(v!=p)
+        {dfs(v,u,d+1); sz[u]+=sz[v];} out[u]=t++;}; dfs(a,-1,0); return {sz, dep, par, in, out};}
 tuple<vi,vi,vi,vi> _dfs(vvpii &g,int a=0){int n=g.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:g[u]) if(v!=p)
         {dist[v]=w; dfs(v,u,d+1);sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
@@ -182,7 +178,7 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
+cx_ int N=100000; cx_ int MOD=998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
 inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
@@ -208,11 +204,63 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
 
+void solve() {
+  cin >> n >> m;
+  vvi factors(m+1);
+  fe(i, m) {
+    for(int j = 1; j*j <= i; j++) {
+      if(i % j == 0) {
+        factors[i].pb(j);
+        if(j * j != i) factors[i].pb(i / j);
+      }
+    }
+    sort(all(factors[i]));
+  }
+  vi a(n); read(a);
+  // Annoying precheck; our logic handles edge cases except when a[0] != 1 or 0.
+  if(a[0] > 1) {
+    quit(0);
+  }
+
+  if(a[0] == 0) a[0] = 1;
+  v<mint> dp(m+1, 0);
+  v<mint> dpp = dp;
+  dp[1] = 1;
+  rep(i, 1, n-1) {
+    int x = a[i];
+    dpp.assign(m+1, 0);
+    if(x == 0) {
+      rep(j, i, m) {
+        mint cnt = dp[j];
+        if(cnt.v == 0) continue;
+        for(int f : factors[j]) {
+          if(j + f <= m) {
+            dpp[j+f] += cnt;
+          }
+        }
+      }
+    } else {
+      rep(j, i, x-1) {
+        mint cnt = dp[j];
+        if(cnt.v == 0) continue;
+        if(binary_search(all(factors[j]), x-j)) {
+          dpp[x] += cnt;
+        }
+      }
+    }
+    swap(dp, dpp);
+    // cout << dp << en;
+  }
+  // cout << dp << en;
+  mint res = 0;
+  rep(i, n, m) {
+    res += dp[i];
+  }
+  cout << res << en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

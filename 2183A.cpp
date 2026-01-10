@@ -147,13 +147,9 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
 void _dijkstra(vi& d, vvpii& adj, int a=0) { mpq<pii> q; d[a]=0, q.push({0, a});
     while(!q.empty()) { auto [w, u]=q.top(); q.pop(); if(w != d[u]) continue;
         for(auto [v, dw] : adj[u]) { if(w+dw < d[v]) { d[v]=w+dw; q.push({d[v], v});} } } }
-tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g, int a=0, bool single=true) {
-    int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n,0),out(n,0);
-    auto dfs=[&](auto& dfs, int u, int p, int d)->void {
-        par[u]=p; dep[u]=d; in[u]=t++;
-        for(int v:g[u]) if(v!=p) {dfs(dfs,v,u,d+1); sz[u]+=sz[v];}
-        out[u] = single ? in[u]+sz[u] : t++;
-    }; dfs(dfs,a,-1,0); return {sz,dep,par,in,out};}
+tuple<vi,vi,vi,vi,vi> _dfs(const vvi &g,int a=0){int n=g.size(), t=0; vi sz(n,1),par(n,-1),dep(n,0),in(n, 0),out(n, 0);
+    fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; in[u]=t++; for(int v:g[u]) if(v!=p)
+        {dfs(v,u,d+1); sz[u]+=sz[v];} out[u]=t++;}; dfs(a,-1,0); return {sz, dep, par, in, out};}
 tuple<vi,vi,vi,vi> _dfs(vvpii &g,int a=0){int n=g.size(); vi sz(n,1), par(n,-1), dep(n,0), dist(n,0);
     fviii dfs=[&](int u,int p,int d){par[u]=p; dep[u]=d; for(auto [v,w]:g[u]) if(v!=p)
         {dist[v]=w; dfs(v,u,d+1);sz[u]+=sz[v];}}; dfs(a,-1,0); return {sz, dep, par, dist};}
@@ -209,10 +205,16 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-
+  cin >> n;
+  vi res(n); read(res);
+  if(res.front() == 1 || res.back() == 1) {
+    cout << "Alice" << en;
+  } else {
+    cout << "Bob" << en;
+  }
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }
