@@ -44,8 +44,12 @@ void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr);
 tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
 tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<", ";return o<<"}";}
-tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
-    {for(const T& x:v)os<<x<<' ';return os;}
+template<typename T> concept StringLike = convertible_to<T, string_view>;
+template<typename C> concept PrintableRange = !StringLike<C> &&
+  requires(const C& c) { begin(c); end(c); } &&
+  requires(ostream& os, const C& c) { os << *begin(c); };
+tpl_<tn_ C> requires PrintableRange<C>
+ostream& op_<<(ostream& os, const C& v) { for(const auto& x : v) os << x << " "; return os; }
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;

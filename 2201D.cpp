@@ -1,5 +1,4 @@
-#include  <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
+#include <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
@@ -19,6 +18,11 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
+
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
+tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
@@ -40,8 +44,12 @@ void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr);
 tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
 tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<", ";return o<<"}";}
-tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
-    {for(const T& x:v)os<<x<<' ';return os;}
+template<typename T> concept StringLike = convertible_to<T, string_view>;
+template<typename C> concept PrintableRange = !StringLike<C> &&
+  requires(const C& c) { begin(c); end(c); } &&
+  requires(ostream& os, const C& c) { os << *begin(c); };
+tpl_<tn_ C> requires PrintableRange<C>
+ostream& op_<<(ostream& os, const C& v) { for(const auto& x : v) os << x << " "; return os; }
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
@@ -207,7 +215,6 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix op_^(ll p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1;
         while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
-using namespace __gnu_pbds;
 
 template<class T>
 using ost = tree<T,null_type,less<T>,rb_tree_tag,
@@ -221,6 +228,7 @@ int range(const set<int>& s) {
   }
   return *s.rbegin() - *s.begin();
 }
+
 void solve() {
   cin >> n >> k;
   vi a(n); read(a);
@@ -228,6 +236,8 @@ void solve() {
   vi freq(n+1, 0);
   // Contains sizes that have freq > 0 (for finding largest)
   set<int> s;
+  oset<int> lefts;
+  oset<int> rights;
   f(i, n) {
     pos[a[i]].insert(i);
   }
@@ -275,7 +285,7 @@ int32_t main() {
   cout << t.order_of_key(1) << endl;
   cout << t.order_of_key(3) << endl;
   t.erase(2);
-  cout << t.find_by_order(2) << endl;
+  cout << *t.find_by_order(2) << endl;
 
     // int t; cin>>t; f(i, t) solve();
 }
