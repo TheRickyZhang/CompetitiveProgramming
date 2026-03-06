@@ -1,4 +1,5 @@
-#include <bits/stdc++.h>
+#include  <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
 
 #define tpl_ template
@@ -18,11 +19,6 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
-tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
@@ -211,13 +207,75 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix op_^(ll p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1;
         while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+using namespace __gnu_pbds;
+
+template<class T>
+using ost = tree<T,null_type,less<T>,rb_tree_tag,
+                 tree_order_statistics_node_update>;
 
 int k, n, m;
+int range(const set<int>& s) {
+  // Explicit edge case
+  if(s.size() < 2) {
+    return 0;
+  }
+  return *s.rbegin() - *s.begin();
+}
 void solve() {
-
+  cin >> n >> k;
+  vi a(n); read(a);
+  v<set<int>> pos(n+1);
+  vi freq(n+1, 0);
+  // Contains sizes that have freq > 0 (for finding largest)
+  set<int> s;
+  f(i, n) {
+    pos[a[i]].insert(i);
+  }
+  f(i, n+1) {
+    int sz = range(pos[i]);
+    if(freq[sz]++ == 0) s.insert(sz);
+  }
+  print(s);
+  f(_, k) {
+    int i, y; cin >> i >> y;
+    i--;
+    // Remove previous
+    int x = a[i];
+    auto& p = pos[x];
+    int prev = range(p); p.erase(i);
+    int curr = range(p);
+    if(prev != curr) {
+      if(--freq[prev] == 0) { s.erase(prev); }
+      if(freq[curr]++ == 0) { s.insert(curr); }
+    }
+    // Add new
+    p = pos[y];
+    prev = range(p); p.insert(i);
+    curr = range(p);
+    if(prev != curr) {
+      if(--freq[prev] == 0) { s.erase(prev); }
+      if(freq[curr]++ == 0) { s.insert(curr); }
+    }
+    assert(!s.empty());
+    int mx = *s.rbegin();
+    if(mx == 0) {
+      cout << "0 0" << en;
+    } else {
+      cout << mx << " " << freq[mx] << en;
+    }
+  }
 }
 
 int32_t main() {
     setIO();
+    ost<int> t;
+    t.insert(1);
+  t.insert(4);
+  t.insert(2);
+  cout << t.order_of_key(1) << endl;
+  cout << t.order_of_key(3) << endl;
+  t.erase(2);
+  cout << t.find_by_order(2) << endl;
+
     // int t; cin>>t; f(i, t) solve();
 }

@@ -1,0 +1,2 @@
+Define the count of the number of 123 patterns of an array as the number of subsequences of length 3 that with a[i] < a[j] < a[k].
+You have the option to swap two elements in array a. Find the maximum number of 123 patterns the resulting array has.

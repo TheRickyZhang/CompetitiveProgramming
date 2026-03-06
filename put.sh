@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 shopt -s nullglob
-
 # clear Windows artifacts
 rm -f ./*.exe 2>/dev/null || true
 rm -f cmake-build-debug/*.exe 2>/dev/null || true
-
 EXCLUDE=(Template.cpp Checker.cpp)
-
 is_excluded(){ local f="$1"; for e in "${EXCLUDE[@]}"; do [[ "$f" == "$e" ]] && return 0; done; return 1; }
-
 process(){
   local file="$1" base name
   base="${file##*/}"; name="${base%.cpp}"
@@ -23,7 +19,6 @@ process(){
     mkdir -p CSES; mv -f -- "$file" CSES/; echo "[CSES] Moved $file → CSES"
   fi
 }
-
 if [[ $# -eq 0 ]]; then
   for f in ./*.cpp; do
     b="${f##*/}"
@@ -31,18 +26,27 @@ if [[ $# -eq 0 ]]; then
   done
   exit 0
 fi
-
-prefix="$1"                             # numeric
+prefix="$1"
 start=$(( (prefix/50)*50 ))
 end=$(( start+49 ))
 rangeFolder="${start}-${end}"
 contestDir="Codeforces/${rangeFolder}/${prefix}"
-
 mkdir -p -- "$contestDir"
-files=( ${prefix}*.cpp )
+
+if [[ $# -ge 2 ]]; then
+  letters="$2"
+  files=()
+  for (( i=0; i<${#letters}; i++ )); do
+    c="${letters:i:1}"
+    files+=( ${prefix}${c}*.cpp )
+  done
+else
+  files=( ${prefix}*.cpp )
+fi
+
 if (( ${#files[@]} == 0 )); then
   echo "[err] No files matching \"${prefix}*.cpp\""
 else
   mv -f -- "${files[@]}" "$contestDir"/
-  echo "[success] Moved \"${prefix}*.cpp\" to \"$contestDir\""
+  echo "[success] Moved ${#files[@]} file(s) to \"$contestDir\""
 fi

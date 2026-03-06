@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include  <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
@@ -18,11 +18,6 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
-tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
@@ -45,7 +40,7 @@ tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
 tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<", ";return o<<"}";}
 tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
-    {for(const T& x:v)os<<x<<' ';return os;}
+    {for(const T& x:v)os<<' '<<x;return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
@@ -214,10 +209,39 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
+  int h;
+  cin >> n >> h >> k;
+  vi a(n); read(a);
 
+  int tot = accumulate(all(a), 0LL);
+
+  int cnt = (h-1)/tot;
+  int base = cnt * (n+k);
+  int rem = h - cnt * tot;
+
+  vi pre(n), mn(n), suf(n);
+
+  pre[0] = a[0];
+  mn[0] = a[0];
+  fe(i, n-1) {
+    pre[i] = pre[i-1] + a[i];
+    mn[i] = min(mn[i-1], a[i]);
+  }
+
+  suf[n-1] = a[n-1];
+  repr(i, n-2, 0) suf[i] = max(suf[i+1], a[i]);
+
+  int best = n;
+  f(i, n) {
+    if(pre[i] >= rem) { best = i+1; break; }
+    if(i+1 < n) {
+      if(pre[i] - mn[i] + suf[i+1] >= rem) { best = i+1; break; }
+    }
+  }
+  cout << base + best << en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

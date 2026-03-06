@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include  <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
@@ -18,11 +18,6 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
-tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
@@ -214,10 +209,26 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-
+  cin >> n;
+  vi a(n); read(a);
+  stack<pii> s;
+  int res = 0;
+  fe(i, n) {
+    res += i * (n-i+1);
+  }
+  // cout << res << en;
+  repr(i, n-1, 0) {
+    int x = a[i];
+    while(!s.empty() && s.top().ff == x+1) {
+      res -= (i+1) * (n - s.top().ss);
+      s.pop();
+    }
+    s.push({x, i});
+  }
+  cout << res << en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }

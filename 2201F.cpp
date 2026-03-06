@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include  <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
@@ -18,11 +18,6 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
-tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;

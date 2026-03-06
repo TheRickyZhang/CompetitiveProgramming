@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include  <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
@@ -18,11 +18,6 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
-tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
@@ -45,7 +40,7 @@ tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
 tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<", ";return o<<"}";}
 tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
-    {for(const T& x:v)os<<x<<' ';return os;}
+    {for(const T& x:v)os<<' '<<x;return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
@@ -187,7 +182,7 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
+cx_ int N=100000; cx_ int MOD=998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
 inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
@@ -213,11 +208,70 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
 
+
+void solve() {
+  cin >> n >> m;
+  int b = 61;
+
+  vi freq(b, 0);
+  f(i, n) {
+    int x; cin >> x;
+    freq[x]++;
+  }
+
+  int max_n = n + m + 111;
+
+  auto [fa, ifa] = initFact(max_n);
+
+  v<mint> pow2(max_n + 1);
+  pow2[0] = 1;
+  rep(i, 1, max_n) pow2[i] = pow2[i - 1] * 2;
+
+  auto choose = [&](int n, int k) -> mint {
+    if(k < 0 || k > n) return 0;
+    return mult(fa[n], mult(ifa[k], ifa[n - k]));
+  };
+
+  auto sum_greater = [&](int x, int y) -> mint {
+    if(y >= x) return 0;
+    mint ans = pow2[x];
+    rep(i, 0, y) ans -= choose(x, i);
+    return ans;
+  };
+
+  f(i, m) {
+    int t; long long x; cin >> t >> x;
+    if(t == 1) freq[(int)x]++;
+    else if(t == 2) freq[(int)x]--;
+    else {
+      vi req(b, 0);
+      int it = 0;
+      repr(i, b - 1, 0) {
+        if(x & (1LL << i)) {
+          req[i + it]++;
+          it++;
+        }
+      }
+
+      mint res = 0;
+      int cnt_less = 0;
+      f(i, b) cnt_less += freq[i];
+
+      mint greaterTerm = 1;
+      repr(i, b - 1, 0) {
+        cnt_less -= freq[i];
+        res += greaterTerm * pow2[cnt_less] * sum_greater(freq[i], req[i]);
+        greaterTerm *= choose(freq[i], req[i]);
+      }
+      res += greaterTerm;
+      cout << res << en;
+    }
+  }
 }
 
 int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
+    // setIO();
+    // int t; cin>>t; f(i, t)
+    solve();
 }

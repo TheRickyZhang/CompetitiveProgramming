@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include  <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
@@ -18,11 +18,6 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
-tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
@@ -45,7 +40,7 @@ tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
 tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<", ";return o<<"}";}
 tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
-    {for(const T& x:v)os<<x<<' ';return os;}
+    {for(const T& x:v)os<<' '<<x;return os;}
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
@@ -187,7 +182,7 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
+cx_ int N=100000; cx_ int MOD=998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
 inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
@@ -212,12 +207,46 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
         while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
 
+vi fa, ifa;
+int choose(int n, int k) {
+  return mult(fa[n], mult(ifa[k], ifa[n-k]));
+}
+
 int k, n, m;
 void solve() {
+  cin>>n;
+  int x; cin>>x;
+  vi a(n); read(a);
 
+  int tot = x;
+  for(int y : a) tot += y;
+  int k = tot/n;
+
+  int dups = 0;
+  int need = 0;
+  for(int y : a) {
+    int take = min(y,k);
+    need += k-take;
+    int extra = y-take;
+    if(extra == 1) dups++;
+    else if(extra > 1) { cout<<0<<en; return; }
+  }
+
+  if(x < need) {
+    cout << 0 << en;
+  } else {
+    int b0 = x-need;
+    int res = 1;
+    res = mult(res, fa[n-dups]);
+    res = mult(res, fa[dups+b0]);
+    res = mult(res, ifa[b0]);
+    cout << res << en;
+  }
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    auto res = initFact(1e6+1);
+    fa = res.first; ifa = res.second;
+    int t; cin>>t; f(i, t) solve();
 }

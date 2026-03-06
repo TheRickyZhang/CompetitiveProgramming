@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include  <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
@@ -18,11 +18,6 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
-tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
@@ -187,7 +182,7 @@ auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; 
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}};
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
+cx_ int N=100000; cx_ int MOD=998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
 inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
@@ -213,11 +208,55 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
+void solve(){
+  cin>>n;
+  string s; cin>>s;
+  vi a(n);
+  f(i,n) a[i]=(s[i]=='(' ? 1 : -1);
 
+  vi bal(n);
+  bal[0]=a[0];
+  f(i,n-1) bal[i+1]=bal[i]+a[i+1];
+
+  // nextBad[i] = first t>=i with bal[t] <= 1, else n
+  vi nextBad(n,n);
+  int it=n;
+  repr(i,n-1,0){
+    if(bal[i] <= 1) it=i;
+    nextBad[i]=it;
+  }
+
+  v<mint> diff(n+3);
+  mint openCarry=0; 
+  mint closeTot=0;
+  mint pow2=1;
+  mint ans=0;
+
+  f(i,n){
+    openCarry += diff[i];
+
+    if(a[i]==1){ // '('
+      ans += pow2;
+      mint openAdd = openCarry + closeTot + 1;
+      int r = nextBad[i];
+      if(r != n){
+        diff[i+1] += openAdd;
+        diff[r+1] -= openAdd;
+      }else{
+        diff[i+1] += openAdd;
+      }
+
+    }else{ // ')'
+      mint closeAdd = openCarry + closeTot + 1;
+      ans += closeAdd;
+      closeTot += closeAdd;
+    }
+    pow2 *= 2;
+  }
+  cout<<ans<<en;
 }
 
 int32_t main() {
     setIO();
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }
