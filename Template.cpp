@@ -120,6 +120,15 @@ tpl_<tn_ T, tn_ C> void printBIT(const BIT<T, C>& b,int l=16){
     cout<<"BIT:\n"; int lv=0;while(1<<lv<=min(b.n,l))lv++; int c=min(b.n,l); v<vs> g(lv,vs(c,str(4,' ')));
     fe(i,c){int r=__builtin_ctz(i);if(r<lv) g[r][i-1]=format("{:4}", b.t[i]);} f(r,lv){f(c2,c)cout<<g[r][c2];cout<<en;}}
 
+struct Point { int x, y; };
+struct Interval { int l, r;
+  Interval merge(Interval other) { assert(l <= other.r && r >= other.l);
+    return Interval(min(l, other.l), max(r, other.r)); }
+};
+struct NestedCmp {
+  template<class T> constexpr bool operator()(const T& x, const T& y) const {
+    auto&& [x1, x2] = x; auto&& [y1, y2] = y; return x1 != y1 ? x1 < y1 : x2 > y2; } };
+
 struct Line { mutable int a, b, p; // =ax+b, last optimal x
     Line(int a, int b, int p=0) : a(a), b(b), p(p) {}
     int at(int x) const { return a*x + b; }
@@ -192,8 +201,12 @@ vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
 cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
-inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
-inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
+tpl_<tn_... T> requires(integral<T> && ...)
+inline int add(T... x) { int res = 0; ((res += x, res -= (res >= MOD ? MOD : 0)), ...); return res; }
+tpl_<tn_ T, tn_... U> requires(integral<T> && (integral<U> && ...))
+inline int sub(T x, U... y) { int res = x; ((res -= y, res += (res < 0 ? MOD : 0)), ...); return res; }
+tpl_<tn_... T> inline int mult(T... x) { int res = 1; ((res = (res * x) % MOD), ...); return res; }
+inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; }
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
 inline int inv(int x) { return fpow(x, MOD-2); }
 struct mint { ll v; mint(ll x=0): v((x % MOD+MOD) % MOD) {}
@@ -222,6 +235,6 @@ void solve() {
 }
 
 int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
+  setIO();
+  // int t; cin>>t; f(i, t) solve();
 }

@@ -193,7 +193,12 @@ auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
 cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
 inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
-inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
+inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; }
+inline int mult(int a,int b){return a*b%MOD;}
+template<typename... T>
+inline int mult(T... a) {
+  return ((a % MOD) * ... * 1LL) % MOD;
+}
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
 inline int inv(int x) { return fpow(x, MOD-2); }
 struct mint { ll v; mint(ll x=0): v((x % MOD+MOD) % MOD) {}
@@ -215,77 +220,157 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix op_^(ll p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1;
         while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 
+struct Point { int x, y; };
+struct Interval { int l, r;
+  Interval merge(Interval other) { assert(l <= other.r && r >= other.l);
+    return Interval(min(l, other.l), max(r, other.r)); }
+};
+struct NestedCmp {
+  template<class T> constexpr bool operator()(const T& x, const T& y) const {
+    auto&& [x1, x2] = x; auto&& [y1, y2] = y; return x1 != y1 ? x1 < y1 : x2 > y2; } };
 
-template<class T>
-using ost = tree<T,null_type,less<T>,rb_tree_tag,
-                 tree_order_statistics_node_update>;
-
-int k, n, m;
-int range(const set<int>& s) {
-  // Explicit edge case
-  if(s.size() < 2) {
-    return 0;
-  }
-  return *s.rbegin() - *s.begin();
-}
+int n, m, k;
+static vector<long long> chooseTwo = []{
+  int N = 200000+5;
+  vector<long long> res(N,0);
+  for(int i = 0; i < N; ++i) res[i] = 1LL*i*(i-1)/2;
+  return res;
+}();
 
 void solve() {
-  cin >> n >> k;
-  vi a(n); read(a);
+  cin>>n>>k;
+  vi a(n); read(a); // values stay 1..n
+
+  // pos[x] = sorted positions where value x occurs
   v<set<int>> pos(n+1);
-  vi freq(n+1, 0);
-  // Contains sizes that have freq > 0 (for finding largest)
+
+  // intervals[d] = disjoint intervals [l,r] of consecutive candidate left endpoints
+  // for values x with first/last distance d>0
+  v<map<int,int>> intervals(n+1);
+
+  // active positive d values
   set<int> s;
-  oset<int> lefts;
-  oset<int> rights;
-  f(i, n) {
-    pos[a[i]].insert(i);
-  }
-  f(i, n+1) {
-    int sz = range(pos[i]);
-    if(freq[sz]++ == 0) s.insert(sz);
-  }
-  print(s);
-  f(_, k) {
-    int i, y; cin >> i >> y;
-    i--;
-    // Remove previous
-    int x = a[i];
-    auto& p = pos[x];
-    int prev = range(p); p.erase(i);
-    int curr = range(p);
-    if(prev != curr) {
-      if(--freq[prev] == 0) { s.erase(prev); }
-      if(freq[curr]++ == 0) { s.insert(curr); }
+
+  // results[d] = sum over runs of C(runLen+1,2)
+  vector<long long> results(n+1,0);
+
+  auto runCnt = [&](int l,int r)->long long {
+    int len = r-l+1;          // number of stored candidate points
+    return chooseTwo[len+1];  // contributes C(len+1,2)
+  };
+  auto cnt = [&](map<int,int>::iterator it)->long long {
+    return runCnt(it->ff,it->ss);
+  };
+  auto pull = [&](int d) {
+    if(d == 0) return;
+    if(intervals[d].empty()) s.erase(d);
+    else s.insert(d);
+  };
+
+  auto addPoint = [&](int d,int p) {
+    if(d == 0) return;
+    auto& mp = intervals[d];
+    auto& res = results[d];
+
+    auto [it,ins] = mp.insert({p,p});
+    if(!ins) return; // should not happen, but safe
+
+    res += cnt(it);
+
+    if(it != mp.begin()) {
+      auto lit = prev(it);
+      if(lit->ss + 1 == it->ff) {
+        res -= cnt(lit);
+        res -= cnt(it);
+        lit->ss = it->ss;
+        mp.erase(it);
+        it = lit;
+        res += cnt(it);
+      }
     }
-    // Add new
-    p = pos[y];
-    prev = range(p); p.insert(i);
-    curr = range(p);
-    if(prev != curr) {
-      if(--freq[prev] == 0) { s.erase(prev); }
-      if(freq[curr]++ == 0) { s.insert(curr); }
+
+    auto rit = next(it);
+    if(rit != mp.end() && it->ss + 1 == rit->ff) {
+      res -= cnt(it);
+      res -= cnt(rit);
+      it->ss = rit->ss;
+      mp.erase(rit);
+      res += cnt(it);
     }
-    assert(!s.empty());
-    int mx = *s.rbegin();
-    if(mx == 0) {
-      cout << "0 0" << en;
+
+    pull(d);
+  };
+
+  auto removePoint = [&](int d,int p) {
+    if(d == 0) return;
+    auto& mp = intervals[d];
+    auto& res = results[d];
+
+    auto rit = mp.upper_bound(p);
+    assert(rit != mp.begin());
+    auto it = prev(rit);
+    int l = it->ff, r = it->ss;
+    assert(l <= p && p <= r);
+
+    res -= cnt(it);
+    mp.erase(it);
+
+    if(l <= p-1) {
+      mp[l] = p-1;
+      res += runCnt(l,p-1);
+    }
+    if(p+1 <= r) {
+      mp[p+1] = r;
+      res += runCnt(p+1,r);
+    }
+
+    pull(d);
+  };
+
+  // remove/add the single candidate contributed by value x
+  auto removeCand = [&](int x) {
+    if(pos[x].size() < 2) return;
+    int d = *pos[x].rbegin() - *pos[x].begin();
+    int p = *pos[x].begin();
+    removePoint(d,p);
+  };
+  auto addCand = [&](int x) {
+    if(pos[x].size() < 2) return;
+    int d = *pos[x].rbegin() - *pos[x].begin();
+    int p = *pos[x].begin();
+    addPoint(d,p);
+  };
+
+  f(i,n) pos[a[i]].insert(i);
+  for(int x = 1; x <= n; ++x) addCand(x);
+
+  f(_,k) {
+    int i,x; cin>>i>>x;
+    --i;
+
+    int old = a[i];
+    if(old != x) {
+      removeCand(old);
+      pos[old].erase(i);
+      addCand(old);
+
+      removeCand(x);
+      pos[x].insert(i);
+      addCand(x);
+
+      a[i] = x;
+    }
+
+    if(s.empty()) {
+      cout<<0<<sp<<0<<en;
     } else {
-      cout << mx << " " << freq[mx] << en;
+      int d = *s.rbegin();
+      cout<<d<<sp<<results[d]<<en;
     }
   }
 }
 
 int32_t main() {
     setIO();
-    ost<int> t;
-    t.insert(1);
-  t.insert(4);
-  t.insert(2);
-  cout << t.order_of_key(1) << endl;
-  cout << t.order_of_key(3) << endl;
-  t.erase(2);
-  cout << *t.find_by_order(2) << endl;
-
-    // int t; cin>>t; f(i, t) solve();
+    int t; cin>>t; f(i, t) solve();
 }
