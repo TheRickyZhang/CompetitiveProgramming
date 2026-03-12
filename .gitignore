@@ -1,6 +1,7 @@
 # Local
 input.txt
 output.txt
+temp.*
 
 ### IntelliJ IDEA ###
 out/

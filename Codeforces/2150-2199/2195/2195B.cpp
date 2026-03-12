@@ -1,4 +1,4 @@
-#include  <bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
 #define tpl_ template
@@ -18,6 +18,11 @@ using namespace std;
 #define rall(x) rbegin(x), rend(x)
 #define print(x) (cout<<#x<<"="<<(x)<<endl)
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
+
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+tpl_<tn_ T> using oset = tree<T, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>;
+tpl_<tn_ K, tn_ V> using omap = tree<K, V,  less<>, rb_tree_tag, tree_order_statistics_node_update>;
 
 #define int long long
 tpl_<tn_ T> using v = vector<T>; using vi = v<int>; tpl_<tn_ T> using vv = v<v<T>>;
@@ -39,8 +44,12 @@ void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr);
 tpl_<tn_ A,tn_ B>ostream& op_<<(ostream& os,const pair<A,B>& p){return os<<"("<<p.ff<<", "<<p.ss<<")";}
 tpl_<tn_ A>ostream& op_<<(ostream& o,const v<v<A>>& m){for(auto& r:m){o<<"{";for(auto& e:r)o<<e<<" ";o<<"}\n";}return o;}
 tpl_<tn_ K,tn_ T>ostream& op_<<(ostream& o,const map<K,T>& m){o<<"{";for(auto& p:m)o<<p.ff<<":"<<p.ss<<", ";return o<<"}";}
-tpl_<tn_ C,tn_ T=enable_if_t<!is_same_v<C,str>,tn_ C::value_type>>ostream& op_<<(ostream& os,const C& v)
-    {for(const T& x:v)os<<' '<<x;return os;}
+template<typename T> concept StringLike = convertible_to<T, string_view>;
+template<typename C> concept PrintableRange = !StringLike<C> &&
+  requires(const C& c) { begin(c); end(c); } &&
+  requires(ostream& os, const C& c) { os << *begin(c); };
+tpl_<tn_ C> requires PrintableRange<C>
+ostream& op_<<(ostream& os, const C& v) { for(const auto& x : v) os << x << " "; return os; }
 struct cind{tpl_<tn_ T> cind& op_>>(T &x){cin>>x;--x;return *this;}} cind;
 struct bout{tpl_<tn_ T> bout& op_<<(T x){if cx_(is_integral_v<T>){int y=x;if(y==0){cout<<'0';return *this;} if(y<0)
     {cout<<'-';y=-y;}str s;while(y){s.pb('0'+(y&1));y>>=1;}reverse(all(s));cout<<s;}else cout<<x;return *this;}} bout;
@@ -110,6 +119,15 @@ tpl_<tn_ T> void printSegtree(int n, v<T>& t, int r=20, int l=4) { [[maybe_unuse
 tpl_<tn_ T, tn_ C> void printBIT(const BIT<T, C>& b,int l=16){
     cout<<"BIT:\n"; int lv=0;while(1<<lv<=min(b.n,l))lv++; int c=min(b.n,l); v<vs> g(lv,vs(c,str(4,' ')));
     fe(i,c){int r=__builtin_ctz(i);if(r<lv) g[r][i-1]=format("{:4}", b.t[i]);} f(r,lv){f(c2,c)cout<<g[r][c2];cout<<en;}}
+
+struct Point { int x, y; };
+struct Interval { int l, r;
+  Interval merge(Interval other) { assert(l <= other.r && r >= other.l);
+    return Interval(min(l, other.l), max(r, other.r)); }
+};
+struct NestedCmp {
+  template<class T> constexpr bool operator()(const T& x, const T& y) const {
+    auto&& [x1, x2] = x; auto&& [y1, y2] = y; return x1 != y1 ? x1 < y1 : x2 > y2; } };
 
 struct Line { mutable int a, b, p; // =ax+b, last optimal x
     Line(int a, int b, int p=0) : a(a), b(b), p(p) {}
@@ -183,8 +201,12 @@ vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'
 auto check=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
 cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
-inline int add(int a,int b){int s=a+b;return s<MOD?s:s-MOD;} inline int sub(int a,int b){int s=a-b;return s>=0?s:s+MOD;}
-inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; } inline int mult(int a,int b){return a*b%MOD;}
+tpl_<tn_... T> requires(integral<T> && ...)
+inline int add(T... x) { int res = 0; ((res += x, res -= (res >= MOD ? MOD : 0)), ...); return res; }
+tpl_<tn_ T, tn_... U> requires(integral<T> && (integral<U> && ...))
+inline int sub(T x, U... y) { int res = x; ((res -= y, res += (res < 0 ? MOD : 0)), ...); return res; }
+tpl_<tn_... T> inline int mult(T... x) { int res = 1; ((res = (res * x) % MOD), ...); return res; }
+inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; }
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
 inline int inv(int x) { return fpow(x, MOD-2); }
 struct mint { ll v; mint(ll x=0): v((x % MOD+MOD) % MOD) {}
@@ -209,10 +231,26 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 int k, n, m;
 void solve() {
-
+  cin >> n;
+  vi a(n+1, 0);
+  fe(i, n) cin >> a[i];
+  fe(x, n) {
+    if(x % 2 == 0) continue;
+    vector<int> temp;
+    vector<int> curr;
+    for(int i = x; i <= n; i <<= 1) {
+      temp.pb(i);
+      curr.pb(a[i]);
+    }
+    sort(all(curr));
+    if(temp != curr) {
+      quit("NO");
+    }
+  }
+  cout << "YES" << en;
 }
 
 int32_t main() {
-    setIO();
-    // int t; cin>>t; f(i, t) solve();
+  setIO();
+  int t; cin>>t; f(i, t) solve();
 }

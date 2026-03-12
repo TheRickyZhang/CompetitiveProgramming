@@ -347,11 +347,98 @@ class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
 
 
 int k, n, m;
-void solve() {
 
+template<bool trackPrev>
+auto populateDist(grid& g, grid& dist, point a, point b, const v<point>& explore) -> conditional_t<trackPrev, v<point>, void> {
+  f(i, n) f(j, m) dist[i][j] = -INFL;
+  dist[a] = g[a];
+  vv<point> prev;
+  if constexpr (trackPrev) {
+    prev.assign(n, v<point>(m));
+  }
+  queue<iii> q;
+  q.push({a.x, a.y, g[a]});
+  while(!q.empty()) {
+    auto [x, y, d] = q.front(); q.pop();
+    if(d < dist[x][y]) continue;
+    for(auto [dx, dy] : explore) {
+      int nx = x + dx, ny = y + dy;
+      if(!check(nx, ny, n, m)) {
+        continue;
+      }
+      int nd = d + g[nx][ny];
+      if(nd > dist[nx][ny]) {
+        dist[nx][ny] = nd;
+        q.push({nx, ny, nd});
+        if constexpr (trackPrev) {
+          prev[nx][ny] = {x, y};
+        }
+      }
+    }
+  }
+  if constexpr (trackPrev) {
+    point curr = b;
+    v<point> res;
+    res.push_back(curr);
+    while(curr != a) {
+      auto [x, y] = curr;
+      point p = prev[x][y];
+      res.push_back(p);
+      curr = p;
+    }
+    return res;
+  }
+}
+
+void solve() {
+  cin >> n >> m;
+  grid g(n, m); cin >> g;
+
+  if(n == 1 && m == 1) quit(-g[0][0]);
+
+  grid dista(n, m), distb(n, m);
+  point a{0, 0};
+  point b{n-1, m-1};
+  v<point> dr = {{1, 0}, {0, 1}};
+  v<point> ul = {{-1, 0}, {0, -1}};
+  vector<point> path = populateDist<true>(g, dista, a, b, dr);
+  populateDist<false>(g, distb, b, a, ul);
+
+  // print(path);
+  // print(dista);
+  // print(distb);
+
+  int path_w = dista[n-1][m-1];
+  // print(path_w);
+
+  grid dist(n, m);
+  f(i, n) f(j, m) dist[i][j] = dista[i][j] + distb[i][j] - g[i][j];
+
+  // prefix over left and right
+  grid dist_l = dist, dist_u = dist;
+  f(i, n) f(j, m-1) cmx(dist_l[i][j+1], dist_l[i][j]);
+  f(i, n-1) f(j, m) cmx(dist_u[i+1][j], dist_u[i][j]);
+  // print(dist);
+  // print(dist_l);
+  // print(dist_u);
+
+  // Since we must flip 1 position, iff both dimensions > 1 -> can just retain original path
+  int res = (n == 1 || m == 1) ? INFL : path_w;
+  for(auto [x, y] : path) {
+    int curr = -INFL;
+    cmx(curr, path_w - 2 * g[x][y]);
+    if(x-1 >= 0 && y+1 < m) {
+      cmx(curr, dist_u[x-1][y+1]);
+    }
+    if(x+1 < n && y-1 >= 0) {
+      cmx(curr, dist_l[x+1][y-1]);
+    }
+    cmn(res, curr);
+  }
+  cout << res << en;
 }
 
 int32_t main() {
   setIO();
-  // int t; cin>>t; f(i, t) solve();
+  int t; cin>>t; f(i, t) solve();
 }
