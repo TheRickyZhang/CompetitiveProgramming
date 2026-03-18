@@ -361,11 +361,47 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
 
 
 int k, n, m;
-void solve() {
 
+void solve() {
+  cin >> n;
+  vi a(n); read(a);
+  str s; cin >> s;
+  // Only solve for canonical forms: starts with 1
+  bool rev = false;
+  if(s == "231" || s == "213") {
+    rev = true;
+    reverse(all(a));
+    reverse(all(s));
+  }
+  if(s[0] == '3') {
+    f(i, n) a[i] = n+1 - a[i];
+    f(i, 3) {
+      if(s[i] == '1') s[i] = '3';
+      else if(s[i] == '3') s[i] = '1';
+    }
+  }
+  assert(s == "123" || s == "321");
+  
+  int best = 0;
+  int l = 0, r = 0;
+  // find initial cnt
+  {
+    BIT x(n+1, _add, {}, 0), y(n+1, _add, {}, 0);
+    fora(x, a) {
+      best += y.query(0, )
+    }
+  }
+  if(s == "123") {
+    BIT left(n, _add, {}, 0);
+    f(i, n) {
+      
+      f(j, i+1, n) {
+        
+      }
+    }
+  }
 }
 
 int32_t main() {
-  setIO();
-  // int t; cin>>t; f(i, t) solve();
+  int t; cin >> t; f(_, t) { solve(); };
 }

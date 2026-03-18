@@ -1,0 +1,59 @@
+A practical order is:
+
+Create the problem + basic metadata
+
+name, time limit, memory limit, tags if you care later.
+
+Write the statement first
+
+legend, input, output, notes, examples framing.
+
+This forces you to pin down ambiguity early.
+
+Write the validator
+
+On Codeforces/Polygon, validators are strongly recommended and effectively required for proper CF use, especially because hack tests are validated too.
+
+Write the main correct solution
+
+the official/reference solution Polygon can use to generate expected outputs.
+
+Write the generator(s)
+
+random, max, structured, adversarial, special cases.
+
+Create the test script / test groups
+
+usually with sample tests first, then hand tests, then generated stress/adversarial tests.
+
+Polygon test scripts typically point generated inputs to official outputs via > $.
+
+Generate and inspect tests
+
+make sure coverage is real, not just volume.
+
+Polygon now warns about incomplete tests when validator-observed bounds are not hit; that warning is meant to be taken seriously.
+
+Add checker if needed
+
+only if the output is non-unique / special judge.
+
+Otherwise standard comparison is enough.
+
+Add bad / alternate solutions
+
+greedy WA, borderline TLE, overflow bugs, etc.
+
+run them against the test set to confirm the tests actually separate them.
+
+Use invocations / local testing repeatedly
+
+test validator, checker, generator, and solutions before packaging. Polygon has dedicated support for validator/checker tests too.
+
+Build package
+
+fix warnings, verify samples, statements, file names, limits.
+
+Only then worry about contest integration / sharing
+
+permissions, coauthors, package export, import into contest.
