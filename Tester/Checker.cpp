@@ -19,8 +19,8 @@ using namespace std;
 #define quit(s) do{ cout<<(s)<<en; return; }while(false)
 
 #define int long long
-tpl_<tn_ T>       using v = vector<T>; using ll=long long; using pii=pair<int,int>; using pll=pair<ll,ll>; using iii=array<int, 3>;  using i4=array<int, 4>;
-tpl_<tn_ T>       using vv = v<v<T>>;  using vi=v<int>;    using vb=v<bool>; using vvb=v<vb>; using vs=v<string>;  using vvi=v<vi>; using vll=v<ll>; using vpii=v<pii>; using vvpii=v<vpii>;
+tpl_<tn_ T>       using v = vector<T>; using llint=long long; using pii=pair<int,int>; using pll=pair<llint,llint>; using iii=array<int, 3>;  using i4=array<int, 4>;
+tpl_<tn_ T>       using vv = v<v<T>>;  using vi=v<int>;    using vb=v<bool>; using vvb=v<vb>; using vs=v<string>;  using vvi=v<vi>; using vll=v<llint>; using vpii=v<pii>; using vvpii=v<vpii>;
 tpl_<tn_ K,tn_ T> using ump=unordered_map<K, T>;  tpl_<tn_ T>using ust=unordered_set<T>; tpl_<tn_ T> using rset=set<T,greater<T>>; tpl_<tn_ T> using mset=multiset<T>;
 tpl_<tn_ T>       using pq=priority_queue<T>;     tpl_<tn_ T>using mpq=priority_queue<T,v<T>,greater<T>>;
 tpl_<class It, class T>     auto leq_bound  (It first, It last, T val) { auto it = upper_bound(first, last, val); return it != first ? prev(it) : last;}
@@ -95,7 +95,7 @@ struct pairHash{tpl_<class T1,class T2>size_t operator()(const pair<T1,T2>&p)con
 struct vectorHash{tpl_<class T>size_t operator()(const v<T>&v)const{size_t val=0;for(const T&i:v)val^=hash<T>{}(i)+0x9e3779b9+(val<<6)+(val>>2);return val;}};
 vpii dirs={{1,0},{0,-1},{0,1},{-1,0}}; map<char, int> dirMap={{'E',0},{'S',1},{'N',2},{'W',3}}; auto bound=[](auto y,auto x,auto m,auto n){return y>=0&&y<m&&x>=0&&x<n;};
 
-    cx_ int N = 100000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ ll INFL=0x3f3f3f3f3f3f3f3f; cx_ auto en = "\n"; cx_ auto sp = " ";
+    cx_ int N = 100000; cx_ int MOD=1e9+7; cx_ int INF=1e9; cx_ llint INFL=0x3f3f3f3f3f3f3f3f; cx_ auto en = "\n"; cx_ auto sp = " ";
 inline int fpow(int a, int b) { int res = 1; a %= MOD; while (b > 0) { if (b & 1) res = res * a % MOD; a = a * a % MOD; b >>= 1; } return res; } inline int inv(int x) { return fpow(x, MOD-2); }
 cx_ int add(int a, int b) { return (a+b < MOD ? a+b : a+b-MOD); } cx_ int mult(int a, int b) { return (a*b < MOD ? a*b : a*b % MOD); } cx_ int ceil(int num, int den) { return num >= 0 ? (num + den - 1) / den : num / den; }
 vb sieve(const int n){vb p(n+1,true);p[0]=p[1]=false;for(int i=2;i*i<=n;++i)if(p[i])for(int j=i*i;j<=n;j+=i)p[j]=false;return p;} vi sieveList(int n){vb p=sieve(n);vi primes; rep(i, 2, n) if(p[i]) primes.pb(i); return primes;}

@@ -30,7 +30,7 @@ tpl_<tn_ K, tn_ V> using omap = __gnu_pbds::tree<K, V, less<>, __gnu_pbds::rb_tr
 
 // Aliases
 #define int long long
-using str=string; using ll=long long; using pii=pair<int, int>; using iii=array<int, 3>; using i4=array<int, 4>;
+using str=string; using llint=long long; using pii=pair<int, int>; using iii=array<int, 3>; using i4=array<int, 4>;
 tpl_<tn_ T> struct v : vector<T> {
   using vector<T>::vector; v(const vector<T>& a) : vector<T>(a) {}
   v(vector<T>&& a) : vector<T>(std::move(a)) {}
@@ -45,6 +45,8 @@ tpl_<tn_ T> struct vv : v<v<T>> {
   vv(int n, int m, T val=T()) : v<v<T>>(n, v<T>(m, val)) {}
   tpl_<tn_ Self, tn_ P> requires requires { typename tuple_size<P>::type; } && (tuple_size_v<P> == 2)
   auto&& operator[](this Self&& self, const P& p) { auto& [x,y] = p; return forward<Self>(self).v<v<T>>::operator[](x)[y]; }
+  tpl_<tn_ Self, tn_ P> requires requires(const P& p) { p.x; p.y; }
+  decltype(auto) operator[](this Self&& self, const P& p) { return std::forward<Self>(self).v<v<T>>::operator[](p.x)[p.y]; }
   using v<v<T>>::operator[];
   void prefix() { int n=this->size(), m=n?(*this)[0].size():0; f(i,n) f(j,m) {
       if(i) (*this)[i][j]+=(*this)[i-1][j]; if(j) (*this)[i][j]+=(*this)[i][j-1];
@@ -59,11 +61,11 @@ tpl_<tn_ T> using pq=priority_queue<T>; tpl_<tn_ T>using mpq=priority_queue<T,v<
 typedef fn<void(int,int)>fvii; typedef fn<void(int,int,int)>fviii;
 
 // Constants
-cx_ ll INF=1e18; cx_ int B=62; cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
+cx_ llint INF=1e18; cx_ int B=62; cx_ int N=100000; cx_ int MOD=1e9+7; // 998244353;
 cx_ auto en="\n"; cx_ auto sp=" ";
 auto _max=[](int a, int b) {return max(a, b);}; auto _min=[](int a, int b) {return min(a, b);};
 auto _sortinv=[](const pii& a,const pii& b) {if(a.ff==b.ff) return a.ss > b.ss; return a.ff<b.ff;};
-cx_ ll msb(ll x) { return x ? 63 - __builtin_clzll(x) : -1; } cx_ ll lsb(ll x) { return x ? __builtin_ctzll(x) : -1; }
+cx_ llint msb(llint x) { return x ? 63 - __builtin_clzll(x) : -1; } cx_ llint lsb(llint x) { return x ? __builtin_ctzll(x) : -1; }
 
 // Input/Output
 void setIO(const str&name=""){ios_base::sync_with_stdio(false);cin.tie(nullptr); if(!name.empty())
@@ -90,7 +92,7 @@ tpl_<tn_... T> inline int mult(T... x) { int res = 1; ((res = (res * x) % MOD), 
 inline int ceil(int a, int b) { return a >= 0 ? (a + b - 1) / b : a / b; }
 inline int fpow(int a, int b){int res=1; a%=MOD; while(b>0){if(b&1) res=res*a % MOD; a=mult(a,a); b>>=1;} return res; }
 inline int inv(int x) { return fpow(x, MOD-2); }
-struct mint { ll v; mint(ll x=0): v((x % MOD+MOD) % MOD) {}
+struct mint { llint v; mint(llint x=0): v((x % MOD+MOD) % MOD) {}
     mint op_+(mint o) const{ return mint(add(v, o.v)); } mint op_-(mint o) const{ return mint(sub(v, o.v)); }
     mint op_*(mint o) const{ return mint(mult(v, o.v)); } mint op_/(mint o) const{ return mint(mult(v, inv(o.v))); }
     mint& op_+=(mint o)    { return *this=*this+o; } mint& op_-=(mint o)    { return *this=*this-o; }
@@ -107,7 +109,7 @@ pair<vi, vi> initFact(int n) { vi fa(n+1), ifa(n+1); fa[0]=1; rep(i, 1, n) fa[i]
 class Matrix {public: vvi v; explicit Matrix(int n): v(n, vi(n, 0)){}
     Matrix op_*(const Matrix &m) const {int n=v.size(); Matrix r(n);
         f(i,n) f(k,n) f(j,n) r.v[i][j]=(r.v[i][j]+v[i][k]*m.v[k][j])%MOD; return r;}
-    Matrix op_^(ll p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1;
+    Matrix op_^(llint p) const {int n=v.size(); Matrix r(n), b=*this; f(i,n) r.v[i][i]=1;
         while(p){if(p&1)r=r*b; b=b*b; p>>=1;} return r;}};
 struct Hash { tpl_<tn_ T> size_t operator()(const T& x) const {
   if cx_(requires { typename tuple_size<T>::type; }) {
@@ -124,30 +126,29 @@ tpl_<tn_ T, tn_ U> T lstTrue(T l, T r, U ff) { for(++r; l<r;) { T m=l+(r-l)/2; i
 tpl_<tn_ T> bool cmn(T& a, T b) {return b<a ? a=b,1 : 0;} tpl_<tn_ T> bool cmx(T& a, T b) {return a<b ? a=b,1 : 0;}
 
 // Named tuples
-struct point { int x, y;
-  point operator+(const point& q) const { return {x + q.x, y + q.y}; }
-  point operator-(const point& q) const { return {x - q.x, y - q.y}; }
-  point operator-() const { return {-x,-y}; }
-  point& operator+=(const point& p) { x+=p.x; y+=p.y; return *this; }
-  point& operator-=(const point& p) { x-=p.x; y-=p.y; return *this; }
-  auto operator<=>(const point&) const = default;
-  friend istream& operator>>(istream& in, point& p) { in >> p.x >> p.y; return in; }
-  friend ostream& operator<<(ostream& os, const point& p) { os << "{" << p.x << "," << p.y << "}"; return os; }
-  bool in(point bounds) const { return x >= 0 && x < bounds.x && y >= 0 && y < bounds.y; }
+template<typename T> struct Point { T x, y;
+  Point operator+(const Point& q) const { return {x + q.x, y + q.y}; }
+  Point operator-(const Point& q) const { return {x - q.x, y - q.y}; }
+  Point operator-() const { return {-x,-y}; }
+  Point& operator+=(const Point& p) { x+=p.x; y+=p.y; return *this; }
+  Point& operator-=(const Point& p) { x-=p.x; y-=p.y; return *this; }
+  auto operator<=>(const Point&) const = default;
+  friend istream& operator>>(istream& in, Point& p) { in >> p.x >> p.y; return in; }
+  friend ostream& operator<<(ostream& os, const Point& p) { os << "{" << p.x << "," << p.y << "}"; return os; }
+  bool in(Point bounds) const { return x >= 0 && x < bounds.x && y >= 0 && y < bounds.y; }
   bool in(int n, int m) const { return in({n, m}); }
-}; using pos = point; using dpoint = point;
-inline const array<point, 4> dirs = {{{1,0}, {0,-1}, {0,1}, {-1,0}}};
+};
+inline const array<Point<int>, 4> dirs = {{{1,0}, {0,-1}, {0,1}, {-1,0}}};
 inline const map<char, int> dirMap = {{'E',0},{'S',1},{'N',2},{'W',3}};
-tpl_<> struct tuple_size<point> : integral_constant<size_t, 2> {};
-tpl_<size_t I> struct tuple_element<I, point> { using type = int; };
-tpl_<size_t I> auto get(const point& p) { if cx_(I==0) return p.x; else return p.y; }
+tpl_<tn_ T> struct tuple_size<Point<T>> : integral_constant<size_t, 2> {};
+tpl_<size_t I, tn_ T> struct tuple_element<I, Point<T>> { using type = T; };
+tpl_<size_t I, tn_ T> auto get(const Point<T>& p) { if cx_(I==0) return p.x; else return p.y; }
 struct ivl { int l, r;
   ivl merge(const ivl& other) const { return ivl{min(l, other.l), max(r, other.r)}; }
   bool contains(int x) const { return(l <= x && x <= r); }
   friend istream& operator>>(istream& in, ivl& ivl) { in >> ivl.l >> ivl.r; return in; }
   friend ostream& operator<<(ostream& os, const ivl& i) { os << i.l << ", " << i.r; return os; }
 };
-tpl_<> struct tuple_size<ivl> : integral_constant<size_t, 2> {};
 struct edge { int u, v;
   friend istream& operator>>(istream& in, edge& e) { in >> e.u >> e.v; return in; }
   friend ostream& operator<<(ostream& os, const edge& e) { os << e.u << ", " << e.v; return os; }
@@ -303,7 +304,7 @@ private:
 tpl_<tn_ T=int, tn_ C=plus<T>, tn_ Inv=conditional_t<is_arithmetic_v<T>, negate<T>, void>> struct BIT;
 tpl_<tn_ T, tn_ C> struct BITBase { int n; v<T> t, nums; [[no_unique_address]] C c; T z;
   static_assert(is_invocable_r_v<T, C, T, T>, "Combine must be T(T,T)");
-  BITBase(int sz, C c=C(), T z=T(), const v<T>& init={}) : n(sz), t(sz+1, z), nums(sz, z), c(std::move(c)), z(z) {
+  BITBase(int sz, C c=plus<int>{}, T z=T(), const v<T>& init={}) : n(sz), t(sz+1, z), nums(sz, z), c(std::move(c)), z(z) {
     if(!init.empty()) f(i, n) add(i, init[i]);
   }
   void add(int i, T x) { nums[i] = c(nums[i], x); for(++i; i <= n; i += i & -i) t[i] = c(t[i], x); }
@@ -319,11 +320,20 @@ struct BIT<T, C, void> : BITBase<T, C> { using BITBase<T, C>::BITBase; };
 tpl_<tn_ T, tn_ C, tn_ Inv>
 struct BIT : BITBase<T, C> {
   [[no_unique_address]] Inv inv; static_assert(is_invocable_r_v<T, Inv, T>, "Inverse must be T(T)");
-  BIT(int sz, C c=C(), T z=T(), const v<T>& init={}, Inv inv=Inv())
+  BIT(int sz, C c=plus<int>{}, T z=T(), const v<T>& init={}, Inv inv=Inv())
     : BITBase<T, C>(sz, std::move(c), z, init), inv(std::move(inv)) {}
   using BITBase<T, C>::c; using BITBase<T, C>::nums; using BITBase<T, C>::pref; using BITBase<T, C>::add;
   T query(int l, int r) const { return l ? c(pref(r), inv(pref(l-1))) : pref(r); }
   void update(int i, T x) { add(i, c(x, inv(nums[i]))); nums[i] = x; }
+};
+struct TrieNode { int cnt = 0; TrieNode* ch[26] = {}; TrieNode() {} };
+struct Trie { TrieNode* root;
+  Trie() { root = new TrieNode(); }
+  void insert(string s) { auto it = root;
+    for(char c : s) { int i = c-'a'; if(!it->ch[i]) it->ch[i] = new TrieNode(); it = it->ch[i]; it->cnt++; } }
+  int query(string s) { int res = 0; auto it = root; for(char c : s) { int i = c-'a';
+    if(!it->ch[i]) return 0; it = it->ch[i]; } return it->cnt;
+  }
 };
 
 struct Line { mutable int a, b, p; // =ax+b, last optimal x
@@ -347,7 +357,7 @@ struct CHT : multiset<Line, less<>> {
 };
 tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
     static bool badUpper(const Line& x,const Line& y,const Line& z){
-        ll lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
+        llint lhs=(y.b-x.b)*(y.a-z.a), rhs=(z.b-y.b)*(x.a-y.a); return lhs >= rhs; }
     void add(const Line& ln){
         if(!upperHull){ ln.a=-ln.a; ln.b=-ln.b; }
         while(h.size()>=2 && badUpper(h[h.size()-2], h.back(), ln)) h.pop_back(); h.pb(ln); }
