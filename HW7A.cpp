@@ -377,35 +377,108 @@ double cross(point o, point a, point b) {
   return (b.y - o.y) * (a.x - o.x) - (a.y - o.y) * (b.x - o.x);
 }
 
+// Good standardizatoin of my understanding / impl of cross for geometry direction
+// Counterclockwise is the default, so think about going left -> right on the lower hull as the reference
+void pivotSort(vpt& a, point pivot) {
+  auto [x, y] = pivot;
+  sort(all(a), [&](point p, point q) {
+    return atan2(p.y-y, p.x-x) < atan2(q.y-y, q.x-x);
+  });
+};
+
+// void solve() {
+//   cin >> n >> m;
+//   vpt a(n); f(i, n) cin >> a[i].x >> a[i].y;
+//   vpt b(m); f(i, m) cin >> b[i].x >> b[i].y;
+//   // Remember we need to sort around pivot, and that default order gives COUNTERCLOCKWISE order
+//   sort(all(b), [&](point p, point q) {
+//     return tie(p.x, p.y) < tie(q.x, q.y);
+//   });
+//   v<point> top, bot;
+//   auto add = [&](v<point>& res, auto&& points) {
+//     for(point p : points) {
+//       while(res.size() >= 2 && cross(res[res.size()-2], res[res.size()-1], p) < 0) {
+//         res.pop_back();
+//       }
+//       res.push_back(p);
+//     }
+//   };
+//   add(bot, b);
+//   add(top, b | views::reverse);
+//   top.pop_back(); bot.pop_back();
+//   // a.front() == a.back();
+//   auto hull = bot;
+//   hull.insert(hull.end(), all(top));
+//   
+//   int res = 0;
+//   int sz = hull.size();
+//   f(i, sz) {
+//     point o = hull[(i+sz-1) % sz];
+//     point p = hull[i];
+//     point q = hull[(i+1) % sz];
+//     v<point> c;
+//     for(point pp : a) {
+//       if(cross(o, p, pp) >= 0 && cross(p, q, pp) >= 0) {
+//         continue;
+//       }
+//       c.push_back(pp);
+//     }
+//     pivotSort(c, p);
+//     // print(a);
+//     deque<point> sweep;
+//     for(point pp : c) {
+//       while(!sweep.empty() && cross(sweep.front(), pp, p) <= 0) {
+//         // cout << "crossed " << sweep.front()  << sp << pp << sp << p << en;
+//         sweep.pop_front();
+//       }
+//       sweep.push_back(pp);
+//       int curr = sweep.size();
+//       if(curr > res) {
+//         res = curr;
+//         // cout << res << " " << o << " " << p << " " << q << " " << sweep << endl;
+//       }
+//     }
+//   }
+// }
+//   cout << res << endl;
+
+const double PI = acos(-1.0);
+
 void solve() {
   cin >> n >> m;
   vpt a(n); f(i, n) cin >> a[i].x >> a[i].y;
-  vpt b(m); f(i, n) cin >> b[i].x >> b[i].y;
-  sort(all(b), [&](point x, point y) {
-    return tie(x.x, x.y) < tie(y.x, y.y);
-  });
-  v<point> htop, hbot;
-  for(point p : b) {
-    while(htop.size() >= 2 && cross(htop[htop.size()-2], htop[htop.size()-1], p) > 0) {
-      htop.pop_back();
+  vpt b(m); f(i, m) cin >> b[i].x >> b[i].y;
+  int res = 0;
+  f(i, m) {
+    point p = b[i];
+    // angle, is_chip
+    vector<pair<double, int>> ev;
+    for(auto& c : a){
+      ev.pb({atan2(c.y-p.y, c.x-p.x), 1});
     }
-    htop.pb(p);
-  }
-  for(point p : b | views::reverse) {
-    while(hbot.size() >= 2 && cross(hbot[hbot.size()-2], hbot[hbot.size()-1], p) > 0) {
-      hbot.pop_back();
+    f(j, m) if(j != i) {
+      ev.pb({atan2(b[j].y-p.y, b[j].x-p.x), 0});
     }
-    if(!hbot.empty() && p != hbot.back()) hbot.pb(p);
+    sort(all(ev));
+    int sz = ev.size();
+    f(j, sz) ev.pb({ev[j].first + 2*PI, ev[j].second});
+    int curr = 0, bad = 0, r = 0;
+    f(l, sz) {
+      while(r < 2*sz && ev[r].first - ev[l].first < PI - 1e-9) {
+        if(ev[r].second == 1) curr++;
+        else bad++;
+        r++;
+      }
+      if(bad == 0) cmx(res, curr);
+
+      if(ev[l].second == 1) curr--;
+      else bad--;
+    }
   }
-  htop.pop_back(); hbot.pop_back();
-  htop.insert(all(hbot), htop.end());
-  
-  for(point p : htop) {
-    cout << p.x << " " << p.y << endl;
-  }
+  cout<<res<<en;
 }
 
 int32_t main() {
   setIO();
   solve();
-}
+} 

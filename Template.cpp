@@ -158,6 +158,7 @@ struct edgew { int w, u, v;
   friend ostream& operator<<(ostream& os, const edgew& e) { os << e.w << ", " << e.u << ", " << e.v; return os; }
 };
 
+
 // Data structures
 struct DSU{ vi p,sz; explicit
     DSU(const int n){p.resize(n),sz.resize(n,1),iota(all(p),0);}

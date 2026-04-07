@@ -42,6 +42,9 @@ bin/
 # Various
 OtherLanguages/Rust/target/**
 
+# TODO: Remove after CP final complete
+Polygon/**
+
 /build/
 /cmake-build-*/
 /CMakeFiles/

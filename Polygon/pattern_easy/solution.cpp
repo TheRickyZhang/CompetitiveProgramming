@@ -138,7 +138,6 @@ struct point { int x, y;
 }; using pos = point; using dpoint = point;
 inline const array<point, 4> dirs = {{{1,0}, {0,-1}, {0,1}, {-1,0}}};
 inline const map<char, int> dirMap = {{'E',0},{'S',1},{'N',2},{'W',3}};
-tpl_<> struct tuple_size<point> : integral_constant<size_t, 2> {};
 tpl_<size_t I> struct tuple_element<I, point> { using type = int; };
 tpl_<size_t I> auto get(const point& p) { if cx_(I==0) return p.x; else return p.y; }
 struct ivl { int l, r;
@@ -147,7 +146,6 @@ struct ivl { int l, r;
   friend istream& operator>>(istream& in, ivl& ivl) { in >> ivl.l >> ivl.r; return in; }
   friend ostream& operator<<(ostream& os, const ivl& i) { os << i.l << ", " << i.r; return os; }
 };
-tpl_<> struct tuple_size<ivl> : integral_constant<size_t, 2> {};
 struct edge { int u, v;
   friend istream& operator>>(istream& in, edge& e) { in >> e.u >> e.v; return in; }
   friend ostream& operator<<(ostream& os, const edge& e) { os << e.u << ", " << e.v; return os; }
@@ -299,31 +297,18 @@ private:
         if(r<a||b<l) return z; if(l<=a && b<=r) return t[i]; push(i,a,b); int m=(a+b)/2;
         T L=query(2*i, a,m, l, r), R=query(2*i+1, m+1, b, l, r); return c(L,R); }
 };
-
-tpl_<tn_ T=int, tn_ C=plus<T>, tn_ Inv=conditional_t<is_arithmetic_v<T>, negate<T>, void>> struct BIT;
-tpl_<tn_ T, tn_ C> struct BITBase { int n; v<T> t, nums; [[no_unique_address]] C c; T z;
-  static_assert(is_invocable_r_v<T, C, T, T>, "Combine must be T(T,T)");
-  BITBase(int sz, C c=C(), T z=T(), const v<T>& init={}) : n(sz), t(sz+1, z), nums(sz, z), c(std::move(c)), z(z) {
-    if(!init.empty()) f(i, n) add(i, init[i]);
+tpl_<tn_ T=int, tn_ C=plus<T>, tn_ Inv=negate<T>>
+struct BIT {
+  int n; v<T> t, nums; T z; C c; [[no_unique_address]] Inv inv;
+  BIT(int sz, C c=C{}, Inv inv=Inv{}, T z=T(), const v<T>& init={})
+    : n(sz), t(sz+1, z), nums(sz, z), z(z), c(c), inv(inv) {
+    if(init.size()) { f(i, min((int)init.size(), n)) nums[i] = init[i]; /* build */ }
   }
-  void add(int i, T x) { nums[i] = c(nums[i], x); for(++i; i <= n; i += i & -i) t[i] = c(t[i], x); }
-  T pref(int i) const { T res = z; for(++i; i > 0; i -= i & -i) res = c(res, t[i]); return res; }
-  friend ostream& operator<<(ostream& out, const BITBase& b) {
-    out << "BIT:\n"; int c = b.n, lv = __lg(c) + 1;
-    v<vs> g(lv, vs(c, str(4, ' ')));
-    for(int i = 1; i <= c; i++) { int r = __builtin_ctzll(i); if(r < lv) g[r][i-1] = format("{:4}", b.t[i]); }
-    f(r, lv) { f(j, c) out<<g[r][j]; out<<en; } return out; }
-};
-tpl_<tn_ T, tn_ C>
-struct BIT<T, C, void> : BITBase<T, C> { using BITBase<T, C>::BITBase; };
-tpl_<tn_ T, tn_ C, tn_ Inv>
-struct BIT : BITBase<T, C> {
-  [[no_unique_address]] Inv inv; static_assert(is_invocable_r_v<T, Inv, T>, "Inverse must be T(T)");
-  BIT(int sz, C c=C(), T z=T(), const v<T>& init={}, Inv inv=Inv())
-    : BITBase<T, C>(sz, std::move(c), z, init), inv(std::move(inv)) {}
-  using BITBase<T, C>::c; using BITBase<T, C>::nums; using BITBase<T, C>::pref; using BITBase<T, C>::add;
-  T query(int l, int r) const { return l ? c(pref(r), inv(pref(l-1))) : pref(r); }
-  void update(int i, T x) { add(i, c(x, inv(nums[i]))); nums[i] = x; }
+  void add(int i, T x) { for(nums[i]=c(nums[i],x), ++i; i<=n; i+=i&-i) t[i]=c(t[i],x); }
+  T pref(int r) const { T s=z; for(++r; r>0; r-=r&-r) s=c(s,t[r]); return s; }
+  T query(int l, int r) const requires invocable<Inv, T> { 
+    if(l > r) return z; return l ? c(pref(r), inv(pref(l-1))) : pref(r); }
+  void update(int i, T x) requires invocable<Inv, T> { add(i, c(x, inv(nums[i]))); nums[i] = x; }
 };
 
 struct Line { mutable int a, b, p; // =ax+b, last optimal x
@@ -362,44 +347,108 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
 
 int k, n, m;
 
+
 void solve() {
   cin >> n;
-  vi a(n); read(a);
+  vi a(n); cin >> a;
+  f(i, n) a[i]--; // normalize to [0, n-1] permutation
   str s; cin >> s;
-  // Only solve for canonical forms: starts with 1
-  bool rev = false;
-  if(s == "231" || s == "213") {
-    rev = true;
-    reverse(all(a));
-    reverse(all(s));
-  }
-  if(s[0] == '3') {
-    f(i, n) a[i] = n+1 - a[i];
-    f(i, 3) {
-      if(s[i] == '1') s[i] = '3';
-      else if(s[i] == '3') s[i] = '1';
+
+  assert(a.size() == n);
+
+  bool rev = false, comp = false;
+  if(s == "321") comp = true, s = "123";
+  else if(s == "231") rev = true, s = "132";
+  else if(s == "312") comp = true, s = "132";
+  else if(s == "213") rev = comp = true, s = "132";
+
+  if(rev) reverse(all(a));
+  if(comp) fora(x, a) x = n-1-x;
+  bool c2 = s == "132";
+
+  auto out = [&](int l, int r) -> pii {
+    return rev ? pii{n-1-r, n-1-l} : pii{l, r};
+  };
+
+  vi pos(n+1);
+  f(i, n) pos[a[i]] = i;
+
+  vvi first(n+1, vi(n+1)), second(n+1, vi(n+1)), third(n+1, vi(n+1));
+  auto add_prefix = [&](vvi& v, int x, int xx, int y, int yy) {
+    v[x][y]++;
+    v[x][yy+1]--;
+    v[xx+1][y]--;
+    v[xx+1][yy+1]++;
+  };
+  auto sum_prefix = [&](vvi& v) {
+    f(i, n) f(j, n) {
+      if(i) v[i][j] += v[i-1][j];
+      if(j) v[i][j] += v[i][j-1];
+      if(i && j) v[i][j] -= v[i-1][j-1];
     }
-  }
-  assert(s == "123" || s == "321");
-  
-  int best = 0;
-  int l = 0, r = 0;
-  // find initial cnt
-  {
-    BIT x(n+1, _add, {}, 0), y(n+1, _add, {}, 0);
-    fora(x, a) {
-      best += y.query(0, )
-    }
-  }
+  };
+
   if(s == "123") {
-    BIT left(n, _add, {}, 0);
-    f(i, n) {
-      
-      f(j, i+1, n) {
-        
+    f(i, n) f(j, i+1, n) {
+      int x = a[i], y = a[j];
+      if(x < y) {
+        add_prefix(first, 0, i-1, 0, x-1);
+        add_prefix(second, i+1, j-1, x+1, y-1);
+        add_prefix(third, j+1, n-1, y+1, n-1);
       }
     }
+  } else if(s == "132") {
+    f(i, n) f(j, i+1, n) {
+      int x = a[i], y = a[j];
+      if(x < y) {
+        add_prefix(second, i+1, j-1, y+1, n-1);
+        add_prefix(third, j+1, n-1, x+1, y-1);
+      } else {
+        add_prefix(first, 0, i-1, 0, y-1);
+      }
+    } 
   }
+  sum_prefix(first); sum_prefix(second); sum_prefix(third);
+
+  auto diff = [&](int i, int x, int y) {
+    return first[i][y] - first[i][x] + second[i][y] - second[i][x] + third[i][y] - third[i][x];
+  };
+
+  int prev = 0;
+  f(i, n) prev += first[i][a[i]];
+
+  int best = 0, l = rev ? n-1 : 0, r = rev ? n-1 : 0;
+  BIT left(n), base_right(n);
+  f(i, 1, n) base_right.add(a[i], 1);
+
+  f(i, n) {
+    BIT mid(n), right = base_right;
+    int x = a[i];
+    f(j, i+1, n) {
+      int y = a[j];
+      right.add(y, -1);
+
+      int mn = min(x, y), mx = max(x, y);
+      int di = diff(i, x, y), dj = diff(j, y, x), fix;
+
+      // The fix term is surprisingly the same whether x < y or not.
+      if(s == "123") {
+        fix = left.query(0, mn-1) + mid.query(mn+1, mx-1) + right.query(mx+1, n-1);
+      } else {
+        fix = left.query(0, mn-1) + mid.query(mx+1, n-1) + right.query(mn+1, mx-1);
+      }
+      int val = di + dj + fix;
+      if(val < best || (val == best && out(i, j) < out(l, r))) {
+        best = val;
+        l = i, r = j;
+      }
+      mid.add(y, 1);
+    }
+    left.add(x, 1);
+    if(i + 1 < n) base_right.add(a[i+1], -1);
+  }
+  auto [L, R] = out(l, r);
+  cout << prev + best << " " << L + 1 << sp << R + 1 << en;
 }
 
 int32_t main() {
