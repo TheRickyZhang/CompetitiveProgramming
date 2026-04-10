@@ -327,13 +327,19 @@ struct BIT : BITBase<T, C> {
   T query(int l, int r) const { return l ? c(pref(r), inv(pref(l-1))) : pref(r); }
   void update(int i, T x) { add(i, c(x, inv(nums[i]))); nums[i] = x; }
 };
-struct TrieNode { int cnt = 0; TrieNode* ch[26] = {}; TrieNode() {} };
-struct Trie { TrieNode* root;
-  Trie() { root = new TrieNode(); }
-  void insert(string s) { auto it = root;
-    for(char c : s) { int i = c-'a'; if(!it->ch[i]) it->ch[i] = new TrieNode(); it = it->ch[i]; it->cnt++; } }
-  int query(string s) { int res = 0; auto it = root; for(char c : s) { int i = c-'a';
-    if(!it->ch[i]) return 0; it = it->ch[i]; } return it->cnt;
+struct Trie {
+  struct Node { int cnt = 0; int ch[26]; Node() { memset(ch, 0, sizeof(ch)); } };
+  vector<Node> t;
+  Trie() { t.emplace_back(); }
+  void insert(const string& s) { int it = 0;
+    for(char c : s) {
+      int& i = t[it].ch[c - 'a']; if(!i) { i = t.size(); t.emplace_back(); } it = i; }
+    t[it].cnt++;
+  }
+  int query(const string& s) { int it = 0;
+    for(char c : s) {
+      int& i = t[it].ch[c - 'a']; if(!i) return 0; it = i; }
+    return t[it].cnt;
   }
 };
 

@@ -326,15 +326,6 @@ struct BIT : BITBase<T, C> {
   T query(int l, int r) const { return l ? c(pref(r), inv(pref(l-1))) : pref(r); }
   void update(int i, T x) { add(i, c(x, inv(nums[i]))); nums[i] = x; }
 };
-struct TrieNode { int cnt = 0; TrieNode* ch[26] = {}; TrieNode() {} };
-struct Trie { TrieNode* root;
-  Trie() { root = new TrieNode(); }
-  void insert(string s) { auto it = root;
-    for(char c : s) { int i = c-'a'; if(!it->ch[i]) it->ch[i] = new TrieNode(); it = it->ch[i]; it->cnt++; } }
-  int query(string s) { int res = 0; auto it = root; for(char c : s) { int i = c-'a';
-    if(!it->ch[i]) return 0; it = it->ch[i]; } return it->cnt;
-  }
-};
 
 struct Line { mutable int a, b, p; // =ax+b, last optimal x
     Line(int a, int b, int p=0) : a(a), b(b), p(p) {}
@@ -368,6 +359,8 @@ tpl_<bool upperHull=true> struct MonotonicCHT { deque<Line> h;
             if(v1 >= v0) h.pop_front(); else break; }
         int res=h.front().at(x); return upperHull ? res : -res; }
 };
+
+
 
 
 int k, n, m;
